@@ -2897,6 +2897,33 @@
           "code": "var a = ['a','b'], o = YourJS.indexBy(a, function(v){return v});\ntest(\n  [o.b,o.a].join(','),\n  'b,a'\n);"
         }
       ]
+    },
+    {
+      "name": "css",
+      "code": "var css;\n(function(RGX_UPPER, RGX_AMP, RGX_NO_COMMAS_OR_NOTHING, RGX_NO_AMP, RGX_IND_SEL, RGX_CLS, RGX_TRIM_SELS) {\n  css = function(obj, selAncestors) {\n    if (typeof selAncestors != 'string') {\n      if (selAncestors) {\n        var className = ('_' + Math.random()).replace(RGX_CLS, +new Date);\n        selAncestors = typeOf(selAncestors) == 'Array' ? selAncestors : [selAncestors];\n        for (var i = selAncestors.length; i--;) {\n          selAncestors[i].className += ' ' + className;\n        }\n      }\n      selAncestors = className ? '.' + className : '';\n    }\n\n    var code = getCssCode(obj, selAncestors);\n    var style = __DOCUMENT.createElement('style');\n    style.type = 'text/css';\n    if (style.styleSheet && !style.sheet) {\n      style.styleSheet.cssText = code;\n    }\n    else {\n      style.appendChild(__DOCUMENT.createTextNode(code));\n    }\n    (__DOCUMENT.getElementsByTagName('head')[0] || __DOCUMENT.body).appendChild(style);\n    return style;\n  }\n\n  function getCssCode(obj, selAncestors) {\n    var rules = [];\n    var rule = [];\n    for (var key in obj) {\n      if (has(obj, key)) {\n        var value = obj[key];\n        var typeName = typeOf(value);\n        if (!key.indexOf('@media ')) {\n          rules.push(key + '{' + getCssCode(value, selAncestors) + '}');\n        }\n        else if (typeName == 'Object') {\n          // Trim selectors\n          key = key.replace(RGX_TRIM_SELS, '$1');\n          // Return all selectors\n          key = key.replace(RGX_IND_SEL, function(sel) {\n            sel = selAncestors ? sel.replace(RGX_NO_AMP, '& $&') : sel;\n            return selAncestors.replace(RGX_NO_COMMAS_OR_NOTHING, function(selAncestor) {\n              return sel.replace(RGX_AMP, selAncestor);\n            });\n          });\n          rules.push(getCssCode(value, key));\n        }\n        else {\n          value = typeName != 'Array'\n            ? value != undefined\n              ? value && typeof value == 'number'\n                ? value + 'px'\n                : ((value + '').slice(-1) == '!' ? value + 'important' : value)\n              : 'none'\n            : value.join(',');\n          key = key.replace(RGX_UPPER, '-$&').toLowerCase();\n          rule.push(key + ':' + value + ';');\n        }\n      }\n    }\n    if (rule[0]) {\n        rules.unshift(selAncestors + '{' + rule.join('') + '}');\n    }\n    return rules.join('');\n  }\n})(\n  /[A-Z]/g,                                       // RGX_UPPER\n  /&/g,                                           // RGX_AMP\n  /[^,]+|^$/g,                                    // RGX_NO_COMMAS_OR_NOTHING\n  /^[^&]+$/,                                      // RGX_NO_AMP\n  /[^\\s\\xa0,][^,]*/g,                             // RGX_IND_SEL\n  /0(.|$)/,                                       // RGX_CLS\n  /^[\\s\\xa0]+|[\\s\\xa0]*(,)[\\s\\xa0]*|[\\s\\xa0]+$/g  // RGX_TRIM_SELS\n);",
+      "description": "Creates a CSS stylesheet from an JSON representation of a stylesheet.",
+      "params": [
+        {
+          "name": "objStyles",
+          "description": "An object representing the CSS rules to be inserted into the document. Property names will be used as media queries if they start with `\"@media \"`. Property names will be used as rule selectors if the value is an object. If a property name is to be used as a selector, if any selectors don't contain `&`, `\"& \"` will be prepended to it. For all selectors, `&` will be replaced recursively with the selectors found in the parent. CSS property names will be uncamelcased by inserting dashes before each uppercased character and lower casing all characters. If a value is `null` or `undefined`, it will be turned into `\"none\"`. If a value is a number other than `0`, `\"px\"` will be appended to it. If a value is an array all of the items will be concatenated together, using `\",\"` to delimit the values. If a value ends with `!` it will be replaced with `\"!important\"`.",
+          "type": "Object"
+        },
+        {
+          "name": "opt_ancestors",
+          "description": "This can be an element or an array of elements which will get another class added to target all rules to it and its children. This can alternatively be a CSS path (selector) specifying the root on which all CSS rules created should be based.",
+          "type": "HTMLElement|Array.<HTMLElement>|string"
+        }
+      ],
+      "return": {
+        "type": "HTMLStyleSheet",
+        "description": "The stylesheet that is created and appended to the document is returned."
+      },
+      "requires": [
+        "typeOf",
+        "has"
+      ],
+      "required": false,
+      "tests": []
     }
   ]
 }
