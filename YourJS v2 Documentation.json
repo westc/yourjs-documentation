@@ -567,6 +567,34 @@
       "tests": []
     },
     {
+      "name": "dom",
+      "code": "var dom;\n(function(RGX_DASH, INNER_TEXT, TEXT_CONTENT, PROP_HASH) {\n  function capAfterDash(m, afterDash) {\n    return afterDash.toUpperCase();\n  }\n  dom = function(input) {\n    var elem, realPropName, propName, propValue, i, l, j, c, style, stylePropName, kids;\n    if (typeOf(input) == 'String') {\n      elem = slice(dom({ _: 'DIV', html: input }).childNodes);\n    }\n    else {\n      elem = __DOCUMENT.createElement(input.nodeName || input._);\n      for (realPropName in input) {\n        propValue = input[realPropName];\n        if (has(input, realPropName) && (propName = has(PROP_HASH, realPropName) ? PROP_HASH[realPropName] : realPropName) != '_') {\n          if (propName == 'style') {\n            style = elem[propName];\n            if (typeOf(propValue) == 'String') {\n              style.cssText = propValue;\n            }\n            else {\n              for (stylePropName in propValue) {\n                if (has(propValue, stylePropName)) {\n                  style[stylePropName.replace(RGX_DASH, capAfterDash)] = propValue[stylePropName];\n                }\n              }\n            }\n          }\n          else if (propName == INNER_TEXT || propName == TEXT_CONTENT) {\n            elem[TEXT_CONTENT] = elem[INNER_TEXT] = propValue;\n          }\n          else if (propName == '$') {\n            propValue = toArray(propValue);\n            for (i = 0, l = propValue.length; i < l;) {\n              for (kids = toArray(dom(propValue[i++])), j = 0, c = kids.length; j < c;) {\n                elem.appendChild(kids[j++]);\n              }\n            }\n          }\n          else {\n            elem[propName] = propValue;\n            if (propName == realPropName && elem.getAttribute(propName) == undefined) {\n              elem.setAttribute(propName, propValue);\n            }\n          }\n        }\n      }\n    }\n    return elem;\n  };\n})(/-([^-])/g, 'innerText', 'textContent',\n  {nodeName:'_',html:'innerHTML',text:'innerText',children:'$','for':'htmlFor','class':'className',cls:'className'});",
+      "description": "Creates HTML DOM objects.",
+      "params": [
+        {
+          "name": "input",
+          "description": "The value that will be converted to DOM objects.  If a string, it will be interpreted as raw HTML.  Otherwise this must be an object specifying at least the `nodeName` (or `_`) property.  To represent an element with child nodes you can set the `children` (or `$`) property to an `input` object, `input` string, or array of `input` strings and/or objects that will be recursively interpreted.  The `html` property will be interpreted as the `innerHTML` property.  The `text` property will be interpreted ass the `innerText` and `textContent` properties.  The `cls` property will be interpreted as the element's class name.",
+          "type": "string|Object"
+        }
+      ],
+      "return": {
+        "type": "Array.<Node>|HTMLElement",
+        "description": "If `input` was a string an array of nodes represented in that string will be returned.  Otherwise the element represented by `input` will be returned."
+      },
+      "requires": [
+        "has",
+        "typeOf",
+        "toArray"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  YourJS.dom({_:'div',$:{nodeName:'div',text:'1>2'}}).innerHTML.toLowerCase(),\n  '<div>1&gt;2</div>'\n);"
+        }
+      ]
+    },
+    {
       "name": "extend",
       "code": "function extend(objToExtend, objProps) {\n  for (var k, args = arguments, i = 1; objProps = args[i++]; ) {\n    for (k in objProps) {\n      if (has(objProps, k)) {\n        objToExtend[k] = objProps[k];\n      }\n    }\n  }\n  return objToExtend;\n}",
       "description": "Adds extra properties to an object based on the properties owned by other specified objects.",
@@ -2833,30 +2861,40 @@
       "tests": []
     },
     {
-      "name": "dom",
-      "code": "var dom;\n(function(RGX_DASH, INNER_TEXT, TEXT_CONTENT, PROP_HASH) {\n  function capAfterDash(m, afterDash) {\n    return afterDash.toUpperCase();\n  }\n  dom = function(input) {\n    var elem, realPropName, propName, propValue, i, l, j, c, style, stylePropName, kids;\n    if (typeOf(input) == 'String') {\n      elem = slice(dom({ _: 'DIV', html: input }).childNodes);\n    }\n    else {\n      elem = __DOCUMENT.createElement(input.nodeName || input._);\n      for (realPropName in input) {\n        propValue = input[realPropName];\n        if (has(input, realPropName) && (propName = has(PROP_HASH, realPropName) ? PROP_HASH[realPropName] : realPropName) != '_') {\n          if (propName == 'style') {\n            style = elem[propName];\n            if (typeOf(propValue) == 'String') {\n              style.cssText = propValue;\n            }\n            else {\n              for (stylePropName in propValue) {\n                if (has(propValue, stylePropName)) {\n                  style[stylePropName.replace(RGX_DASH, capAfterDash)] = propValue[stylePropName];\n                }\n              }\n            }\n          }\n          else if (propName == INNER_TEXT || propName == TEXT_CONTENT) {\n            elem[TEXT_CONTENT] = elem[INNER_TEXT] = propValue;\n          }\n          else if (propName == '$') {\n            propValue = toArray(propValue);\n            for (i = 0, l = propValue.length; i < l;) {\n              for (kids = toArray(dom(propValue[i++])), j = 0, c = kids.length; j < c;) {\n                elem.appendChild(kids[j++]);\n              }\n            }\n          }\n          else {\n            elem[propName] = propValue;\n            if (propName == realPropName && elem.getAttribute(propName) == undefined) {\n              elem.setAttribute(propName, propValue);\n            }\n          }\n        }\n      }\n    }\n    return elem;\n  };\n})(/-([^-])/g, 'innerText', 'textContent',\n  {nodeName:'_',html:'innerHTML',text:'innerText',children:'$','for':'htmlFor','class':'className',cls:'className'});",
-      "description": "Creates HTML DOM objects.",
+      "name": "indexBy",
+      "code": "function indexBy(arr, indexer, opt_initial) {\n  opt_initial = opt_initial || {};\n  for (var i = 0, l = arr.length; i < l; i++) {\n    if (has(arr, i)) {\n      opt_initial[indexer(arr[i], i, arr)] = arr[i];\n    }\n  }\n  return opt_initial;\n}",
+      "description": "Traverses an array and returns an object with the values from the array placed in the specified indices.",
       "params": [
         {
-          "name": "input",
-          "description": "The value that will be converted to DOM objects.  If a string, it will be interpreted as raw HTML.  Otherwise this must be an object specifying at least the `nodeName` (or `_`) property.  To represent an element with child nodes you can set the `children` (or `$`) property to an `input` object, `input` string, or array of `input` strings and/or objects that will be recursively interpreted.  The `html` property will be interpreted as the `innerHTML` property.  The `text` property will be interpreted ass the `innerText` and `textContent` properties.  The `cls` property will be interpreted as the element's class name.",
-          "type": "string|Object"
+          "name": "arr",
+          "description": "Values to be placed in the returned object.",
+          "type": "Array"
+        },
+        {
+          "name": "indexer",
+          "description": "Function that will be called for each item in `arr` and return an index that will be the property name under which the value will be found in the returned object.  If the same index is returned multiple times the last value corresponding to that index will be the one found in the returned object.  The values passed to this function will be (1) the `arr` item, (2) the index in `arr` at which the item is found, and (3) `arr`.",
+          "type": "function(*,number,Array)"
+        },
+        {
+          "name": "opt_initial",
+          "description": "The object that will be augmented and returned.",
+          "type": "Object",
+          "optional": true,
+          "default": "{}"
         }
       ],
       "return": {
-        "type": "Array.<Node>|HTMLElement",
-        "description": "If `input` was a string an array of nodes represented in that string will be returned.  Otherwise the element represented by `input` will be returned."
+        "type": "Array",
+        "description": "`opt_initial` with additional properties names coming from the return values of `indexer` and the items found in `arr`."
       },
       "requires": [
-        "has",
-        "typeOf",
-        "toArray"
+        "has"
       ],
       "required": false,
       "tests": [
         {
           "name": "Simple",
-          "code": "test(\n  YourJS.dom({_:'div',$:{nodeName:'div',text:'1>2'}}).innerHTML.toLowerCase(),\n  '<div>1&gt;2</div>'\n);"
+          "code": "var a = ['a','b'], o = YourJS.indexBy(a, function(v){return v});\ntest(\n  [o.b,o.a].join(','),\n  'b,a'\n);"
         }
       ]
     }
