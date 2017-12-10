@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2017 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "parts": [
     {
       "name": "alias",
@@ -2831,6 +2831,34 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "dom",
+      "code": "var dom;\n(function(RGX_DASH, INNER_TEXT, TEXT_CONTENT, PROP_HASH) {\n  function capAfterDash(m, afterDash) {\n    return afterDash.toUpperCase();\n  }\n  dom = function(input) {\n    var elem, realPropName, propName, propValue, i, l, j, c, style, stylePropName, kids;\n    if (typeOf(input) == 'String') {\n      elem = slice(dom({ _: 'DIV', html: input }).childNodes);\n    }\n    else {\n      elem = __DOCUMENT.createElement(input.nodeName || input._);\n      for (realPropName in input) {\n        propValue = input[realPropName];\n        if (has(input, realPropName) && (propName = has(PROP_HASH, realPropName) ? PROP_HASH[realPropName] : realPropName) != '_') {\n          if (propName == 'style') {\n            style = elem[propName];\n            if (typeOf(propValue) == 'String') {\n              style.cssText = propValue;\n            }\n            else {\n              for (stylePropName in propValue) {\n                if (has(propValue, stylePropName)) {\n                  style[stylePropName.replace(RGX_DASH, capAfterDash)] = propValue[stylePropName];\n                }\n              }\n            }\n          }\n          else if (propName == INNER_TEXT || propName == TEXT_CONTENT) {\n            elem[TEXT_CONTENT] = elem[INNER_TEXT] = propValue;\n          }\n          else if (propName == '$') {\n            propValue = toArray(propValue);\n            for (i = 0, l = propValue.length; i < l;) {\n              for (kids = toArray(dom(propValue[i++])), j = 0, c = kids.length; j < c;) {\n                elem.appendChild(kids[j++]);\n              }\n            }\n          }\n          else {\n            elem[propName] = propValue;\n            if (propName == realPropName && elem.getAttribute(propName) == undefined) {\n              elem.setAttribute(propName, propValue);\n            }\n          }\n        }\n      }\n    }\n    return elem;\n  };\n})(/-([^-])/g, 'innerText', 'textContent',\n  {nodeName:'_',html:'innerHTML',text:'innerText',children:'$','for':'htmlFor','class':'className',cls:'className'});",
+      "description": "Creates HTML DOM objects.",
+      "params": [
+        {
+          "name": "input",
+          "description": "The value that will be converted to DOM objects.  If a string, it will be interpreted as raw HTML.  Otherwise this must be an object specifying at least the `nodeName` (or `_`) property.  To represent an element with child nodes you can set the `children` (or `$`) property to an `input` object, `input` string, or array of `input` strings and/or objects that will be recursively interpreted.  The `html` property will be interpreted as the `innerHTML` property.  The `text` property will be interpreted ass the `innerText` and `textContent` properties.  The `cls` property will be interpreted as the element's class name.",
+          "type": "string|Object"
+        }
+      ],
+      "return": {
+        "type": "Array.<Node>|HTMLElement",
+        "description": "If `input` was a string an array of nodes represented in that string will be returned.  Otherwise the element represented by `input` will be returned."
+      },
+      "requires": [
+        "has",
+        "typeOf",
+        "toArray"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  YourJS.dom({_:'div',$:{nodeName:'div',text:'1>2'}}).innerHTML.toLowerCase(),\n  '<div>1&gt;2</div>'\n);"
+        }
+      ]
     }
   ]
 }
