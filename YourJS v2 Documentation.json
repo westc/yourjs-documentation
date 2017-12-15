@@ -32,6 +32,44 @@
       "required": false
     },
     {
+      "name": "bind",
+      "code": "function bind(fn, objThis, opt_args) {\n  opt_args = slice(opt_args || []);\n  return function() {\n    return fn.apply(objThis, opt_args.concat(slice(arguments)));\n  };\n}",
+      "description": "Creates a function that when called will call `fn` with `this` referring to `objThis` and any values in `opt_args` be passed as the first arguments to `fn`.",
+      "params": [
+        {
+          "name": "fn",
+          "description": "Function to invoke when the return function is called.",
+          "type": "Function"
+        },
+        {
+          "name": "objThis",
+          "description": "The value to which `this` will refer unless `undefined` or `null` is given.",
+          "type": "*"
+        },
+        {
+          "name": "opt_args",
+          "description": "Array of arguments to prepend to the arguments passed to `fn` when the returned function is called.",
+          "type": "Array",
+          "optional": true,
+          "default": "[]"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "A function that when called will call `fn` with `this` referring to `objThis` and any values in `opt_args` be passed as the first arguments to `fn`."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var result = YourJS.bind(function(a, b) { return [b,a,this,a,b]; }, 1, [2])(3);\ntest(result.join(','), '3,2,1,2,3');"
+        }
+      ]
+    },
+    {
       "name": "call",
       "code": "function call(fn, objThis) {\n  var t = typeOf(fn) == 'String';\n  if (t) {\n    t = fn.match(/^([\\w\\$]+(?=\\.|#))?(#|\\.?prototype\\.)(\\w+)$/);\n    fn = t ? (t[1] ? __GLOBAL[t[1]].prototype : objThis)[t[3]] : YourJS[fn];\n  }\n  return fn.apply(t ? objThis : undefined, slice(arguments, t ? 2 : 1));\n}",
       "description": "Calls a function whether it be a global prototype function or a YourJS function or a custom bindable.",
@@ -112,31 +150,97 @@
     },
     {
       "name": "cap",
-      "code": "function cap(fn, opt_maxArity) {\n  opt_maxArity = opt_maxArity != undefined ? opt_maxArity : fn.length;\n  return function() {\n    return fn.apply(this, slice(arguments, 0, opt_maxArity));\n  };\n}",
+      "code": "function cap(fn, opt_maxArity, opt_staticArgs, opt_indexInArgs) {\n  var leftArgs = slice(\n        opt_staticArgs = opt_staticArgs || [],\n        0,\n        opt_indexInArgs = opt_indexInArgs == undefined ? opt_staticArgs.length : opt_indexInArgs\n      ),\n      rightArgs = slice(opt_staticArgs, opt_indexInArgs);\n  if ('string' == typeof fn) {\n    fn = YourJS[fn];\n    if ('function' != typeof fn) {\n      throw new Error('Cannot resolve cap function for \"' + fn + '\"');\n    }\n  }\n  opt_maxArity = opt_maxArity != undefined ? opt_maxArity : fn.length;\n  return function(arg1) {\n    return fn.apply(\n      this,\n      leftArgs.concat(slice(arguments, 0, opt_maxArity), rightArgs)\n    );\n  };\n}",
       "description": "Puts a cap (limit) on the amount of arguments that a function can receive.",
       "params": [
         {
           "name": "fn",
-          "description": "The function whose argument count will be capped off (limited).",
-          "type": "Function"
+          "description": "The function that will be called by the capped function.  If a string it be interpreted as the function within the YourJS object's context with that name.",
+          "type": "Function|string"
         },
         {
           "name": "opt_maxArity",
-          "description": "The max number of arguments that will be passed into `fn`.",
+          "description": "The max number of arguments that will be accepted by the returned capped function.",
           "type": "number",
           "optional": true,
           "default": "fn.length"
+        },
+        {
+          "name": "opt_staticArgs",
+          "description": "Arguments that will always be passed to `fn`.",
+          "type": "Array",
+          "optional": true,
+          "default": "[]"
+        },
+        {
+          "name": "opt_indexInArgs",
+          "description": "Position within `opt_staticArgs` to place the limited additional arguments if any are passed to the capped function.  Negative position will be counted from the end of `opt_staticArgs`.",
+          "type": "number",
+          "optional": true,
+          "default": "opt_staticArgs.length"
         }
       ],
       "return": {
         "type": "Function",
-        "description": "Returns a function that will call `fn` with the passed in arguments when invoked, but it will limit the argument count to the value `opt_maxArity`. When calling this newly created function, it will behave like this: `fn.apply(this, YourJS.slice(arguments, 0, opt_maxArity))`."
+        "description": "Returns a function that will call `fn` with the passed in arguments when invoked, but it will limit the argument count to the value `opt_maxArity`."
       },
       "requires": [
         "slice"
       ],
       "required": false,
-      "tests": []
+      "tests": [
+        {
+          "name": "Generic Slice",
+          "code": "inner = YourJS.cap(function(v, s, e){return v.slice(s,e)}, 1, [1, -1], 0);\ntest(\n  JSON.stringify([inner('where'), inner([1,2,3,4,5,6,7,8,9])]),\n  '[\"her\",[2,3,4,5,6,7,8]]'\n);"
+        }
+      ]
+    },
+    {
+      "name": "capProto",
+      "code": "function capProto(fn, opt_maxArity, opt_staticArgs, opt_indexInArgs) {\n  var fnIsString = 'string' == typeof fn,\n      leftArgs = slice(\n        opt_staticArgs = opt_staticArgs || [],\n        0,\n        opt_indexInArgs = opt_indexInArgs == undefined ? opt_staticArgs.length : opt_indexInArgs\n      ),\n      rightArgs = slice(opt_staticArgs, opt_indexInArgs);\n  if (fnIsString) {\n    fn.replace(/^([\\w\\$]+(?=\\.|#))?(?:#|\\.?prototype\\.)(\\w+)$|[\\s\\S]*/, function(m, globalClassName, fnName) {\n      fnIsString = !globalClassName;\n      if (globalClassName) {\n        fn = __GLOBAL[globalClassName].prototype[fnName];\n        if ('function' != typeof fn) {\n          fn = 0;\n        }\n      }\n      else {\n        fn = fnName;\n      }\n      if (!fn) {\n        throw new Error('Cannot resolve prototype function for \"' + m + '\"');\n      }\n    });\n  }\n  return function(objThis) {\n    var f = fn;\n    if (fnIsString) {\n      f = Object(objThis)[f];\n      if ('function' !== typeof f) {\n        throw new Error(\"Invalid value for this prototype function\");\n      }\n    }\n    return f.apply(objThis, leftArgs.concat(\n      slice(arguments, 1, opt_maxArity == undefined ? f.length + 1 : opt_maxArity),\n      rightArgs\n    ));\n  };\n}",
+      "description": "Creates a wrapper function for a prototype function that can be capped (limited in the amount of arguments it can receive).",
+      "params": [
+        {
+          "name": "fn",
+          "description": "The prototype function that will be called by the returned wrapper function.  If it is a string it can refer to a prototype function by using either the `\"Array.prototype.slice\"` (`\"Prototype_Name.prototype.function_name\"`) format, the `\"Array#slice\"` (`\"Prototype_Name#function_name\"`) format or the `\"#slice\"` (`\"#function_name\"` for the 1st argument) format.",
+          "type": "Function|string"
+        },
+        {
+          "name": "opt_maxArity",
+          "description": "The max number of arguments that will be accepted by the returned capped function.",
+          "type": "number",
+          "optional": true,
+          "default": "fn.length"
+        },
+        {
+          "name": "opt_staticArgs",
+          "description": "Arguments that will always be passed to `fn`.",
+          "type": "Array",
+          "optional": true,
+          "default": "[]"
+        },
+        {
+          "name": "opt_indexInArgs",
+          "description": "Position within `opt_staticArgs` to place the limited additional arguments if any are passed to the capped function.  Negative position will be counted from the end of `opt_staticArgs`.",
+          "type": "number",
+          "optional": true,
+          "default": "opt_staticArgs.length"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "Returns a function that will call `fn` with the passed in arguments when invoked, but it will limit the argument count to the value `opt_maxArity` (not including the 1st argument which is the context argument)."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Generic Slice",
+          "code": "inner = YourJS.capProto('#slice', 1, [1, -1], 0);\ntest(\n  JSON.stringify([inner('where'), inner([1,2,3,4,5,6,7,8,9])]),\n  '[\"her\",[2,3,4,5,6,7,8]]'\n);"
+        }
+      ]
     },
     {
       "name": "ceil",
@@ -223,6 +327,30 @@
       "tests": []
     },
     {
+      "name": "compact",
+      "code": "function compact(arr) {\n  var result = [];\n  for (var i = 0, l = arr.length; i < l; i++) {\n    if (arr[i]) {\n      result.push(arr[i]);\n    }\n  }\n  return result;\n}",
+      "description": "Create a new array with all of the `false`-ish values removed.",
+      "params": [
+        {
+          "name": "arr",
+          "description": "Array of values to comb through.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "A new array with only the non-`false`-ish (not `false`, `undefined`, `null`, `\"\"`, `0`, etc.) values found in `arr`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  JSON.stringify(YourJS.compact([false,true,5,0,\"\",\"H\",null])),\n  '[true,5,\"H\"]'\n)"
+        }
+      ]
+    },
+    {
       "name": "compare",
       "code": "function compare(a, b) {\n  return a < b ? -1 : a > b ? 1 : 0;\n}",
       "description": "Simple compare function typically use in sorting.",
@@ -276,6 +404,39 @@
       "requires": [],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "construct",
+      "code": "function construct(constructor) {\n  for (var args = slice(arguments, 1), argNames = '', i = args.length; i--;) {\n    argNames += (argNames ? ',a' : 'a') + i;\n  }\n  return Function(argNames, 'return new this(' + argNames + ')').apply(constructor, args);\n}",
+      "description": "Constructs an object with an arbitrary number of arguments passed via an array (or an array-like object).",
+      "params": [
+        {
+          "name": "constructor",
+          "description": "The constructor function.",
+          "type": "Function"
+        },
+        {
+          "name": "args",
+          "description": "Zero or more arguments with which `constructor` will be used to construct the desired object type.",
+          "type": "*",
+          "optional": true,
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "Returns the result of calling `new constructor(...args)`."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple Array",
+          "code": "test(JSON.stringify(YourJS.construct(Array,4,5,6)), '[4,5,6]');"
+        }
+      ]
     },
     {
       "name": "cos",
@@ -334,6 +495,83 @@
       "tests": []
     },
     {
+      "name": "count",
+      "code": "function count(arrOrObj, tester, opt_traverseAll) {\n  var count = 0, isStrTester = typeOf(tester) == 'String';\n  forOf(arrOrObj, function(value, key, arrOrObj) {\n    if (tester(value, key, arrOrObj)) {\n      count++;\n    }\n  }, opt_traverseAll);\n  return count;\n}",
+      "description": "Count how many items in an array or an object pass a given tester function.",
+      "params": [
+        {
+          "name": "arrOrObj",
+          "description": "If this is an array or an object all of the items that pass the `tester` function will be counted.  If this is a string all of the characters that pass the `tester` function will be counted.",
+          "type": "Array|Object|string"
+        },
+        {
+          "name": "tester",
+          "description": "Function that will take in (1) each value, (2) the corresponding key, and (3) a reference to `arrOrObj`.  If the function returns a `true`-ish value the count will be incremented.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_traverseAll",
+          "description": "Indicates whether or not all items, including the non-owned ones, should be traversed and included in the count.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The number of times `tester` returned a `true`-ish value."
+      },
+      "requires": [
+        "forOf",
+        "typeOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Count Odds In Array",
+          "code": "test(YourJS.count([1,2,3,4,5,6,7], function(v){return v%2}), 4);"
+        }
+      ]
+    },
+    {
+      "name": "countBy",
+      "code": "function countBy(arr, grouper, opt_initial) {\n  opt_initial = opt_initial || {};\n  for (var index, i = 0, l = arr.length; i < l; i++) {\n    if (has(arr, i)) {\n      if ('number' != typeof opt_initial[index = grouper(arr[i], i, arr)]) {\n        opt_initial[index] = 0;\n      }\n      opt_initial[index]++;\n    }\n  }\n  return opt_initial;\n}",
+      "description": "Creates or augments an object, making new properties that correspond to values in the given array.  Each property added will indicate how many items in the array corresponding to those property names.",
+      "params": [
+        {
+          "name": "arr",
+          "description": "Array or array-like object containing items to group together and count.",
+          "type": "Array"
+        },
+        {
+          "name": "grouper",
+          "description": "Function that will be called for all of the items in `arr` and will be passed (1) the item, (2) the index within `arr` and (3) `arr`.  The return value will be used as the property name for which each item in `arr` will count.",
+          "type": "function(*,number,Array)"
+        },
+        {
+          "name": "opt_initial",
+          "description": "Object to augment with property names that will contain counts of how many items correspond to the values returned by `grouper`.",
+          "type": "Object",
+          "optional": true,
+          "default": "{}"
+        }
+      ],
+      "return": {
+        "type": "Object",
+        "description": "`opt_initial` with property names that will contain counts of how many items correspond to the values returned by `grouper`."
+      },
+      "requires": [
+        "has"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Odds & Evens",
+          "code": "var nums = [0,1,2,3,4,5,6,7,8,9,10];\nvar counts = YourJS.countBy(nums, function(n) { return n % 2 ? 'odd' : 'even'; });\ntest(counts.odd + ' odds, ' + counts.even + ' evens', '5 odds, 6 evens');"
+        }
+      ]
+    },
+    {
       "name": "csc",
       "code": "",
       "description": "Determines the cosecant of a given number either in radians or in degrees.",
@@ -357,6 +595,33 @@
       },
       "requires": [
         "sec"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "css",
+      "code": "var css;\n(function(RGX_UPPER, RGX_AMP, RGX_NO_COMMAS_OR_NOTHING, RGX_NO_AMP, RGX_IND_SEL, RGX_CLS, RGX_TRIM_SELS) {\n  css = function(obj, selAncestors) {\n    if (typeof selAncestors != 'string') {\n      if (selAncestors) {\n        var className = ('_' + Math.random()).replace(RGX_CLS, +new Date);\n        selAncestors = typeOf(selAncestors) == 'Array' ? selAncestors : [selAncestors];\n        for (var i = selAncestors.length; i--;) {\n          selAncestors[i].className += ' ' + className;\n        }\n      }\n      selAncestors = className ? '.' + className : '';\n    }\n\n    var code = getCssCode(obj, selAncestors);\n    var style = __DOCUMENT.createElement('style');\n    style.type = 'text/css';\n    if (style.styleSheet && !style.sheet) {\n      style.styleSheet.cssText = code;\n    }\n    else {\n      style.appendChild(__DOCUMENT.createTextNode(code));\n    }\n    (__DOCUMENT.getElementsByTagName('head')[0] || __DOCUMENT.body).appendChild(style);\n    return style;\n  }\n\n  function getCssCode(obj, selAncestors) {\n    var rules = [];\n    var rule = [];\n    for (var key in obj) {\n      if (has(obj, key)) {\n        var value = obj[key];\n        var typeName = typeOf(value);\n        if (!key.indexOf('@media ')) {\n          rules.push(key + '{' + getCssCode(value, selAncestors) + '}');\n        }\n        else if (typeName == 'Object') {\n          // Trim selectors\n          key = key.replace(RGX_TRIM_SELS, '$1');\n          // Return all selectors\n          key = key.replace(RGX_IND_SEL, function(sel) {\n            sel = selAncestors ? sel.replace(RGX_NO_AMP, '& $&') : sel;\n            return selAncestors.replace(RGX_NO_COMMAS_OR_NOTHING, function(selAncestor) {\n              return sel.replace(RGX_AMP, selAncestor);\n            });\n          });\n          rules.push(getCssCode(value, key));\n        }\n        else {\n          value = typeName != 'Array'\n            ? value != undefined\n              ? value && typeof value == 'number'\n                ? value + 'px'\n                : ((value + '').slice(-1) == '!' ? value + 'important' : value)\n              : 'none'\n            : value.join(',');\n          key = key.replace(RGX_UPPER, '-$&').toLowerCase();\n          rule.push(key + ':' + value + ';');\n        }\n      }\n    }\n    if (rule[0]) {\n        rules.unshift(selAncestors + '{' + rule.join('') + '}');\n    }\n    return rules.join('');\n  }\n})(\n  /[A-Z]/g,                                       // RGX_UPPER\n  /&/g,                                           // RGX_AMP\n  /[^,]+|^$/g,                                    // RGX_NO_COMMAS_OR_NOTHING\n  /^[^&]+$/,                                      // RGX_NO_AMP\n  /[^\\s\\xa0,][^,]*/g,                             // RGX_IND_SEL\n  /0(.|$)/,                                       // RGX_CLS\n  /^[\\s\\xa0]+|[\\s\\xa0]*(,)[\\s\\xa0]*|[\\s\\xa0]+$/g  // RGX_TRIM_SELS\n);",
+      "description": "Creates a CSS stylesheet from an JSON representation of a stylesheet.",
+      "params": [
+        {
+          "name": "objStyles",
+          "description": "An object representing the CSS rules to be inserted into the document. Property names will be used as media queries if they start with `\"@media \"`. Property names will be used as rule selectors if the value is an object. If a property name is to be used as a selector, if any selectors don't contain `&`, `\"& \"` will be prepended to it. For all selectors, `&` will be replaced recursively with the selectors found in the parent. CSS property names will be uncamelcased by inserting dashes before each uppercased character and lower casing all characters. If a value is `null` or `undefined`, it will be turned into `\"none\"`. If a value is a number other than `0`, `\"px\"` will be appended to it. If a value is an array all of the items will be concatenated together, using `\",\"` to delimit the values. If a value ends with `!` it will be replaced with `\"!important\"`.",
+          "type": "Object"
+        },
+        {
+          "name": "opt_ancestors",
+          "description": "This can be an element or an array of elements which will get another class added to target all rules to it and its children. This can alternatively be a CSS path (selector) specifying the root on which all CSS rules created should be based.",
+          "type": "HTMLElement|Array.<HTMLElement>|string"
+        }
+      ],
+      "return": {
+        "type": "HTMLStyleSheet",
+        "description": "The stylesheet that is created and appended to the document is returned."
+      },
+      "requires": [
+        "typeOf",
+        "has"
       ],
       "required": false,
       "tests": []
@@ -425,6 +690,27 @@
       "tests": []
     },
     {
+      "name": "deburr",
+      "code": "var deburr;\n(function(RGX_DEBURR, ARR_DEBURR, RGX_NON_SPACE) {\n  function replaceDeburrChar() {\n    return ARR_DEBURR[slice(arguments, 1).join(' ').search(RGX_NON_SPACE, '')];\n  }\n  deburr = function(str) {\n    return str.replace(RGX_DEBURR, replaceDeburrChar);\n  };\n})(\n  /([\\xc0-\\xc5\\u0100])|([\\xe0-\\xe5\\u0101])|([\\xc7\\u0106\\u010c])|([\\xe7\\u0107\\u010d])|(\\xd0\\u0110)|(\\xf0\\u0111)|([\\xc8-\\xcb\\u0112\\u0116\\u0118])|([\\xe8-\\xeb\\u0113\\u0117\\u0119])|([\\xcc-\\xcf\\u012a\\u012e])|([\\xec-\\xef\\u012b\\u012f])|([\\xd1\\u0143])|([\\xf1\\u0144])|([\\xd2-\\xd6\\xd8\\u014c])|([\\xf2-\\xf6\\xf8\\u014d])|([\\xd9-\\xdc\\u016a])|([\\xf9-\\xfc\\u016b])|([\\xdd\\u0178])|([\\xfd\\xff])|(\\xc6)|(\\xe6)|(\\xde)|(\\xfe)|(\\xdf)|(\\u0152)|(\\u0153)|(\\u0141)|(\\u0142)|([\\u02B9-\\u036F])/g,\n  'A,a,C,c,D,d,E,e,I,i,N,n,O,o,U,u,Y,y,Ae,ae,Th,th,ss,Oe,oe,L,l,'.split(','),\n  /\\S/\n);",
+      "description": "Converts supplementary latin letters into basic latin letters, removing the diacritical marks.",
+      "params": [
+        {
+          "name": "str",
+          "description": "The string to be modified and returned without supplementary latin letters.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "Returns a copy of `str` but with all of the following characters replaced by their corresponding basic latin letters:  `À`, `Á`, `Â`, `Ã`, `Ä`, `Å`, `Ā` convert to `A`.  `à`, `á`, `â`, `ã`, `ä`, `å`, `ā` convert to `a`.  `Ç`, `Ć`, `Č` convert to `C`.  `ç`, `ć`, `č` convert to `c`.  `Ð`, `Đ` convert to `D`.  `ð`, `đ` convert to `d`.  `È`, `É`, `Ê`, `Ë`, `Ē`, `Ė`, `Ę` convert to `E`.  `è`, `é`, `ê`, `ë`, `ē`, `ė`, `ę` convert to `e`.  `Ì`, `Í`, `Î`, `Ï`, `Ī`, `Į` convert to `I`.  `ì`, `í`, `î`, `ï`, `ī`, `į` convert to `i`.  `Ñ`, `Ń` convert to `N`.  `ñ`, `ń` convert to `n`.  `Ò`, `Ó`, `Ô`, `Õ`, `Ö`, `Ø`, `Ō` convert to `O`.  `ò`, `ó`, `ô`, `õ`, `ö`, `ø`, `ō` convert to `o`.  `Ù`, `Ú`, `Û`, `Ü`, `Ū` convert to `U`.  `ù`, `ú`, `û`, `ü`, `ū` convert to `u`.  `Ý`, `Ÿ` convert to `Y`.  `ý`, `ÿ` convert to `y`.  `Æ` converts to `Ae`.  `æ` converts to `ae`.  `Þ` converts to `Th`.  `þ` converts to `th`.  `ß` converts to `ss`.  `Œ` converts to `Oe`.  `œ` converts to `oe`.  `Ł` converts to `L`.  `ł` converts to `l`."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "defer",
       "code": "function defer(fn, opt_args) {\n  var objThis = this;\n  opt_args = slice(opt_args || []);\n  return setTimeout(function() { fn.apply(objThis, opt_args); }, 0);\n}",
       "description": "Defers calling a function until the current call stack is done.  Similar to using the global `setTimeout` function.",
@@ -456,6 +742,25 @@
           "code": "var value, newValue = Math.random();\nYourJS.defer(function(input){ value = input; }, [newValue]);\nif (value === newValue) {\n  test('defer never happened');\n}\nsetTimeout(function() {\n  test(value, newValue);\n}, 100);"
         }
       ]
+    },
+    {
+      "name": "degrees",
+      "code": "function degrees(radians) {\n  return radians * 180 / Math.PI;\n}",
+      "description": "Converts radians to degrees.",
+      "params": [
+        {
+          "name": "radians",
+          "description": "The number representing radians of in angle which will be converted to degrees.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The equivalent of `radians` in degrees."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
     },
     {
       "name": "delay",
@@ -492,6 +797,54 @@
         {
           "name": "Delay call",
           "code": "var delayCalled;\nYourJS.delay(function(){ delayCalled = true; }, 500);\nif (delayCalled) {\n  test(true, false);\n}\nelse {\n  setTimeout(function() {\n    test(delayCalled, true);\n  }, 600);\n}"
+        }
+      ]
+    },
+    {
+      "name": "dice",
+      "code": "function dice(str, delim, opt_limit) {\n  var arr = [], start = 0, i;\n  if (str) {\n    str.replace(\n      (typeOf(delim) == 'RegExp' ? modRegExp : quoteRegExp)(delim, 'g'),\n      function(m) {\n        i = arguments;\n        i = i[i.length - 2];\n        if (!(opt_limit-- < 1)) {\n          arr.push(str.slice(start, i));\n          start = i + (m.length || 1);\n        }\n      }\n    );\n    arr.push(str.slice(start));\n  }\n  return arr;\n}",
+      "description": "Dices up a string splitting it on the passed in delimiter and placing the results in an array while making sure that the empty string is converted to an empty array.",
+      "params": [
+        {
+          "name": "str",
+          "description": "The string to be diced and turned into an array of strings.",
+          "type": "string"
+        },
+        {
+          "name": "delim",
+          "description": "The regular expression or string to be used as a delimiter in order to dice up `str`. The matched substrings will not be included in the strings returned in the array.",
+          "type": "RegExp|string"
+        },
+        {
+          "name": "opt_limit",
+          "description": "If specified, this number represents the maximum number of times `str` will be split on `delim`. Unlike with `String.prototype.split()`, the remaining substring after this limit will simply be placed in the last element of the array.",
+          "type": "number",
+          "optional": true,
+          "default": "Infinity"
+        }
+      ],
+      "return": {
+        "type": "Array.<string>",
+        "description": "Returns an array of substrings formed by dicing (splitting) up `str` by `delim`. If `str` is an empty string, an empty array will be returned."
+      },
+      "requires": [
+        "typeOf",
+        "modRegExp",
+        "quoteRegExp"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Empty String",
+          "code": "test(JSON.stringify(YourJS.dice('', ',')), '[]');"
+        },
+        {
+          "name": "Simple String",
+          "code": "test(JSON.stringify(YourJS.dice('Abe Bob Car', ' ')), '[\"Abe\",\"Bob\",\"Car\"]');"
+        },
+        {
+          "name": "One Item",
+          "code": "test(JSON.stringify(YourJS.dice('Abe', ',')), '[\"Abe\"]');"
         }
       ]
     },
@@ -595,6 +948,63 @@
       ]
     },
     {
+      "name": "entries",
+      "code": "function entries(arrOrObj, opt_includeInheritance) {\n  var result = [];\n  forOf(arrOrObj, function(value, key) {\n    result.push([key, value]);\n  }, opt_includeInheritance);\n  return result;\n}",
+      "description": "Gets an array of pairs (array of length 2) indicating all of the keys and values within a given array or object.",
+      "params": [
+        {
+          "name": "arrOrObj",
+          "description": "Array or object to traverse to get all of the key/value pairs.",
+          "type": "Array|Object"
+        },
+        {
+          "name": "opt_includeInheritance",
+          "description": "Indicates whether inherited key/value pairs should be included in the returned array of entries.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Array.<Array>",
+        "description": "An array of pairs (arrays where the first item is the key and the second is the value)."
+      },
+      "requires": [
+        "forOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Sparse Array",
+          "code": "var arr = [5];\narr[9] = \"7\";\narr[13] = 11;\ntest(JSON.stringify(YourJS.entries(arr)), '[[0,5],[9,\"7\"],[13,11]]');"
+        }
+      ]
+    },
+    {
+      "name": "escape",
+      "code": "function escape(str) {\n  return encodeURIComponent(str)\n    .replace(/!/g, '%21')\n    .replace(/'/g, '%27')\n    .replace(/\\(/g, '%28')\n    .replace(/\\)/g, '%29')\n    .replace(/\\*/g, '%2A')\n    .replace(/%20/g, '+');\n}",
+      "description": "Encodes a string to be used in a query part of a URL.",
+      "params": [
+        {
+          "name": "str",
+          "description": "String to encode.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "Encoded string that can be used in the query part of a URL."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.escape('Hello world!'), 'Hello+world%21');"
+        }
+      ]
+    },
+    {
       "name": "extend",
       "code": "function extend(objToExtend, objProps) {\n  for (var k, args = arguments, i = 1; objProps = args[i++]; ) {\n    for (k in objProps) {\n      if (has(objProps, k)) {\n        objToExtend[k] = objProps[k];\n      }\n    }\n  }\n  return objToExtend;\n}",
       "description": "Adds extra properties to an object based on the properties owned by other specified objects.",
@@ -620,6 +1030,82 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "fill",
+      "code": "function fill(arr, value, opt_start, opt_end) {\n  var len = arr.length;\n  opt_start = opt_start < 0 ? Math.max(len + opt_start, 0) : (opt_start || 0);\n  for (\n    opt_end = opt_end < 0\n      ? Math.max(len + opt_end, 0)\n      : (opt_end || opt_end === 0 ? Math.min(opt_end, len) : len);\n    opt_start < opt_end;\n    opt_start++\n  ) { arr[opt_start] = value; }\n  return arr;\n}",
+      "description": "Fill an array with a given value.",
+      "params": [
+        {
+          "name": "arr",
+          "description": "Array to fill.",
+          "type": "Array"
+        },
+        {
+          "name": "value",
+          "description": "Value with which to fill `arr`.",
+          "type": "*"
+        },
+        {
+          "name": "opt_start",
+          "description": "Starting position within `arr` at which to fill `arr`.  If it is negative it will be calculated from the end of `arr`.",
+          "type": "number",
+          "optional": true,
+          "default": "0"
+        },
+        {
+          "name": "opt_end",
+          "description": "Ending position within `arr` at which to no longer fill `arr`.  If it is negative it will be calculated from the end of `arr`.",
+          "type": "number",
+          "optional": true,
+          "default": "arr.length"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "A reference to `arr`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  JSON.stringify(YourJS.fill(new Array(10), 5, 1, -1)),\n  '[null,5,5,5,5,5,5,5,5,null]'\n);"
+        }
+      ]
+    },
+    {
+      "name": "flatten",
+      "code": "function flatten(array, opt_depth) {\n  opt_depth = opt_depth == undefined ? 1 : opt_depth;\n  var result = [];\n  for (var nextDepth = opt_depth === true || (opt_depth - 1), i = 0, l = array.length; i < l; i++) {\n    if (opt_depth > 0 && typeOf(array[i]) == 'Array') {\n      result = result.concat(flatten(array[i], nextDepth));\n    }\n    else {\n      result.push(array[i]);\n    }\n  }\n  return result;\n}",
+      "description": "Create a flattened copy of an array.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array to flatten.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_depth",
+          "description": "If `true` or `Infinity` there will be no limit to the recursiveness of the flattening.  Otherwise, if given, this should be a number indicated how many levels down this array should be flattened.",
+          "type": "boolean|number",
+          "optional": true,
+          "default": "1"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "Flattened version of `array` up to the given `opt_depth`."
+      },
+      "requires": [
+        "typeOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.flatten([1,[2,[3],4],5])), '[1,2,[3],4,5]')"
+        }
+      ]
     },
     {
       "name": "floor",
@@ -662,7 +1148,7 @@
         },
         {
           "name": "fn",
-          "description": "Function called on each item in `a`.  The parameters passed are as follows:  (1) value, (2) key, (3) `a` and (4) ender function.  The `this` keyword will contain the number of times the function has been called.  The ender function may be used to immediately stop traversing `a`.  Calling the ender function with a `true`-ish value will instead make it just return a boolean value indicating if the ender function has already been called (useful only in a `catch` or `finally` clause).",
+          "description": "Function called on each item in `a`.  The parameters passed are as follows:  (1) value, (2) key, (3) `a` and (4) ender function.  The `this` keyword will contain the number of times the function has been called.  The ender function may be used to immediately stop traversing `a`.  Calling the ender function with a `true`-ish value will instead make the ender function return a boolean value indicating if the ender function has already been called (useful only in a `catch` or `finally` clause).",
           "type": "Function"
         },
         {
@@ -695,7 +1181,7 @@
         },
         {
           "name": "fn",
-          "description": "Function to call for each property in `obj`.  The parameters passed are as follows:  (1) value, (2) key, (3) `obj` and (4) ender function.  The `this` keyword will contain the number of times the function has been called.  The ender function may be used to immediately stop traversing `obj`.  Calling the ender function with a `true`-ish value will instead make it just return a boolean value indicating if the ender function has already been called (useful only in a `catch` or `finally` clause).",
+          "description": "Function to call for each property in `obj`.  The parameters passed are as follows:  (1) value, (2) key, (3) `obj` and (4) ender function.  The `this` keyword will contain the number of times the function has been called.  The ender function may be used to immediately stop traversing `obj`.  Calling the ender function with a `true`-ish value will instead make the ender function return a boolean value indicating if the ender function has already been called (useful only in a `catch` or `finally` clause).",
           "type": "Function"
         },
         {
@@ -712,6 +1198,42 @@
       },
       "requires": [
         "has"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "forOf",
+      "code": "function forOf(obj, fn, opt_traverseAll) {\n  return (\n    (isArrayLike(obj) || typeOf(obj) == 'String') ? forEach : forIn\n  )(Object(obj), fn, opt_traverseAll);\n}",
+      "description": "Traverses all the characters in a string or all of the items in an array or an object, executing a function on each one.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "If is an array, an array-like object, or an object, its items will be traversed.  If it is a string its characters will be individual traversed.",
+          "type": "Array|Object|string"
+        },
+        {
+          "name": "fn",
+          "description": "Function to call for each item traversed within `obj`.  The parameters passed are as follows:  (1) value, (2) key, (3) `obj` and (4) ender function.  The `this` keyword will contain the number of times this `fn` function has been called.  The ender function may be used to immediately stop traversing `obj`.  Calling the ender function with a `true`-ish value will instead make the ender function return a boolean value indicating if the ender function has already been called (useful only in a `catch` or `finally` clause).",
+          "type": "Function"
+        },
+        {
+          "name": "opt_traverseAll",
+          "description": "Boolean indicating whether or not even the properties that are not owned by `obj` should be traversed.  If `true` all properties will be traversed.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Number of times `fn` was called."
+      },
+      "requires": [
+        "isArrayLike",
+        "typeOf",
+        "forEach",
+        "forIn"
       ],
       "required": false,
       "tests": []
@@ -734,6 +1256,35 @@
       "requires": [],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "gcd",
+      "code": "function gcd(int1, int2) {\n  return int2 ? gcd(int2, int1 % int2) : int1;\n}",
+      "description": "Finds the largest integer which evenly divides the two specified integers.",
+      "params": [
+        {
+          "name": "int1",
+          "description": "The first of two integers for which the greatest common denominator should be found.",
+          "type": "number"
+        },
+        {
+          "name": "int2",
+          "description": "The second of two integers for which the greatest common denominator should be found.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns the largest integer which evenly divides `int1` and `int2`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.gcd(2*3*5*7*11, 2*5*7*13*19), 2*5*7);"
+        }
+      ]
     },
     {
       "name": "get",
@@ -885,6 +1436,70 @@
       "tests": []
     },
     {
+      "name": "htmlify",
+      "code": "function htmlify(str, opt_keepWhitespace) {\n  str = str.replace(/&/g, '&amp;')\n           .replace(/</g, '&lt;')\n           .replace(/>/g, '&gt;')\n           .replace(/\"/g, '&quot;')\n           .replace(/'/g, '&#x27;')\n           .replace(/`/g, '&#x60;');\n  return opt_keepWhitespace\n    ? str.replace(/\\r?\\n|\\r/g, '<br />')\n         .replace(/\\t/g, '    ')\n         .replace(/^ | (?= )| $/g, '&nbsp;')\n    : str;\n}",
+      "description": "Converts a normal string into a string that can be treated as raw HTML.",
+      "params": [
+        {
+          "name": "str",
+          "description": "The string to be converted to raw HTML.",
+          "type": "string"
+        },
+        {
+          "name": "optKeepWhitespace",
+          "description": "If set to `true` the returned string will convert multiple, consecutive spaces to non-breaking spaces followed by one normal space. If set to `true`, line breaks will be converted to `<br />`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "HTMLified version of `str`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "indexBy",
+      "code": "function indexBy(arr, indexer, opt_initial) {\n  opt_initial = opt_initial || {};\n  for (var i = 0, l = arr.length; i < l; i++) {\n    if (has(arr, i)) {\n      opt_initial[indexer(arr[i], i, arr)] = arr[i];\n    }\n  }\n  return opt_initial;\n}",
+      "description": "Traverses an array and returns an object with the values from the array placed in the specified indices.",
+      "params": [
+        {
+          "name": "arr",
+          "description": "Values to be placed in the returned object.",
+          "type": "Array"
+        },
+        {
+          "name": "indexer",
+          "description": "Function that will be called for each item in `arr` and return an index that will be the property name under which the value will be found in the returned object.  If the same index is returned multiple times the last value corresponding to that index will be the one found in the returned object.  The values passed to this function will be (1) the `arr` item, (2) the index in `arr` at which the item is found, and (3) `arr`.",
+          "type": "function(*,number,Array)"
+        },
+        {
+          "name": "opt_initial",
+          "description": "The object that will be augmented and returned.",
+          "type": "Object",
+          "optional": true,
+          "default": "{}"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "`opt_initial` with additional properties names coming from the return values of `indexer` and the items found in `arr`."
+      },
+      "requires": [
+        "has"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var a = ['a','b'], o = YourJS.indexBy(a, function(v){return v});\ntest(\n  [o.b,o.a].join(','),\n  'b,a'\n);"
+        }
+      ]
+    },
+    {
       "name": "info",
       "code": "function info() {\n  return { name: __VARIABLE_NAME, version: __VERSION, toString: YourJS.toString };\n}",
       "required": true,
@@ -926,8 +1541,71 @@
       "tests": []
     },
     {
+      "name": "isArguments",
+      "code": "eval('var Arguments,Array,Boolean,Date,Function,Null,Number,Object,RegExp,String,Undefined,Unknown'.replace(/[A-Z]\\w+/g, 'is$&'));\n'Arguments Array Boolean Date Function null Number Object RegExp String undefined Unknown'.replace(/(\\w)(\\w+)/g, function(all, first, rest) {\n  eval('(function(t){is' + first.toUpperCase() + rest + '=function(v){return t(v)==\"' + all + '\"}})')(typeOf);\n});",
+      "description": "Determines if the given value is of type `Arguments` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `Arguments` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `Arguments` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "typeOf",
+        "isArray",
+        "isBoolean",
+        "isDate",
+        "isFunction",
+        "isNull",
+        "isNumber",
+        "isObject",
+        "isRegExp",
+        "isUndefined",
+        "isUnknown",
+        "isString"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "(function() {\n  test(\n    [YourJS.isArguments(arguments), YourJS.isArguments([])].join(','),\n    'true,false'\n  );\n})();"
+        }
+      ]
+    },
+    {
+      "name": "isArray",
+      "code": "",
+      "description": "Determines if the given value is of type `Array` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `Array` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `Array` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "(function() {\n  test(\n    [YourJS.isArray(arguments), YourJS.isArray([])].join(','),\n    'false,true'\n  );\n})();"
+        }
+      ]
+    },
+    {
       "name": "isArrayLike",
-      "code": "function isArrayLike(o) {\n  var l, i;\n  return !!o\n      && !o.nodeName\n      && typeOf(l = o.length) == 'Number'\n      && !['Function', 'String'].includes(typeOf(o))\n      && (!l || (l > 0 && (i = l - 1) % 1 == 0 && i in o));\n}",
+      "code": "function isArrayLike(o) {\n  var l, i, t = typeOf(o);\n  return t == 'Array'\n      || (!!o\n        && !o.nodeName\n        && typeOf(l = o.length) == 'Number'\n        && !['Function', 'String'].includes(t)\n        && (!l || (l > 0 && (i = l - 1) % 1 == 0 && i in o)));\n}",
       "description": "Determines if an object is an array or at least array-like.",
       "params": [
         {
@@ -947,14 +1625,388 @@
       "tests": []
     },
     {
+      "name": "isBitable",
+      "code": "function isBitable(value) {\n  return ~~value == Math.trunc(value);\n}",
+      "description": "Tests to see if a number can be the operand of a bitwise operator without losing integral precision.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it can be an operand for a bitwise operator without losing integral precision.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` will not lose integral precision when used as an operand for a bitwise operator.  Otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isBitable(2), YourJS.isBitable(Infinity), YourJS.isBitable(2.1), YourJS.isBitable(Math.pow(2,31)-1), YourJS.isBitable(Math.pow(2,31))].join(','),\n  'true,false,true,true,false'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isBoolean",
+      "code": "",
+      "description": "Determines if the given value is of type `Boolean` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `Boolean` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `Boolean` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isBoolean(0), YourJS.isBoolean(false)].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isComposite",
+      "code": "function isComposite(num) {\n  return num > 1 && !isPrime(num);\n}",
+      "description": "Determines if a number is a positive integer that is divisible by other integers apart from `1` and itself.",
+      "params": [
+        {
+          "name": "num",
+          "description": "Number to be tested.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `num` is divisible by another integer other than `1` and itself, otherwise `false`."
+      },
+      "requires": [
+        "isPrime"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isDate",
+      "code": "",
+      "description": "Determines if the given value is of type `Date` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `Date` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `Date` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isDate(0), YourJS.isDate(new Date)].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isEmpty",
+      "code": "function isEmpty(value) {\n  var isNotArrayLike = !isArrayLike(value = Object(value));\n  for (var k in value) {\n    if (has(value, k) && (isNotArrayLike || ~~k == k)) {\n      return false;\n    }\n  }\n  return true;\n}",
+      "description": "Determines if an array, arguments list, other type of list or collection is empty. Also can be used on objects to ensure that it doesn't have any properties explicitly set.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to be checked.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "Returns `false` if `value` is an empty array, arguments list, node list, element collection, or string. Returns `false` if `value` has no properties of its own defined. In all other cases, `true` is returned."
+      },
+      "requires": [
+        "isArrayLike",
+        "has"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Check Empty Array",
+          "code": "var arr = new Array();\narr.length = 123;\ntest(YourJS.isEmpty(arr), true);"
+        }
+      ]
+    },
+    {
+      "name": "isError",
+      "code": "function isError(value, opt_testForAnyError) {\n  return typeOf(value).slice(opt_testForAnyError ? -5 : 0) == 'Error';\n}",
+      "description": "Determines if a value is an `Error` object.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to be tested.",
+          "type": "*"
+        },
+        {
+          "name": "opt_testForAnyError",
+          "description": "Indicates whether or not any type of object whose type name ends with `\"Error\"` will count as an error object.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `opt_testForAnyError` is `false`-ish or not given and `value` is an `Error` object.  `true` if `opt_testForAnyError` is `true`-ish and the type name of `value` ends with `\"Error\"`.  Otherwise `false`."
+      },
+      "requires": [
+        "typeOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isFalsy",
+      "code": "function isFalsy(value, opt_strict) {\n  return !value || (!opt_strict && (isArrayLike(value) || value.constructor == Object) && isEmpty(value));\n}",
+      "description": "Basically used to determine if something is falsy or is an empty collection of sorts.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to check.",
+          "type": "*"
+        },
+        {
+          "name": "opt_strict",
+          "description": "Ordinarilly `isFalsy()` will check if a value is falsy or is an empty collection. If this argument is `true`-ish `isFalsy()` will not check `value` to see if it is an empty collection but will only return the equivalent of `!value`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "Returns `false` if `value` is an empty array, arguments list, node list, element collection, or string. Returns `false` if `value` is an object of type `Object` which has no properties of its own defined. Returns `false` if `value` is falsy. In all other cases, `true` is returned."
+      },
+      "requires": [
+        "isArrayLike",
+        "isEmpty"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Check Falsy Array",
+          "code": "var arr = new Array();\narr.length = 123456789;\ntest(YourJS.isFalsy(arr), true);"
+        }
+      ]
+    },
+    {
+      "name": "isFinite",
+      "code": "function isFinite(value) {\n  return 'number' == typeof value && __GLOBAL.isFinite(value);\n}",
+      "description": "Tests a value to see if it is a number that is also finite.",
+      "params": [
+        {
+          "name": "value",
+          "description": "The value to be tested to see if it is a number and is finite.",
+          "type": "number|*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is a number and is finite, otherwise `false` is returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isFinite(2), YourJS.isFinite(Infinity), YourJS.isFinite('3')].join(','),\n  'true,false,false'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isFloat",
+      "code": "function isFloat(value) {\n  return ('number' == typeof value) && !!(value % 1);\n}",
+      "description": "Determines if a value is a floating point number.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to be tested.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean.",
+        "description": "`true` if `value` is a floating point number, otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isFullOf",
+      "code": "function isFullOf(arrOrObj, tester, opt_trueOnEmpty) {\n  var result = true, isStrTester = typeOf(tester) == 'String';\n  var count = forOf(arrOrObj, function(value, key, arrOrObj, end) {\n    if (isStrTester ? typeOf(value) != tester : !tester(value, key, arrOrObj)) {\n      result = false;\n      end();\n    }\n  });\n  return result && (count > 0 || !!opt_trueOnEmpty);\n}",
+      "description": "Determines if an array, array-like object, or an object is full of items that match a specific type or tester function.",
+      "params": [
+        {
+          "name": "arrOrObj",
+          "description": "Array, array-like object, or object whose items will be tested.",
+          "type": "Array|Object"
+        },
+        {
+          "name": "tester",
+          "description": "If a string is specified it will be assumed to be the type that all values in `arrOrObj` must match.  Otherwise this must be a function that will accept (1) the item value, (2) the item index, and (3) a reference to `arrOrObj` and the return value of this function will coerced to a boolean to determine if the value matched.",
+          "type": "string|Function"
+        },
+        {
+          "name": "opt_trueOnEmpty",
+          "description": "Indicates whether or not an empty `arrOrObj` will allow this call to `isFullOf()` to evaluate to `true`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if all of the items in `arrOrObj` match `tester` or if `arrOrObj` is empty and `opt_trueOnEmpty` is `true`-ish.  Otherwise `false`."
+      },
+      "requires": [
+        "forOf",
+        "typeOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple Positive Array Type Test",
+          "code": "test(YourJS.isFullOf([2,3,4,5], 'Number'), true);"
+        },
+        {
+          "name": "Simple Positive Object Type Test",
+          "code": "test(YourJS.isFullOf({d:/5/,c:/q/,e:/z/,a:/d/}, 'RegExp'), true);"
+        }
+      ]
+    },
+    {
+      "name": "isFunction",
+      "code": "",
+      "description": "Determines if the given value is of type `Function` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `Function` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `Function` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isFunction(new (function(){})), YourJS.isFunction((function(){}))].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isInRange",
+      "code": "function isInRange(value, lowerBound, upperBound, opt_excludeBounds) {\n  return opt_excludeBounds\n    ? lowerBound < value && value < upperBound\n    : (lowerBound <= value && value <= upperBound);\n}",
+      "description": "Determines if a value is within a given range.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to be checked.",
+          "type": "number|string"
+        },
+        {
+          "name": "lowerBounds",
+          "description": "Lower bounds against which `value` will be checked.",
+          "type": "number|string"
+        },
+        {
+          "name": "upperBounds",
+          "description": "Upper bounds against which `value` will be checked.",
+          "type": "number|string"
+        },
+        {
+          "name": "opt_excludeBounds",
+          "description": "Indicates whether or not equality to the bounds should prevent the `value` from being considered within the range.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is greater than or equal `lowerBound` and less than or equal `upperBound` (equality test is ignored if `opt_excludeBounds` is `true`-ish), otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isInt",
+      "code": "function isInt(value) {\n  return ('number' == typeof value) && value % 1 == 0;\n}",
+      "description": "Determines if a value is an integer.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to be tested.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is an integer, otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isLeapYear",
+      "code": "function isLeapYear(opt_year) {\n  if ('number' != typeof opt_year) {\n    opt_year = (opt_year == undefined ? new Date : opt_year).getFullYear();\n  }\n  return opt_year % (opt_year % 100 ? 4 : 400) == 0;\n}",
+      "description": "Determine if the specified year is a leap year.",
+      "params": [
+        {
+          "name": "opt_year",
+          "description": "The year to be tested.  If a date is specified the year from that date will be used.  If nothing is specified the current year will be used.",
+          "type": "Date|number",
+          "optional": true,
+          "default": "new Date()"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `year` is a leap year, otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "isLowerCase",
       "code": "",
       "description": "Determines if a string doesn't have upper cased characters.",
       "params": [
         {
           "name": "str",
-          "description": "The value to be turned into a string and checked.",
-          "type": "*"
+          "description": "The value to be checked.",
+          "type": "string"
         },
         {
           "name": "opt_allowNoCasing",
@@ -981,8 +2033,8 @@
       "params": [
         {
           "name": "str",
-          "description": "The value to be turned into a string and checked.",
-          "type": "*"
+          "description": "The value to be checked.",
+          "type": "string"
         },
         {
           "name": "opt_allowNoCasing",
@@ -1003,6 +2055,61 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "isNaN",
+      "code": "function isNaN(value) {\n  return 'number' == typeof value && value != value;\n}",
+      "description": "Determines whether or not a value is actually `NaN`.  Different from the global `isNaN` function because it only tests for the presence of the `NaN` value.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to test to see if it is `NaN`.",
+          "type": "number|*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "If `value` is `NaN` then `true` is returned, otherwise `false` is returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isNaN({}), YourJS.isNaN(Infinity), YourJS.isNaN(NaN)].join(','),\n  'false,false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isNegative",
+      "code": "function isNegative(value, opt_includeNegZero) {\n  return value < 0 || (!!opt_includeNegZero && 1 / value < 0);\n}",
+      "description": "Determines if a value is negative.",
+      "params": [
+        {
+          "name": "value",
+          "description": "The value to test to see if it is negative.",
+          "type": "number"
+        },
+        {
+          "name": "opt_includeNegZero",
+          "description": "Value indicating whether or not `-0` should be counted as negative.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is negative or if `value` is `-0` and `opt_includeNegZero` is `true`-ish.  Otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isNegative(-2), YourJS.isNegative(-Infinity), YourJS.isNegative(-0), YourJS.isNegative(-0, true)].join(','),\n  'true,true,false,true'\n);"
+        }
+      ]
     },
     {
       "name": "isNil",
@@ -1030,8 +2137,8 @@
       "params": [
         {
           "name": "str",
-          "description": "The value to be turned into a string and checked.",
-          "type": "*"
+          "description": "The value to be checked.",
+          "type": "string"
         }
       ],
       "return": {
@@ -1043,6 +2150,58 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "isNull",
+      "code": "",
+      "description": "Determines if the given value is `null` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is `null` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is `null` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isNull(undefined), YourJS.isNull(null)].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isNumber",
+      "code": "",
+      "description": "Determines if the given value is of type `Number` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `Number` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `Number` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isNumber('1'), YourJS.isNumber(1)].join(','),\n  'false,true'\n);"
+        }
+      ]
     },
     {
       "name": "isNumeric",
@@ -1069,6 +2228,155 @@
         {
           "name": "Simple False",
           "code": "test(YourJS.isNumeric('D34.532'), false);"
+        }
+      ]
+    },
+    {
+      "name": "isObject",
+      "code": "",
+      "description": "Determines if the given value is of type `Object` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `Object` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `Object` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isObject(new (function(){})), YourJS.isObject({})].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isoDate",
+      "code": "function isoDate(opt_date) {\n  opt_date = opt_date || new Date;\n  return opt_date.getUTCFullYear() + \"-\"\n    + (\"0\" + (opt_date.getUTCMonth() + 1) + \"-\").slice(-3)\n    + (\"0\" + opt_date.getUTCDate() + \"T\").slice(-3)\n    + (\"0\" + opt_date.getUTCHours() + \":\").slice(-3)\n    + (\"0\" + opt_date.getUTCMinutes() + \":\").slice(-3)\n    + (\"0\" + opt_date.getUTCSeconds() + \".\").slice(-3)\n    + (\"00\" + opt_date.getUTCMilliseconds() + \"Z\").slice(-4);\n}",
+      "description": "Gets the date in the ISO-8601 standard format: `YYYY-MM-DDTHH:mm:ss.sssZ`",
+      "params": [
+        {
+          "name": "opt_date",
+          "description": "Date to convert to ISO-8601 format.  If not given the current date/time is used.",
+          "type": "Date",
+          "optional": true,
+          "default": "new Date()"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "`opt_date` as a string in the ISO-8601 format: `YYYY-MM-DDTHH:mm:ss.sssZ`"
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.isoDate(new Date(Date.UTC(2010,9,8,7,6,5,4))), '2010-10-08T07:06:05.004Z');"
+        }
+      ]
+    },
+    {
+      "name": "isPositive",
+      "code": "function isPositive(value, opt_includeZero) {\n  return value > 0 || (!!opt_includeZero && 1 / value > 0);\n}",
+      "description": "Determines if a value is positive.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to be tested as to whether or not it is positive.",
+          "type": "number"
+        },
+        {
+          "name": "opt_includeZero",
+          "description": "Value indicating whether or not `0` should be counted as positive.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is negative or if `value` is `-0` and `opt_includeNegZero` is `true`-ish.  Otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isPositive(2), YourJS.isPositive(Infinity), YourJS.isPositive(0), YourJS.isPositive(0, true)].join(','),\n  'true,true,false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isPrime",
+      "code": "function isPrime(num) {\n  if(!isSafeInt(num)) {\n    throw new TypeError(\"expected a finite integer\");\n  }\n  if(num < 2) {\n    return false;\n  }\n  if(num < 4) {\n    return true;\n  }\n  if(num % 2 == 0 || num % 3 == 0) {\n    return false;\n  }\n  for(var max = parseInt(Math.sqrt(num)) + 2, check = 6; check <= max; check += 6) {\n    if(num % (check - 1) == 0 || num % (check + 1) == 0) {\n      return false;\n    }\n  }\n  return true;\n}",
+      "description": "Determines if a number is a prime integer.",
+      "params": [
+        {
+          "name": "num",
+          "description": "Number to be tested.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `num` is a positive integer that is only divisible by itself and `1`.  Otherwise `false`."
+      },
+      "requires": [
+        "isSafeInt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isPrimitive",
+      "code": "function isPrimitive(arg) {\n  var type = typeof arg;\n  return arg == undefined || (type != \"object\" && type != \"function\");\n}",
+      "description": "Determines if something is a primitive or not. If not a primitive it must be some form of object.",
+      "params": [
+        {
+          "name": "arg",
+          "description": "The argument which will be determined as being either a primitive (eg. boolean, number, string, etc.) or a non-primitive.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` will be returned if `arg` is simply a primitive, otherwise `false` will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isRegExp",
+      "code": "",
+      "description": "Determines if the given value is of type `RegExp` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `RegExp` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `RegExp` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isRegExp(new Date), YourJS.isRegExp(/d/)].join(','),\n  'false,true'\n);"
         }
       ]
     },
@@ -1167,6 +2475,32 @@
       "tests": []
     },
     {
+      "name": "isString",
+      "code": "",
+      "description": "Determines if the given value is of type `String` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is of type `String` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is of type `String` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isString(['sdfs']), YourJS.isString('sdfs')].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
       "name": "isType",
       "code": "function isType(value) {\n  value = typeOf(value);\n  for (var a = arguments, i = a.length; --i && a[i] != value; );\n  return i > 0;\n}",
       "description": "Determines if a value is of a specific type or one of a list of specific types.",
@@ -1194,14 +2528,66 @@
       "tests": []
     },
     {
+      "name": "isUndefined",
+      "code": "",
+      "description": "Determines if the given value is `undefined` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is `undefined` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is `undefined` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isUndefined(null), YourJS.isUndefined(undefined)].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
+      "name": "isUnknown",
+      "code": "",
+      "description": "Determines if the given value is `Unknown` as specified by `typeOf()`.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to see if it is `Unknown` according to `typeOf()`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is `Unknown` according to `typeOf()`.  Otherwise `false`."
+      },
+      "requires": [
+        "isArguments"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [YourJS.isUnknown({}), YourJS.isUnknown(new (function(){}))].join(','),\n  'false,true'\n);"
+        }
+      ]
+    },
+    {
       "name": "isUpperCase",
       "code": "",
       "description": "Determines if a string doesn't have lower cased characters.",
       "params": [
         {
           "name": "str",
-          "description": "The value to be turned into a string and checked.",
-          "type": "*"
+          "description": "The value to be checked.",
+          "type": "string"
         },
         {
           "name": "opt_allowNoCasing",
@@ -1218,6 +2604,25 @@
       "requires": [
         "isMixCase"
       ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isValidVarName",
+      "code": "function isValidVarName(varName) {\n  try {\n    Function((varName + '').replace(/[\\s\\xA0,\\/]|^$/g, '.'), '');\n    return true;\n  }\n  catch (e) {\n    return false;\n  }\n}",
+      "description": "Determines if a string can be used as a variable name in JavaScript.",
+      "params": [
+        {
+          "name": "varName",
+          "description": "The string to be tested to see if it is a valid variable name.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if the string value of `varName` is a valid variable name in JavaScript, otherwise `false`."
+      },
+      "requires": [],
       "required": false,
       "tests": []
     },
@@ -1329,6 +2734,74 @@
       "requires": [],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "keys",
+      "code": "function keys(arrOrObj, opt_includeInheritance) {\n  var result = [];\n  forOf(arrOrObj, function(value, key) {\n    result.push(key);\n  }, opt_includeInheritance);\n  return result;\n}",
+      "description": "Gets the keys of a specified array or object.",
+      "params": [
+        {
+          "name": "arrOrObj",
+          "description": "Array or object whose keys will be retrieved.",
+          "type": "Array|Object"
+        },
+        {
+          "name": "opt_includeInheritance",
+          "description": "Indicates whether or not inherited keys should be retrieved.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array of all of the keys of `arrOrObj`."
+      },
+      "requires": [
+        "forOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple Array Test",
+          "code": "var arr = [4,6];\narr[5] = 2;\ntest(JSON.stringify(YourJS.keys(arr)), '[0,1,5]');"
+        },
+        {
+          "name": "Simple Object Test",
+          "code": "function Person(name){this.name = name;}\nPerson.prototype.gender = 'Unknown';\ntest(JSON.stringify(YourJS.keys(new Person('Billie'))), '[\"name\"]');"
+        }
+      ]
+    },
+    {
+      "name": "lcm",
+      "code": "function lcm(int1, int2) {\n  return Math.abs(int1 * int2) / gcd(int1, int2);\n}",
+      "description": "Finds the smallest integer that is evenly divisible by the two specified integers.",
+      "params": [
+        {
+          "name": "int1",
+          "description": "The first of two integers that will be evenly divisible by the returned least common multiple.",
+          "type": "number"
+        },
+        {
+          "name": "int2",
+          "description": "The second of two integers that will be evenly divisible by the returned least common multiple.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The smallest integer that is evenly divisible by `int1` and `int2`."
+      },
+      "requires": [
+        "gcd"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.lcm(2*5*7, 4*5*9*13), 4*5*7*9*13);"
+        }
+      ]
     },
     {
       "name": "limit",
@@ -1647,6 +3120,33 @@
       "tests": []
     },
     {
+      "name": "parseQS",
+      "code": "function parseQS(url) {\n  var vars = {};\n  url.replace(/\\?[^#]+/, function(query) {\n    query.replace(/\\+/g, ' ').replace(/[\\?&]([^=&#]+)(?:=([^&#]*))?/g, function(m, key, value, arrIndicator, alreadyDefined, lastValue) {\n      key = decodeURIComponent(key);\n      if (arrIndicator = key.slice(-2) == '[]') {\n        key = key.slice(0, -2);\n      }\n      value = value && decodeURIComponent(value);\n      alreadyDefined = has(vars, key);\n      lastValue = vars[key];\n      vars[key] = arrIndicator || alreadyDefined\n        ? typeOf(lastValue) == 'Array'\n          ? lastValue.concat([value])\n          : alreadyDefined\n            ? [lastValue, value]\n            : [value]\n        : value;\n    });\n  });\n  return vars;\n}",
+      "description": "Parses a URL to get the parameters specified in the query string.",
+      "params": [
+        {
+          "name": "url",
+          "description": "The URL to parse.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "Object",
+        "description": "An object in which the keys are the keys of the parameters found in `url` and the values are the corresponding values found in `url`. If a parameter key is specified twice or ends in `\"[]\"`, that property will be an array of all of the found values for that key."
+      },
+      "requires": [
+        "has",
+        "typeOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var url = 'http://google.com?q=my+search+terms';\ntest(YourJS.parseQS(url).q, 'my search terms');"
+        }
+      ]
+    },
+    {
       "name": "partial",
       "code": "function partial(fn, arrPresetArgs, opt_presetFromRight) {\n  return opt_presetFromRight\n    ? function() { return fn.apply(this, slice(arguments).concat(arrPresetArgs)); }\n    : function() { return fn.apply(this, arrPresetArgs.concat(slice(arguments))); };\n}",
       "description": "Creates a copy of a function with the left-most arguments preset.",
@@ -1779,6 +3279,49 @@
       ]
     },
     {
+      "name": "poll",
+      "code": "function poll(fnTest, fnOnFound, opt_interval, opt_timeout) {\n  var isDone, iteration = 0, self = this, start = new Date;\n  opt_timeout = opt_timeout == undefined ? Infinity : opt_timeout;\n  opt_interval = opt_interval == undefined ? 100 : opt_interval;\n  function cancel() {\n    isDone = true;\n  }\n  function fnTestWrapper() {\n    try {\n      var result = fnTest.call(self, cancel, ++iteration);\n      if (result) {\n        isDone = result;\n        fnOnFound.call(self, result, iteration);\n        result;\n      }\n      return !!result;\n    }\n    catch (e) {\n      throw e;\n    }\n    finally {\n      if (!isDone && (new Date - start) < opt_timeout) {\n        setTimeout(fnTestWrapper, opt_interval);\n      }\n    }\n  }\n  return fnTestWrapper();\n}",
+      "description": "Periodically tests for a condition to be met before executing some code.",
+      "params": [
+        {
+          "name": "fnTest",
+          "description": "Polling function which will be executed every `opt_interval` until it returns a `true`-ish value or the `opt_timeout` time elapses.  The arguments passed will be (1) a prevention function that when called will prevent further tests from occurring and (2) the number of times this function was called.  Calling the prevention function will only prevent subsequent polls from happening, it will not indicate that the test was a success or failure.",
+          "type": "Function"
+        },
+        {
+          "name": "fnOnFound",
+          "description": "Function to execute once `fnTest` evaluates to a `true`-ish value.  The arguments passed will be (1) the return value from the success call to `fnTest` and (2) the number of times `fnTest` was called.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_interval",
+          "description": "Amount of milliseconds to wait between tests.",
+          "type": "number",
+          "optional": true,
+          "default": "100"
+        },
+        {
+          "name": "opt_timeout",
+          "description": "Amount of milliseconds to wait timing out the poll.",
+          "type": "number",
+          "optional": true,
+          "default": "Infinity"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "Indicating if the first call to `fnTest` was a success."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var done, cool;\nsetTimeout(function(){done = true}, 500);\nYourJS.poll(function(prevent, iter){console.log(iter);return done;}, function() {cool = true});\nsetTimeout(function(){ test(cool, true) }, 1000);"
+        }
+      ]
+    },
+    {
       "name": "prefix",
       "code": "function prefix(str, strPrefix, opt_rgxTester) {\n  return str == undefined\n    ? function(str) { return prefix(str, strPrefix, opt_rgxTester); }\n    : (opt_rgxTester ? !opt_rgxTester.test(str) : str.indexOf(strPrefix))\n      ? strPrefix + str\n      : str;\n}",
       "description": "Always ensures that a string starts with a specific substring.",
@@ -1844,6 +3387,25 @@
       "return": {
         "type": "RegExp|string",
         "description": "If `flagsOrMakeRegExp` is `true` a regular expression without flags will be returned. If `flagsOrMakeRegExp` is a non-empty string, a regular expression with the specified characters representing the corresponding flags will be returned. In all other cases just the escaped string that can be used as a regular expression will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "radians",
+      "code": "function radians(degrees) {\n  return degrees * Math.PI / 180;\n}",
+      "description": "Converts degrees to radians.",
+      "params": [
+        {
+          "name": "degrees",
+          "description": "The number representing degrees of an angle which will be converted to radians.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The equivalent of `degrees` in radians."
       },
       "requires": [],
       "required": false,
@@ -2042,6 +3604,35 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "root",
+      "code": "function root(number, n) {\n  var result = Math.pow(Math.abs(number), 1 / n);\n  return number < 0 ? -result : result;\n}",
+      "description": "Determines the nth-root of a number.",
+      "params": [
+        {
+          "name": "number",
+          "description": "Number to be rooted.",
+          "type": "number"
+        },
+        {
+          "name": "n",
+          "description": "The degree to which `number` should be rooted (eg. `3` for cube root).",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "`number` to the `n`th-root."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.root(625, 4), 5);"
+        }
+      ]
     },
     {
       "name": "round",
@@ -2376,6 +3967,55 @@
       "tests": []
     },
     {
+      "name": "splice",
+      "code": "function splice(arrOrStr, start, opt_length, opt_replacement) {\n  opt_length = opt_length != undefined\n    ? opt_length < 0\n      ? arrOrStr.length - start + opt_length\n      : opt_length\n    : Infinity;\n  start = start < 0 ? Math.max(0, arrOrStr.length + start) : start;\n  if (isArrayLike(arrOrStr)) {\n    return slice(arrOrStr, 0, start).concat(opt_replacement || [], slice(arrOrStr, start + opt_length));\n  }\n  return arrOrStr.slice(0, start)\n    + (opt_replacement === undefined ? '' : opt_replacement)\n    + arrOrStr.slice(start + opt_length);\n}",
+      "description": "Duplicates an array or a string and adds and/or removes one or more values from it. NOTE: This is different from the traditional splice function because it doesn't modify the array, but rather it returns a modified duplicate.",
+      "params": [
+        {
+          "name": "arrOrStr",
+          "description": "The array or string to be duplicated and modified.",
+          "type": "Array|string"
+        },
+        {
+          "name": "start",
+          "description": "The position at which to start modifying `arrOrStr`. If this number is negative the position will be calculated from the end of `arrOrStr`.",
+          "type": "number"
+        },
+        {
+          "name": "opt_length",
+          "description": "Indicates the amount of indices that should be removed from `arrOrStr`. If negative this will be used as if it were an index counting from the end of `arrOrStr`.",
+          "type": "number",
+          "optional": true,
+          "default": "Infinity"
+        },
+        {
+          "name": "opt_replacement",
+          "description": "If specified, this will be inserted at `start`. If `arrOrStr` is an array, this should be an array of the values to insert at `start`. If `arrOrStr` is a string, this should be the string to insert at `start`.",
+          "type": "Array|string",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "Array|string",
+        "description": "The modified duplicate of `arrOrStr`."
+      },
+      "requires": [
+        "slice",
+        "isArrayLike"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple Array Test",
+          "code": "test(\n  JSON.stringify(YourJS.splice([1,5,4,5], 1, -1, [3])),\n  '[1,3,5]'\n);"
+        },
+        {
+          "name": "Simple String Test",
+          "code": "test(\n  YourJS.splice('Hello mom!', 6, -1, 'world'),\n  'Hello world!'\n);"
+        }
+      ]
+    },
+    {
       "name": "sub",
       "code": "function sub(template, opt_subs, opt_funcs) {\n  opt_subs = opt_subs || __GLOBAL;\n  opt_funcs = opt_funcs || YourJS;\n  for (\n    var result;\n    result !== template;\n    template = template.replace(\n      /\\{([\\w\\$]+)(?:\\?((?:\\\\.|[^\\\\\\{\\}:])*):((?:\\\\.|[^\\\\\\{\\}:])*)(?::((?:\\\\.|[^\\\\\\{\\}:])*))?|#([\\w\\$]+))?\\}/ig,\n      function(match, arg, multi, one, none, fn) {\n        if (has(opt_subs, arg)) {\n          arg = opt_subs[arg];\n          if ('function' == typeof arg) {\n            arg = arg(multi, one, none, match);\n          }\n          match = multi === undefined ? arg : (arg == 1 ? one : ((!arg && none !== undefined) ? none : multi));\n          if (fn != undefined) {\n            fn = fn ? opt_funcs[fn] : opt_funcs;\n            if ('function' == typeof fn) {\n              match = fn(match);\n            }\n          }\n        }\n        return match;\n      }\n    )\n  ) {\n    result = template;\n  }\n  return result.replace(/\\\\(\\W)/g, '$1');\n}",
       "description": "Substitute values into strings where the corresponding placeholders have been entered.",
@@ -2537,6 +4177,37 @@
       "requires": [],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "timeAgo",
+      "code": "function timeAgo(dateTime, opt_currDateTime) {\n  opt_currDateTime = new Date(opt_currDateTime || new Date) - new Date(dateTime);\n  return '31536e6year2592e6month864e5day36e5hour6e4minute1e3second'.replace(/(\\d+e\\d)([a-z]+)/g, function(m, ms, interval) {\n    if (dateTime != undefined) {\n      ms = opt_currDateTime / +ms;\n      if (ms >= 1 || interval == 'second') {\n        dateTime = undefined;\n        return ~~ms + ' ' + interval + (~~ms - 1 ? 's' : '') + ' ago';\n      }\n    }\n    return '';\n  }) || undefined;\n}",
+      "description": "Gets a string indicating how long ago a given date was in the largest unit possible.",
+      "params": [
+        {
+          "name": "dateTime",
+          "description": "Date in the past.",
+          "type": "Date"
+        },
+        {
+          "name": "opt_currDateTime",
+          "description": "Current date.  If not given defaults to the current date and time.",
+          "type": "Date",
+          "optional": true,
+          "default": "new Date()"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "A string indicating in the largest unit possible how long ago `dateTime` happened compared to `opt_currDateTime`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  YourJS.timeAgo(new Date(2016,3,4), new Date(2017,1,2)),\n  '10 months ago'\n)"
+        }
+      ]
     },
     {
       "name": "titleCase",
@@ -2832,6 +4503,123 @@
       "tests": []
     },
     {
+      "name": "unescape",
+      "code": "function unescape(str) {\n  return decodeURIComponent(str.replace(/%(?![\\dA-F]{2})/gi, '%25').replace(/\\+/g, '%20'));\n}",
+      "description": "Decodes any `%##` encoding in the given string. Plus symbols (`'+'`) are decoded to a space character.",
+      "params": [
+        {
+          "name": "str",
+          "description": "String to be decoded.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "Decoded version of `str`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.unescape('Hello+world%21'), 'Hello world!');"
+        }
+      ]
+    },
+    {
+      "name": "utc",
+      "code": "function utc(yearOrValue, opt_month, opt_day, opt_hour, opt_min, opt_sec, opt_ms) {\n  var d;\n  if (arguments.length < 2) {\n    d = 'object' == typeof yearOrValue ? yearOrValue : new Date(yearOrValue);\n    d = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());\n  }\n  else {\n    d = Date.UTC(yearOrValue, opt_month, opt_day == undefined ? 1 : opt_day, opt_hour || 0, opt_min || 0, opt_sec || 0, opt_ms || 0);\n  }\n  return new Date(d);\n}",
+      "description": "Creates a date using universal time.",
+      "params": [
+        {
+          "name": "yearOrValue",
+          "description": "Either a `Date` object whose properties will be interpreted as UTC properties, or the number of milliseconds since the beginning of Jaunary 1, 1970 GMT, or a string version of the date, or the year.  If this is to be understood as the year additional arguments must also be passed.",
+          "type": "Date|number|string"
+        },
+        {
+          "name": "opt_month",
+          "description": "An integer between `0` and `11` representing the month.",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "opt_day",
+          "description": "An integer between `1` and `31` representing the month.",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "opt_hour",
+          "description": "An integer between `0` and `23` representing the hour.",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "opt_min",
+          "description": "An integer between `0` and `59` representing the minute.",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "opt_sec",
+          "description": "An integer between `0` and `59` representing the second.",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "opt_ms",
+          "description": "An integer between `0` and `999` representing the millisecond.",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "Date",
+        "description": "Specified UTC date/time as a `Date` object."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.utc(2010,9,8,7,6,5,4).toISOString(), '2010-10-08T07:06:05.004Z');"
+        }
+      ]
+    },
+    {
+      "name": "values",
+      "code": "function values(arrOrObj, opt_includeInheritance) {\n  var result = [];\n  forOf(arrOrObj, function(value) {\n    result.push(value);\n  }, opt_includeInheritance);\n  return result;\n}",
+      "description": "Gets an array of all of the values within a given array or object.",
+      "params": [
+        {
+          "name": "arrOrObj",
+          "description": "Array or object containing all of the values that will be returned.",
+          "type": "Array|Object"
+        },
+        {
+          "name": "opt_includeInheritance",
+          "description": "Indicates whether or not even the inherited values should be returned.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array of all of the values in `arrOrObj`."
+      },
+      "requires": [
+        "forOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Sparse Array Test",
+          "code": "var arr = [5,9];\narr[7] = 7;\narr[23] = 23;\ntest(JSON.stringify(YourJS.values(arr)), '[5,9,7,23]');"
+        }
+      ]
+    },
+    {
       "name": "wait",
       "code": "function wait(fnReady, opt_clearOrdersAfterReady) {\n  var orders = [], allOrders = [];\n  return function(opt_makeAnOrder, opt_order) {\n    var index;\n    if (opt_makeAnOrder) {\n      orders.push(opt_order);\n      allOrders.push(opt_order);\n    }\n    else {\n      index = orders.findIndex(function(order) {\n        return is(order, opt_order);\n      });\n      if (index >= 0) {\n        orders.splice(index, 1);\n        if (!orders.length) {\n          try {\n            fnReady(slice(allOrders), opt_order);\n          }\n          catch (e) {\n            setTimeout(function(){throw e},0);\n          }\n          if (opt_clearOrdersAfterReady) {\n            allOrders = [];\n          }\n        }\n      }\n    }\n    return !(index < 0);\n  }\n}",
       "description": "Creates a waiter function which takes orders and serves orders in a way and calls a ready function when all orders have been served.",
@@ -2856,71 +4644,6 @@
       "requires": [
         "is",
         "slice"
-      ],
-      "required": false,
-      "tests": []
-    },
-    {
-      "name": "indexBy",
-      "code": "function indexBy(arr, indexer, opt_initial) {\n  opt_initial = opt_initial || {};\n  for (var i = 0, l = arr.length; i < l; i++) {\n    if (has(arr, i)) {\n      opt_initial[indexer(arr[i], i, arr)] = arr[i];\n    }\n  }\n  return opt_initial;\n}",
-      "description": "Traverses an array and returns an object with the values from the array placed in the specified indices.",
-      "params": [
-        {
-          "name": "arr",
-          "description": "Values to be placed in the returned object.",
-          "type": "Array"
-        },
-        {
-          "name": "indexer",
-          "description": "Function that will be called for each item in `arr` and return an index that will be the property name under which the value will be found in the returned object.  If the same index is returned multiple times the last value corresponding to that index will be the one found in the returned object.  The values passed to this function will be (1) the `arr` item, (2) the index in `arr` at which the item is found, and (3) `arr`.",
-          "type": "function(*,number,Array)"
-        },
-        {
-          "name": "opt_initial",
-          "description": "The object that will be augmented and returned.",
-          "type": "Object",
-          "optional": true,
-          "default": "{}"
-        }
-      ],
-      "return": {
-        "type": "Array",
-        "description": "`opt_initial` with additional properties names coming from the return values of `indexer` and the items found in `arr`."
-      },
-      "requires": [
-        "has"
-      ],
-      "required": false,
-      "tests": [
-        {
-          "name": "Simple",
-          "code": "var a = ['a','b'], o = YourJS.indexBy(a, function(v){return v});\ntest(\n  [o.b,o.a].join(','),\n  'b,a'\n);"
-        }
-      ]
-    },
-    {
-      "name": "css",
-      "code": "var css;\n(function(RGX_UPPER, RGX_AMP, RGX_NO_COMMAS_OR_NOTHING, RGX_NO_AMP, RGX_IND_SEL, RGX_CLS, RGX_TRIM_SELS) {\n  css = function(obj, selAncestors) {\n    if (typeof selAncestors != 'string') {\n      if (selAncestors) {\n        var className = ('_' + Math.random()).replace(RGX_CLS, +new Date);\n        selAncestors = typeOf(selAncestors) == 'Array' ? selAncestors : [selAncestors];\n        for (var i = selAncestors.length; i--;) {\n          selAncestors[i].className += ' ' + className;\n        }\n      }\n      selAncestors = className ? '.' + className : '';\n    }\n\n    var code = getCssCode(obj, selAncestors);\n    var style = __DOCUMENT.createElement('style');\n    style.type = 'text/css';\n    if (style.styleSheet && !style.sheet) {\n      style.styleSheet.cssText = code;\n    }\n    else {\n      style.appendChild(__DOCUMENT.createTextNode(code));\n    }\n    (__DOCUMENT.getElementsByTagName('head')[0] || __DOCUMENT.body).appendChild(style);\n    return style;\n  }\n\n  function getCssCode(obj, selAncestors) {\n    var rules = [];\n    var rule = [];\n    for (var key in obj) {\n      if (has(obj, key)) {\n        var value = obj[key];\n        var typeName = typeOf(value);\n        if (!key.indexOf('@media ')) {\n          rules.push(key + '{' + getCssCode(value, selAncestors) + '}');\n        }\n        else if (typeName == 'Object') {\n          // Trim selectors\n          key = key.replace(RGX_TRIM_SELS, '$1');\n          // Return all selectors\n          key = key.replace(RGX_IND_SEL, function(sel) {\n            sel = selAncestors ? sel.replace(RGX_NO_AMP, '& $&') : sel;\n            return selAncestors.replace(RGX_NO_COMMAS_OR_NOTHING, function(selAncestor) {\n              return sel.replace(RGX_AMP, selAncestor);\n            });\n          });\n          rules.push(getCssCode(value, key));\n        }\n        else {\n          value = typeName != 'Array'\n            ? value != undefined\n              ? value && typeof value == 'number'\n                ? value + 'px'\n                : ((value + '').slice(-1) == '!' ? value + 'important' : value)\n              : 'none'\n            : value.join(',');\n          key = key.replace(RGX_UPPER, '-$&').toLowerCase();\n          rule.push(key + ':' + value + ';');\n        }\n      }\n    }\n    if (rule[0]) {\n        rules.unshift(selAncestors + '{' + rule.join('') + '}');\n    }\n    return rules.join('');\n  }\n})(\n  /[A-Z]/g,                                       // RGX_UPPER\n  /&/g,                                           // RGX_AMP\n  /[^,]+|^$/g,                                    // RGX_NO_COMMAS_OR_NOTHING\n  /^[^&]+$/,                                      // RGX_NO_AMP\n  /[^\\s\\xa0,][^,]*/g,                             // RGX_IND_SEL\n  /0(.|$)/,                                       // RGX_CLS\n  /^[\\s\\xa0]+|[\\s\\xa0]*(,)[\\s\\xa0]*|[\\s\\xa0]+$/g  // RGX_TRIM_SELS\n);",
-      "description": "Creates a CSS stylesheet from an JSON representation of a stylesheet.",
-      "params": [
-        {
-          "name": "objStyles",
-          "description": "An object representing the CSS rules to be inserted into the document. Property names will be used as media queries if they start with `\"@media \"`. Property names will be used as rule selectors if the value is an object. If a property name is to be used as a selector, if any selectors don't contain `&`, `\"& \"` will be prepended to it. For all selectors, `&` will be replaced recursively with the selectors found in the parent. CSS property names will be uncamelcased by inserting dashes before each uppercased character and lower casing all characters. If a value is `null` or `undefined`, it will be turned into `\"none\"`. If a value is a number other than `0`, `\"px\"` will be appended to it. If a value is an array all of the items will be concatenated together, using `\",\"` to delimit the values. If a value ends with `!` it will be replaced with `\"!important\"`.",
-          "type": "Object"
-        },
-        {
-          "name": "opt_ancestors",
-          "description": "This can be an element or an array of elements which will get another class added to target all rules to it and its children. This can alternatively be a CSS path (selector) specifying the root on which all CSS rules created should be based.",
-          "type": "HTMLElement|Array.<HTMLElement>|string"
-        }
-      ],
-      "return": {
-        "type": "HTMLStyleSheet",
-        "description": "The stylesheet that is created and appended to the document is returned."
-      },
-      "requires": [
-        "typeOf",
-        "has"
       ],
       "required": false,
       "tests": []
