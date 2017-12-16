@@ -119,6 +119,40 @@
       ]
     },
     {
+      "name": "callReturn",
+      "code": "function callReturn(fn, opt_this) { return fn.apply(opt_this, slice(arguments, 2)), fn; }",
+      "description": "Calls a function and returns it so it can be called again.",
+      "params": [
+        {
+          "name": "fn",
+          "description": "Function to be called and returned.  The return value of this function will be ignored when it is called.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_this",
+          "description": "Value referenced by `this` in evaluation of `fn`.",
+          "type": "*",
+          "optional": true
+        },
+        {
+          "name": "opt_args",
+          "description": "Zero or more arguments to be passed to `fn`.",
+          "type": "*",
+          "rest": true,
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "After executing `fn` it will be returned."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "calls",
       "code": "function calls(value) {\n  for (var callArgs, args = slice(arguments), i = 0, l = args.length, i = l; i < l; i++) {\n    callArgs = args[i];\n    if (typeOf(callArgs) != 'Array') {\n      callArgs = [callArgs];\n    }\n    value = call.apply(undefined, slice(callArgs, 0, 1).concat([value], slice(callArgs, 1)));\n  }\n  return value;\n}",
       "description": "Makes multiple calls using the YourJS `call()` function.",
@@ -627,6 +661,61 @@
       "tests": []
     },
     {
+      "name": "curry",
+      "code": "function curry(fn, opt_argsNeeded, opt_curryRight, opt_presetArgs) {\n  opt_presetArgs = opt_presetArgs || [];\n  opt_argsNeeded = opt_argsNeeded == undefined ? fn.length - opt_presetArgs.length : opt_argsNeeded;\n  return function() {\n    var inArgs = slice(arguments),\n        args = opt_curryRight ? inArgs.concat(opt_presetArgs) : opt_presetArgs.concat(inArgs),\n        newArgsNeeded = opt_argsNeeded - inArgs.length;\n    return newArgsNeeded > 0\n      ? curry(fn, newArgsNeeded, opt_curryRight, args)\n      : fn.apply(this, args);\n  };\n}",
+      "description": "Creates a wrapper function that will only execute the given function once the number of arguments passed is at least a given amount.  If the wrapper is called with too few arguments, those arguments will be recursively stored within a new wrapper function.",
+      "params": [
+        {
+          "name": "fn",
+          "description": "Function to be executed once enough arguments have been passed.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_argsNeeded",
+          "description": "Number of arguments needed to successfully invoke this function.",
+          "type": "number",
+          "optional": true,
+          "default": "fn.length"
+        },
+        {
+          "name": "opt_curryRight",
+          "description": "Indicates whether returned partial functions will group the arguments recursively from right-to-left.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        },
+        {
+          "name": "opt_presetArgs",
+          "description": "Arguments that will always be passed to `fn`.  If `opt_curryRight` is `true` any arguments passed to the wrapper function will precede these arguments when invoking the function, otherwise any arguments passed to the wrapper function will come after these arguments when invoking the function.",
+          "type": "Array",
+          "optional": true,
+          "default": "[]"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "A wrapper function that will recursively create wrapper functions upon invocation until the cumulative number of arguments (excluding those specified in `opt_presetArgs`) amounts to `opt_argsNeeded`.  If the minimum number of arguments are passed to this function it will invoke `fn` with all of the arguments passed in."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Wait for 5",
+          "code": "var waitFor5 = YourJS.curry(function(a,b,c,d,e){return [].join.call(arguments, ',')});\ntest(waitFor5(4,5)(6)(7)(8,9), '4,5,6,7,8,9');"
+        },
+        {
+          "name": "Wait for 5 curryRight",
+          "code": "var waitFor5 = YourJS.curry(function(a,b,c,d,e){return [].join.call(arguments, ',')}, undefined, true);\ntest(waitFor5(4,5)(6)(7)(8,9), '8,9,7,6,4,5');"
+        },
+        {
+          "name": "Wait for 5 prefilled curryRight",
+          "code": "var waitFor5 = YourJS.curry(function(a,b,c,d,e){return [].join.call(arguments, ',')}, undefined, true, [1,2,3]);\ntest(waitFor5(4)(5,6,7), '5,6,7,4,1,2,3');"
+        }
+      ]
+    },
+    {
       "name": "cut",
       "code": "function cut(str, startIndex, opt_endIndex) {\n  var len = str.length;\n  if (opt_endIndex == undefined) {\n    opt_endIndex = Infinity;\n  }\n  else if (opt_endIndex < 0) {\n    opt_endIndex = opt_endIndex < -len ? 0 : (len + opt_endIndex);\n  }\n  if (startIndex < 0) {\n    startIndex = startIndex < -len ? 0 : (len + startIndex);\n  }\n  if (opt_endIndex < startIndex) {\n    opt_endIndex = startIndex;\n  }\n  return str.slice(0, startIndex) + str.slice(opt_endIndex);\n}",
       "description": "Cut out a substring within a given range.",
@@ -845,6 +934,38 @@
         {
           "name": "One Item",
           "code": "test(JSON.stringify(YourJS.dice('Abe', ',')), '[\"Abe\"]');"
+        }
+      ]
+    },
+    {
+      "name": "diffArrays",
+      "code": "function diffArrays(array1, array2) {\n  array1 = slice(array1);\n  array2 = slice(array2);\n  for (var e1, i1 = 0, l1 = array1.length, i2, l2 = array2.length; i1 < l1; i1++) {\n    e1 = array1[i1];\n    for (i2 = 0; i2 < l2; i2++) {\n      if (e1 === array2[i2]) {\n        l1--;\n        array1.splice(i1--, 1);\n        l2--;\n        array2.splice(i2--, 1);\n        break;\n      }\n    }\n  }\n  return array1;\n}",
+      "description": "Creates a new array which is the difference of the two given arrays.",
+      "params": [
+        {
+          "name": "array1",
+          "description": "Array containing the values that will be returned if they are not found in `array2`.",
+          "type": "Array"
+        },
+        {
+          "name": "array2",
+          "description": "Array whose values will be compared to those in `array1` and only those that appear in `array1` and not in this array will be returned.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "A new array with values from `array1` that are not in `array2`."
+      },
+      "requires": [
+        "is",
+        "slice"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Remove Values",
+          "code": "test(JSON.stringify(YourJS.diffArrays([2,3,4,3,5,6], [3,5,7])), '[2,4,3,6]');"
         }
       ]
     },
@@ -1513,6 +1634,71 @@
       ],
       "params": [],
       "tests": []
+    },
+    {
+      "name": "insert",
+      "code": "function insert(array, position, item) {\n  array.splice((position == 0 && 1 / position < 0) ? array.length : position, 0, item);\n  return array;\n}",
+      "description": "Inserts a value into an array at the given position.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array into which a value will be inserted.",
+          "type": "Array"
+        },
+        {
+          "name": "position",
+          "description": "Position at which to insert the value within `array`.  A negative value will mean that the position is counted from the end of `array`.  A position of `-0` means that `value` will be added to the end of `array`.",
+          "type": "number"
+        },
+        {
+          "name": "value",
+          "description": "Value to insert into `array`.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "A reference to `array`.  This is useful when chaining."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.insert([2,4],1,3)), '[2,3,4]');"
+        }
+      ]
+    },
+    {
+      "name": "intersect",
+      "code": "function intersect(array1, array2) {\n  return diffArrays(array1, diffArrays(array1, array2));\n}",
+      "description": "Gets a new array that will be the intersection of two arrays.",
+      "params": [
+        {
+          "name": "array1",
+          "description": "First array to be intersected with the second array.",
+          "type": "Array"
+        },
+        {
+          "name": "array2",
+          "description": "Second array to be intersected with the first array.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array with all of the values that `array1` and `array2` share while each value only appears as many times as the minimum amount of times it is found in either array."
+      },
+      "requires": [
+        "diffArrays"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.intersect([1,2,2,2,3,3,4,5], [2,2,3,4,4,5])), '[2,2,3,4,5]');"
+        }
+      ]
     },
     {
       "name": "is",
@@ -2980,6 +3166,24 @@
       "tests": []
     },
     {
+      "name": "noConflict",
+      "code": "var noConflict;\n(function(previousValue, alreadyRun) {\n  noConflict = function() {\n    if (!alreadyRun) {\n      alreadyRun = 1;\n      __GLOBAL[__VARIABLE_NAME] = previousValue;\n    }\n    return YourJS;\n  };\n})(__GLOBAL[__VARIABLE_NAME]);",
+      "description": "Reverts the global variable to which `YourJS` is initially assigned by the library back to its value prior to defining YourJS.",
+      "params": [],
+      "return": {
+        "type": "Object",
+        "description": "`YourJS` object."
+      },
+      "requires": [],
+      "required": true,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "YourJS2 = YourJS;\nJS = YourJS.noConflict();\ntest(JS === YourJS2 && YourJS === undefined, true);"
+        }
+      ]
+    },
+    {
       "name": "not",
       "code": "function not(x) { return !x; }",
       "description": "Apply the boolean negation operator to a value.",
@@ -2997,6 +3201,28 @@
       "requires": [],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "now",
+      "code": "function now() { return new Date; }\nnow.valueOf = function() { return +new Date; };",
+      "description": "Gets the a `Date` object representing the current date/time.",
+      "params": [],
+      "return": {
+        "type": "Date",
+        "description": "A `Date` object representing the current date/time.  Executing arithmetic on this function without invoking it will result in getting the number of milliseconds since January 1, 1970 GMT (eg. `+YourJS.now === Date.now()`)."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.now().toISOString(), (new Date).toISOString());"
+        },
+        {
+          "name": "Arithmetic Feature",
+          "code": "test(+YourJS.now, +new Date);"
+        }
+      ]
     },
     {
       "name": "nth",
@@ -3521,6 +3747,35 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "removeAt",
+      "code": "function removeAt(array, position) {\n  array.splice(position, 1);\n  return array;\n}",
+      "description": "Removes a value from an array at the specified position.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array from which a value will be removed.",
+          "type": "Array"
+        },
+        {
+          "name": "position",
+          "description": "Position within `array` from where the value should be removed.  If this is negative the position will be calculated from the end of `array`.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "A reference to `array`.  This is useful when chaining."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.removeAt([3,4,5,6,7,8,9], -2)), '[3,4,5,6,7,9]');"
+        }
+      ]
     },
     {
       "name": "repay",
@@ -4523,6 +4778,65 @@
         {
           "name": "Simple",
           "code": "test(YourJS.unescape('Hello+world%21'), 'Hello world!');"
+        }
+      ]
+    },
+    {
+      "name": "union",
+      "code": "function union(array1, array2) {\n  return array1.concat(diffArrays(array2, array1));\n}",
+      "description": "Creates a new array which will contain all of the items of the two given arrays.  Different from concatenation because the number of times a value occurs will never exceed the maximum number of times it was found in one of the arrays.",
+      "params": [
+        {
+          "name": "array1",
+          "description": "First array to union with the second array.",
+          "type": "Array",
+          "optional": false
+        },
+        {
+          "name": "array2",
+          "description": "Second array to union with the first array.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array of all of the items from `array1` and `array2` but limiting the occurrences to never exceeding the maximum number of times the value occurred in either array."
+      },
+      "requires": [
+        "diffArrays"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.union([1,2,2,2,3,3,4,5], [2,2,3,4,4,5])), '[1,2,2,2,3,3,4,5,4]');"
+        }
+      ]
+    },
+    {
+      "name": "uniquify",
+      "code": "function uniquify(array) {\n  array = slice(array);\n  for (var e1, i1 = 0, l = array.length; i1 < l; i1++) {\n    e1 = array[i1];\n    for (i2 = i1 + 1; i2 < l; i2++) {\n      if (is(e1, array[i2])) {\n        l--;\n        array.splice(i2--, 1);\n      }\n    }\n  }\n  return array;\n}",
+      "description": "Creates a new version of an array with all of the duplicate values removed.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array to copy and then modify to get rid of all duplicates from within the copy.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "A copy of `array` with all of the duplicates removed."
+      },
+      "requires": [
+        "is",
+        "slice"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  JSON.stringify(YourJS.uniquify([7,5,2,7,6,2,2,3])),\n  '[7,5,2,6,3]'\n);"
         }
       ]
     },
