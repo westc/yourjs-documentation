@@ -119,40 +119,6 @@
       ]
     },
     {
-      "name": "callReturn",
-      "code": "function callReturn(fn, opt_this) { return fn.apply(opt_this, slice(arguments, 2)), fn; }",
-      "description": "Calls a function and returns it so it can be called again.",
-      "params": [
-        {
-          "name": "fn",
-          "description": "Function to be called and returned.  The return value of this function will be ignored when it is called.",
-          "type": "Function"
-        },
-        {
-          "name": "opt_this",
-          "description": "Value referenced by `this` in evaluation of `fn`.",
-          "type": "*",
-          "optional": true
-        },
-        {
-          "name": "opt_args",
-          "description": "Zero or more arguments to be passed to `fn`.",
-          "type": "*",
-          "rest": true,
-          "optional": true
-        }
-      ],
-      "return": {
-        "type": "Function",
-        "description": "After executing `fn` it will be returned."
-      },
-      "requires": [
-        "slice"
-      ],
-      "required": false,
-      "tests": []
-    },
-    {
       "name": "calls",
       "code": "function calls(value) {\n  for (var callArgs, args = slice(arguments), i = 0, l = args.length, i = l; i < l; i++) {\n    callArgs = args[i];\n    if (typeOf(callArgs) != 'Array') {\n      callArgs = [callArgs];\n    }\n    value = call.apply(undefined, slice(callArgs, 0, 1).concat([value], slice(callArgs, 1)));\n  }\n  return value;\n}",
       "description": "Makes multiple calls using the YourJS `call()` function.",
@@ -1124,6 +1090,40 @@
           "code": "test(YourJS.escape('Hello world!'), 'Hello+world%21');"
         }
       ]
+    },
+    {
+      "name": "exec",
+      "code": "function exec(fn, opt_this) { return fn.apply(opt_this, slice(arguments, 2)), fn; }",
+      "description": "Calls a function and returns it so it can be called again.",
+      "params": [
+        {
+          "name": "fn",
+          "description": "Function to be called and returned.  The return value of this function will be ignored when it is called.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_this",
+          "description": "Value referenced by `this` in evaluation of `fn`.",
+          "type": "*",
+          "optional": true
+        },
+        {
+          "name": "opt_args",
+          "description": "Zero or more arguments to be passed to `fn`.",
+          "type": "*",
+          "rest": true,
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "After executing `fn` it will be returned."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "extend",
