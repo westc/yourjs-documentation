@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2017 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "parts": [
     {
       "name": "alias",
@@ -30,6 +30,35 @@
         }
       ],
       "required": false
+    },
+    {
+      "name": "best",
+      "code": "function best(array, iterator) {\n  function getBest(array) {\n    for (var t, best = array[0], i = 1, l = array.length; i < l; i++) {\n      if (iterator(t = array[i], best)) {\n        best = t;\n      }\n    }\n    return best;\n  }\n  return array == undefined ? getBest : getBest(array);\n}",
+      "description": "Gives the best item in a list based on the return value of the given iterator function.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Either the array to be iterated over to find the best value or `undefined` (or `null`) indicating that this is a partial function call.",
+          "type": "Array|undefined|null"
+        },
+        {
+          "name": "iterator",
+          "description": "Function that will receive two values starting with the first two in `array` or in the array passed when calling the returned partial function.  When a `true`-ish is returned by this function the value in `array` passed as the first argument will be regarded as the best value, otherwise the value in `array` passed as the second argument will be regarded as the best value.",
+          "type": "Function"
+        }
+      ],
+      "return": {
+        "type": "Function|*",
+        "description": "If `array` is `undefined` or `null` a partial function that is simply awaiting the value of `array` will be returned. Otherwise the value that was determined to be the best will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Shortest & Longest",
+          "code": "var words = 'This is an interesting bit of code'.split(' ');\nvar shortest = YourJS.best(null, function(a,b){ return a.length < b.length });\nvar longest = YourJS.best(null, function(a,b){ return a.length > b.length });\ntest(JSON.stringify([shortest(words),longest(words)]), '[\"is\",\"interesting\"]');"
+        }
+      ]
     },
     {
       "name": "bind",
@@ -272,7 +301,7 @@
     },
     {
       "name": "chain",
-      "code": "var chain, mixin;\n(function(RGX_INVALID_PROP_NAMES) {\n  function YourJSChain(value, previousWrap) {\n    this.$$ = previousWrap;\n    this.$ = value;\n  }\n\n  YourJSChain.prototype = {\n    _: function(name) {\n      return new YourJSChain(this.$[name].apply(this.$, slice(arguments, 1)), this);\n    },\n    value: function() { return this.$; },\n    end: function() { return this.$$; }\n  };\n\n  __callsAfterDefs.push(function() {\n    forIn(YourJS, function(prop, name) {\n      if ('function' == typeof prop && !RGX_INVALID_PROP_NAMES.test(name)) {\n        YourJSChain.prototype[name] = function() {\n          return new YourJSChain(prop.apply(undefined, [this.$].concat(slice(arguments))), this);\n        };\n      }\n    });\n  });\n\n  typeOf(YourJSChain, 'YourJSChain');\n\n  chain = function(value) {\n    return new YourJSChain(value);\n  };\n\n  mixin = function(fn, name) {\n    if (RGX_INVALID_PROP_NAMES.test(name) || has(YourJS, name)) {\n      return false;\n    }\n\n    YourJS[name] = fn;\n    YourJSChain.prototype[name] = function() {\n      return new YourJSChain(fn.apply(undefined, [this.$].concat(slice(arguments))), this);\n    };\n    return true;\n  };\n})(/^(value|end|_|mixin|\\$\\$?)$/);",
+      "code": "var chain, mixin;\n(function(RGX_INVALID_PROP_NAMES) {\n  function YourJSChain(value, previousWrap) {\n    this.$$ = previousWrap;\n    this.$ = value;\n  }\n\n  function value() { return this.$; }\n\n  YourJSChain.prototype = {\n    _: function(name) {\n      return new YourJSChain(this.$[name].apply(this.$, slice(arguments, 1)), this);\n    },\n    value: value,\n    end: function() { return this.$$; },\n    valueOf: value\n  };\n\n  __callsAfterDefs.push(function() {\n    forIn(YourJS, function(prop, name) {\n      if ('function' == typeof prop && !RGX_INVALID_PROP_NAMES.test(name)) {\n        YourJSChain.prototype[name] = function() {\n          return new YourJSChain(prop.apply(undefined, [this.$].concat(slice(arguments))), this);\n        };\n      }\n    });\n  });\n\n  typeOf(YourJSChain, 'YourJSChain');\n\n  chain = function(value) {\n    return new YourJSChain(value);\n  };\n\n  mixin = function(fn, name) {\n    if (RGX_INVALID_PROP_NAMES.test(name) || has(YourJS, name)) {\n      return false;\n    }\n\n    YourJS[name] = fn;\n    YourJSChain.prototype[name] = function() {\n      return new YourJSChain(fn.apply(undefined, [this.$].concat(slice(arguments))), this);\n    };\n    return true;\n  };\n})(/^(value|end|_|mixin|\\$\\$?)$/);",
       "description": "Creates a chained version of a value.",
       "params": [
         {
@@ -3226,23 +3255,23 @@
     },
     {
       "name": "nth",
-      "code": "function nth(arr, n) {\n  return arr[n < 0 ? arr.length + n : n];\n}",
+      "code": "function nth(arrayOrN, opt_n) {\n  return opt_n != undefined\n    ? arrayOrN[opt_n < 0 ? arrayOrN.length + opt_n : opt_n]\n    : function(array) {\n      return array[arrayOrN < 0 ? array.length + arrayOrN : arrayOrN];\n    };\n}",
       "description": "Gets the value at the specified position in an array or an array-like object.",
       "params": [
         {
-          "name": "arr",
-          "description": "Array or array-like object from which to pull the value.",
-          "type": "Array|Arguments|Object"
+          "name": "arrayOrN",
+          "description": "If an array or an array-like object is given this will be the object from which the value will be immediately retrieved.  If this is a number, this will be interpreted as `opt_n`, the position from which all values passed into the returned partial function will be retrieved.",
+          "type": "Array|number"
         },
         {
-          "name": "n",
-          "description": "The position from which the value should be pulled.  If this is a negative number the position will be calculated from the end of `arr`.",
+          "name": "opt_n",
+          "description": "If given and `arrayOrN` is an array or an array-like object, this will be the position from which the value should be retrieved.  If this is a negative number the position will be calculated from the end of `arr`.  If `arrayOrN` is a number this will become that value.",
           "type": "number"
         }
       ],
       "return": {
-        "type": "*",
-        "description": "Value at position `n`."
+        "type": "Function|*",
+        "description": "If `arrayOrN` is an array or an array-like object the value at position `n` will be returned.  Otherwise if `arrayOrN` is a number a partial function that will already have the value of `opt_n` and will be awaiting the array will be returned."
       },
       "requires": [],
       "required": false,
@@ -3254,6 +3283,10 @@
         {
           "name": "Negative Position",
           "code": "var arr = [5,8,2,13];\ntest(YourJS.nth(arr, -3), arr.slice(-3)[0]);"
+        },
+        {
+          "name": "Simple Partial",
+          "code": "var arr = [5,8,2,13], arr2 = [1,2,3,4,5,6,7];\nvar first = YourJS.nth(0), last = YourJS.nth(-1);\ntest(JSON.stringify([first(arr),last(arr),first(arr2),last(arr2)]), '[5,13,1,7]');"
         }
       ]
     },
@@ -3589,6 +3622,67 @@
         {
           "name": "Partial #2",
           "code": "var path1 = 'google.com/', path2 = 'https://bing.com/';\nvar prefixHTTP = YourJS.prefix(undefined, 'http://', /^https?:\\/\\//);\ntest(\n  prefixHTTP(path1) + ' ' + prefixHTTP(path2),\n  'http://google.com/ https://bing.com/'\n);"
+        }
+      ]
+    },
+    {
+      "name": "prop",
+      "code": "function prop(obj, opt_name) {\n  function getProp(name) {\n    name = obj[name];\n    return 'function' == typeof name ? name.call(obj) : name;\n  }\n  obj = obj || Object(obj);\n  return arguments.length > 1 ? getProp(opt_name) : getProp;\n}",
+      "description": "Gets the value of a property.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "Object whose property will be retrieved.",
+          "type": "Object"
+        },
+        {
+          "name": "opt_name",
+          "description": "Name of the property to get.  If `obj[opt_name]` references a function it will be called to get the property value.",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "Function|*",
+        "description": "If both `obj` and `opt_name` are given, the property `obj[opt_name]` will be returned.  If `opt_name` is not given a partial function is returned which will await the value of `opt_name`.  If the property to be returned is a function it will be evaluated and the return value will be returned instead."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var obj = { name: 'John', age: 42,\n  summary: function() { return this.name + ' is ' + this.age; } };\nvar prop = YourJS.prop(obj);\ntest(JSON.stringify([YourJS.prop(obj, 'name'), prop('age'), prop('summary')]),\n     '[\"John\",42,\"John is 42\"]');"
+        }
+      ]
+    },
+    {
+      "name": "propOf",
+      "code": "function propOf(name, opt_obj) {\n  function getPropOf(obj) {\n    var prop = (obj || Object(obj))[name];\n    return 'function' == typeof prop ? prop.call(obj) : prop;\n  };\n  return arguments.length > 1 ? getPropOf(opt_obj) : getPropOf;\n}",
+      "description": "Gets the value of a property.",
+      "params": [
+        {
+          "name": "name",
+          "description": "Name of the property to get.  If `obj[opt_name]` references a function it will be called to get the property value.",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "opt_obj",
+          "description": "Object whose property will be retrieved.",
+          "type": "Object",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "Function|*",
+        "description": "If both `opt_obj` and `name` are given, the property `opt_obj[name]` will be returned.  If `opt_obj` is not given a partial function is returned which will await the value of `opt_obj`.  If the property to be returned is a function it will be evaluated and the return value will be returned instead."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var obj = { name: 'John', age: 42,\n  summary: function() { return this.name + ' is ' + this.age; } };\nvar ageOf = YourJS.propOf('age');\ntest(JSON.stringify([YourJS.propOf('name', obj), ageOf(obj), YourJS.propOf('summary', obj)]),\n     '[\"John\",42,\"John is 42\"]');"
         }
       ]
     },
@@ -4841,6 +4935,43 @@
       ]
     },
     {
+      "name": "untilExists",
+      "code": "",
+      "description": "Creates a copy of an array with all of the consecutive items up to but not including the first value `true`-ish value.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array or array-like object containing values that will be copied.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_fromEnd",
+          "description": "Indicates that the values should be copied starting from the end, not from the beginning as normal.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "If `opt_fromEnd` is not given or is `false`-ish, an array of all of the consecutive `false`-ish values starting at the beginning of `array` will be returned.  Otherwise an array of all of the consecutive `false`-ish values starting at the end of `array` will be returned."
+      },
+      "requires": [
+        "whileExists"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.untilExists([null,undefined,3,0,8,null,0])), '[null,null]');"
+        },
+        {
+          "name": "Simple From End",
+          "code": "test(JSON.stringify(YourJS.untilExists([null,undefined,3,0,8,null,0], true)), '[null,0]');"
+        }
+      ]
+    },
+    {
       "name": "utc",
       "code": "function utc(yearOrValue, opt_month, opt_day, opt_hour, opt_min, opt_sec, opt_ms) {\n  var d;\n  if (arguments.length < 2) {\n    d = 'object' == typeof yearOrValue ? yearOrValue : new Date(yearOrValue);\n    d = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());\n  }\n  else {\n    d = Date.UTC(yearOrValue, opt_month, opt_day == undefined ? 1 : opt_day, opt_hour || 0, opt_min || 0, opt_sec || 0, opt_ms || 0);\n  }\n  return new Date(d);\n}",
       "description": "Creates a date using universal time.",
@@ -4961,6 +5092,43 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "whileExists",
+      "code": "eval('while until'.replace(/\\w+/g, function(m, i) {\n  return 'function ' + m\n    + 'Exists(b,c){for(var f=c?\"unshift\":\"push\",d=[],g=c?-1:1,e=b.length,a=c?~~(e-1):0;'\n    + (i ? '!' : '') + 'b[a]&&-1<a&&a<e;a+=g)d[f](b[a]);return d}';\n}));",
+      "description": "Creates a copy of an array with all of the consecutive items up to but not including the first value `false`-ish value.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array or array-like object containing values that will be copied.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_fromEnd",
+          "description": "Indicates that the values should be copied starting from the end, not from the beginning as normal.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "If `opt_fromEnd` is not given or is `false`-ish, an array of all of the consecutive `true`-ish values starting at the beginning of `array` will be returned.  Otherwise an array of all of the consecutive `true`-ish values starting at the end of `array` will be returned."
+      },
+      "requires": [
+        "untilExists"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.whileExists([3,7,8,NaN,2,0,1,5])), '[3,7,8]');"
+        },
+        {
+          "name": "Simple From End",
+          "code": "test(JSON.stringify(YourJS.whileExists([3,7,8,NaN,2,0,1,5], true)), '[1,5]');"
+        }
+      ]
     }
   ]
 }
