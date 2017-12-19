@@ -2061,7 +2061,7 @@
         }
       ],
       "return": {
-        "type": "boolean.",
+        "type": "boolean",
         "description": "`true` if `value` is a floating point number, otherwise `false`."
       },
       "requires": [],
