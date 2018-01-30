@@ -1,6 +1,6 @@
 {
-  "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2017 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.2.0",
+  "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2018 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
+  "version": "2.3.0",
   "parts": [
     {
       "name": "alias",
@@ -1650,6 +1650,35 @@
       ]
     },
     {
+      "name": "indexOfDiff",
+      "code": "function indexOfDiff(str1, str2) {\n  var splitLen = Math.ceil(Math.min(str1.length, str2.length) / 2),\n      s1_1 = str1.slice(0, splitLen), s2_1 = str2.slice(0, splitLen);\n  return str1 != str2\n    ? splitLen\n      ? s1_1 != s2_1\n        ? splitLen - 1 && indexOfDiff(s1_1, s2_1)\n        : (indexOfDiff(str1.slice(splitLen), str2.slice(splitLen)) + splitLen)\n      : 0\n    : -1;\n}",
+      "description": "Determine where 2 strings begin to differ from each other.",
+      "params": [
+        {
+          "name": "str1",
+          "description": "A string to be compared to another string.",
+          "type": "string"
+        },
+        {
+          "name": "str2",
+          "description": "A string to be compared to `str1`.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "If `str1` matches `str2`, `-1` will be returned. In all other cases, the first index at which the corresponding character in `str1` is not the same as that found in `str2` will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test([\n  YourJS.indexOfDiff('', ''),  // -> -1\n  YourJS.indexOfDiff('Cool', 'Cool'),  // -> -1\n  YourJS.indexOfDiff('Cool beans', 'Cool'),  // -> 4\n  YourJS.indexOfDiff('Cool beans', 'Cool jeans'),  // -> 5\n  YourJS.indexOfDiff(Math.PI + '', '3.14159')  // -> 7\n].join(', '), '-1, -1, 4, 5, 7');"
+        }
+      ]
+    },
+    {
       "name": "info",
       "code": "function info() {\n  return { name: __VARIABLE_NAME, version: __VERSION, toString: YourJS.toString };\n}",
       "required": true,
@@ -2910,6 +2939,39 @@
       "tests": []
     },
     {
+      "name": "jsonp",
+      "code": "function jsonp(url, callback, opt_callbackParamName) {\n  for (\n    var parent = __DOCUMENT.getElementsByTagName('head')[0] || __DOCUMENT.body,\n        script = __DOCUMENT.createElement('script'),\n        callbackName = '__jsonp';\n    has(__GLOBAL, callbackName = (callbackName + Math.random()).replace('.', ''));\n  );\n  __GLOBAL[callbackName] = function() {\n    delete __GLOBAL[callbackName];\n    callback.apply(this, arguments);\n  };\n  script.src = (url + '&'\n    + encodeURIComponent(opt_callbackParamName || 'callback')\n    + '=' + callbackName).replace(/(^[^\\?&]*)&/, '$1?');\n  script.type = 'text/JavaScript';\n  parent.appendChild(script);\n  return script;\n}",
+      "description": "Adds a JSON-P script to the page to be executed once the script has been retrieved.",
+      "params": [
+        {
+          "name": "url",
+          "description": "URL of the JSON-P script without the callback parameter provided.",
+          "type": "string"
+        },
+        {
+          "name": "callback",
+          "description": "Function to be called by the JSON-P script.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_callbackParamName",
+          "description": "Name of the parameter that will be passed the callback function's name.",
+          "type": "string",
+          "optional": true,
+          "default": "\"callback\""
+        }
+      ],
+      "return": {
+        "type": "HTMLScriptElement",
+        "description": "The script element that is added to the page."
+      },
+      "requires": [
+        "has"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "keepAspectRatio",
       "code": "function keepAspectRatio(width, height, targetWidth, targetHeight, opt_maximize) {\n  targetWidth = Math[opt_maximize ? 'max' : 'min'](targetHeight * width / height, targetWidth);\n  return { width: targetWidth, height: targetWidth * height / width };\n}\n",
       "description": "Maximizes the dimensions while keeping the same aspect ratio.",
@@ -3195,6 +3257,37 @@
       "tests": []
     },
     {
+      "name": "modURL",
+      "code": "function modURL(opt_url, options) {\n  var url = opt_url || __GLOBAL.location.href;\n  try {\n    url = new __GLOBAL.URL(url);\n  }\n  catch (a) {\n    a = __DOCUMENT.createElement('a');\n    a.href = url;\n    url = new __GLOBAL.URL(a.href);\n  }\n  for (var optionKey in options) {\n    if (has(options, optionKey)) {\n      var optionValue = options[optionKey];\n      if (optionKey == 'search' && 'object' == typeof optionValue) {\n        var objSearch = parseQS(url[optionKey]), arrNewSearch = [];\n        for (var qsKey in objSearch) {\n          if (has(objSearch, qsKey) && !has(optionValue, qsKey)) {\n            arrNewSearch.push([qsKey, objSearch[qsKey]]);\n          }\n        }\n        for (var searchKey in optionValue) {\n          if (has(optionValue, searchKey)) {\n            var searchValue = optionValue[searchKey],\n                newSearchValue = 'function' == typeof searchValue ? searchValue(objSearch[searchKey], objSearch) : searchValue;\n            if (newSearchValue != undefined) {\n              (typeOf(newSearchValue) == 'Array' ? newSearchValue : [newSearchValue]).forEach(function(searchValue) {\n                arrNewSearch.push([searchKey, searchValue]);\n              });\n            }\n          }\n        }\n        optionValue = arrNewSearch.reduce(function(search, pair) {\n          return search + (search ? '&' : '?') + escape(pair[0]) + '=' + escape(pair[1]);\n        }, '');\n      }\n      url[optionKey] = 'function' == typeof optionValue ? optionValue(url[optionKey]) : optionValue;\n    }\n  }\n  return url.href;\n}",
+      "description": "Modifie a URL.",
+      "params": [
+        {
+          "name": "opt_url",
+          "description": "URL to modify and return.  If `undefined` or `null` is specified this will default to the page's location.",
+          "type": "string",
+          "optional": true,
+          "default": "location.href"
+        },
+        {
+          "name": "options",
+          "description": "An object indicating how to modify `opt_url`.  Each property name should correspond to a valid `URL` property name.  If a function is given as a property name it will be executed and the return value will be used as that property of the URL.  Specifying an object for the `\"search\"` property will provide the ability to set individual search parameters.",
+          "type": "Object"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "The modified form of `opt_url`."
+      },
+      "requires": [
+        "has",
+        "escape",
+        "parseQS",
+        "typeOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "noConflict",
       "code": "var noConflict;\n(function(previousValue, alreadyRun) {\n  noConflict = function() {\n    if (!alreadyRun) {\n      alreadyRun = 1;\n      __GLOBAL[__VARIABLE_NAME] = previousValue;\n    }\n    return YourJS;\n  };\n})(__GLOBAL[__VARIABLE_NAME]);",
       "description": "Reverts the global variable to which `YourJS` is initially assigned by the library back to its value prior to defining YourJS.",
@@ -3380,7 +3473,7 @@
     },
     {
       "name": "parseQS",
-      "code": "function parseQS(url) {\n  var vars = {};\n  url.replace(/\\?[^#]+/, function(query) {\n    query.replace(/\\+/g, ' ').replace(/[\\?&]([^=&#]+)(?:=([^&#]*))?/g, function(m, key, value, arrIndicator, alreadyDefined, lastValue) {\n      key = decodeURIComponent(key);\n      if (arrIndicator = key.slice(-2) == '[]') {\n        key = key.slice(0, -2);\n      }\n      value = value && decodeURIComponent(value);\n      alreadyDefined = has(vars, key);\n      lastValue = vars[key];\n      vars[key] = arrIndicator || alreadyDefined\n        ? typeOf(lastValue) == 'Array'\n          ? lastValue.concat([value])\n          : alreadyDefined\n            ? [lastValue, value]\n            : [value]\n        : value;\n    });\n  });\n  return vars;\n}",
+      "code": "function parseQS(url) {\n  var vars = {};\n  url.replace(/\\?[^#]+/, function(query) {\n    query.replace(/\\+/g, ' ').replace(/[\\?&]([^=&#]+)(?:=([^&#]*))?/g, function(m, key, value, arrIndicator, alreadyDefined, lastValue) {\n      key = decodeURIComponent(key);\n      arrIndicator = key.slice(-2) == '[]';\n      value = value && decodeURIComponent(value);\n      alreadyDefined = has(vars, key);\n      lastValue = vars[key];\n      vars[key] = (arrIndicator || alreadyDefined)\n        ? typeOf(lastValue) == 'Array'\n          ? lastValue.concat([value])\n          : alreadyDefined\n            ? [lastValue, value]\n            : [value]\n        : value;\n    });\n  });\n  return vars;\n}",
       "description": "Parses a URL to get the parameters specified in the query string.",
       "params": [
         {
@@ -3872,6 +3965,38 @@
       ]
     },
     {
+      "name": "removeCookie",
+      "code": "function removeCookie(name, opt_options) {\n  var key, cookies, ret = getCookie(name);\n  if('string' == typeof ret) {\n    (cookies = {})[name] = ret;\n  }\n  else {\n    cookies = ret;\n  }\n  opt_options = opt_options || {};\n  for(key in cookies) {\n    if (has(cookies, key)) {\n      setCookie(key, '', {\n        path: opt_options.path,\n        domain: opt_options.domain,\n        secure: opt_options.secure,\n        expires: new Date(0)\n      });\n    }\n  }\n  return ret;\n}",
+      "description": "Removes the specified cookie(s).",
+      "params": [
+        {
+          "name": "name",
+          "description": "Either the name of the cookie to remove or a regular expression matching the names of all of the cookies to remove.  If `undefined` or `null` is supplied that means all cookies should be removed.",
+          "type": "string|RegExp|undefined|null",
+          "optional": true,
+          "default": "undefined"
+        },
+        {
+          "name": "opt_options",
+          "description": "Object whose property values can be used to specify additional options.  If you want to specify the hosts for which the cookie will be removed you can set the `domain` property.  If a domain is specified, subdomains are always included.  If you want to specify the URL path from under which the cookie will be removed you can specify it in the `path` property.  If you want to remove a secure cookie while on a secure site (`https:`) you can set the `secure` property to `true`.",
+          "type": "Object",
+          "optional": true,
+          "default": "{\"path\":\"/\"}"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "If `name` is a string and matches the name of a cookie, that cookie's value will be returned as a string.  If `name` is a string but doesn't match the name of a cookie `undefined` will be returned.  If `name` is of type `RegExp` an object containing all of the cookies with names that match the specified regular expression will be returned.  If `name` is `undefined` or `null` an object containing all of the cookies will be returned.  If an object is returned each key will represent the name of each removed cookie and each value will be the value of that removed cookie."
+      },
+      "requires": [
+        "has",
+        "getCookie",
+        "setCookie"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "repay",
       "code": "function repay(input) {\n  var args = arguments;\n  return Function('s,i,a', 'return function(){return ' + (args.length - 1 ? 's(a)' : 'i') + '}')(slice, input, args);\n}",
       "description": "Produces a function that when called will simply return was was passed in.",
@@ -4133,18 +4258,18 @@
     },
     {
       "name": "set",
-      "code": "function set(obj, opt_name, opt_value) {\n  var t1, t2,\n      needsObj = obj == undefined,\n      needsName = opt_name == undefined,\n      needsValue = arguments.length < 3;\n  if (needsObj || needsName || needsValue) {\n    t1 = ['b','a'];\n    t2 = { x: needsObj, y: needsName, z: needsValue };\n    return Function(\n      's,x,y,z',\n      'return function(a,b){return s(x,y,z)}'.replace(/x|y|z/g, function(m){return t2[m]?t1.pop():m}).replace(t1[0] ? '' : ',b', '')\n    )(set, obj, opt_name, opt_value);\n  }\n  t1 = obj[opt_name];\n  obj[opt_name] = opt_value;\n  return t1;\n}",
+      "code": "function set(obj, opt_name, opt_value, opt_returnObj) {\n  var t1, t2,\n      needsObj = obj == undefined,\n      needsName = opt_name == undefined,\n      needsValue = arguments.length < 3;\n  if (needsObj || needsName || needsValue) {\n    t1 = ['b','a'];\n    t2 = { x: needsObj, y: needsName, z: needsValue };\n    return Function(\n      's,x,y,z',\n      'return function(a,b){return s(x,y,z)}'.replace(/x|y|z/g, function(m){return t2[m]?t1.pop():m}).replace(t1[0] ? '' : ',b', '')\n    )(set, obj, opt_name, opt_value, opt_returnObj);\n  }\n  t1 = obj[opt_name];\n  obj[opt_name] = opt_value;\n  return opt_returnObj ? obj : t1;\n}",
       "description": "Set the value of a property on an object.",
       "params": [
         {
           "name": "obj",
           "description": "Object whose property will be set.",
-          "type": "*"
+          "type": "*|undefined"
         },
         {
           "name": "opt_name",
           "description": "Name of the property to be set.",
-          "type": "string|undefined",
+          "type": "string",
           "optional": true,
           "default": "undefined"
         },
@@ -4158,7 +4283,7 @@
       ],
       "return": {
         "type": "*",
-        "description": "If all 3 arguments are given the previous property value will be returned.  If one or more arguments are missing a partial function will be returned that will accept the remaining arguments."
+        "description": "If the first 3 arguments are given the previous property value will be returned unless `opt_returnObj` is `true`-ish in which case `obj` will be returned.  If one or more arguments are missing a partial function will be returned that will accept the remaining arguments.  The value of `opt_returnObj` will be ignored for partial functions."
       },
       "requires": [],
       "required": false,
@@ -4361,6 +4486,40 @@
         {
           "name": "Simple String Test",
           "code": "test(\n  YourJS.splice('Hello mom!', 6, -1, 'world'),\n  'Hello world!'\n);"
+        }
+      ]
+    },
+    {
+      "name": "spread",
+      "code": "function spread(fn) {\n  return fn.apply(this, slice(arguments, 1).reduce(function(args, arg) {\n    return args.concat(isArrayLike(arg) ? slice(arg) : [arg]);\n  }, []));\n}",
+      "description": "Calls a function while flattening first-level array-like arguments so as the spread those individual values and use them as individual arguments.",
+      "params": [
+        {
+          "name": "fn",
+          "description": "Function to which the spread values will be passed.",
+          "type": "Function"
+        },
+        {
+          "name": "args",
+          "description": "Arguments that will be passed to `fn`.  If any of the arguments are arrays or array-like they will be flattened and passed to `fn` so as the spread those values.",
+          "type": "*",
+          "optional": true,
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "Return value after calling `fn` with the specified `args`."
+      },
+      "requires": [
+        "isArrayLike",
+        "slice"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "function sum(a, b) {\n  return a + (arguments.length < 3 ? b : sum.apply(this, [].slice.call(arguments, 1)));\n}\ntest(YourJS.spread(sum,1,2,3,[4,5],6,[7,8,9]), sum(1,2,3,4,5,6,7,8,9));"
         }
       ]
     },
