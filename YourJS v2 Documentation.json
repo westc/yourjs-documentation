@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2018 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "parts": [
     {
       "name": "alias",
@@ -1037,7 +1037,7 @@
     },
     {
       "name": "dom",
-      "code": "var dom;\n(function(RGX_DASH, INNER_TEXT, TEXT_CONTENT, PROP_HASH) {\n  function capAfterDash(m, afterDash) {\n    return afterDash.toUpperCase();\n  }\n  dom = function(input) {\n    var elem, realPropName, propName, propValue, i, l, j, c, style, stylePropName, kids;\n    if (typeOf(input) == 'String') {\n      elem = slice(dom({ _: 'DIV', html: input }).childNodes);\n    }\n    else {\n      elem = __DOCUMENT.createElement(input.nodeName || input._);\n      for (realPropName in input) {\n        propValue = input[realPropName];\n        if (has(input, realPropName) && (propName = has(PROP_HASH, realPropName) ? PROP_HASH[realPropName] : realPropName) != '_') {\n          if (propName == 'style') {\n            style = elem[propName];\n            if (typeOf(propValue) == 'String') {\n              style.cssText = propValue;\n            }\n            else {\n              for (stylePropName in propValue) {\n                if (has(propValue, stylePropName)) {\n                  style[stylePropName.replace(RGX_DASH, capAfterDash)] = propValue[stylePropName];\n                }\n              }\n            }\n          }\n          else if (propName == INNER_TEXT || propName == TEXT_CONTENT) {\n            elem[TEXT_CONTENT] = elem[INNER_TEXT] = propValue;\n          }\n          else if (propName == '$') {\n            propValue = toArray(propValue);\n            for (i = 0, l = propValue.length; i < l;) {\n              for (kids = toArray(dom(propValue[i++])), j = 0, c = kids.length; j < c;) {\n                elem.appendChild(kids[j++]);\n              }\n            }\n          }\n          else {\n            elem[propName] = propValue;\n            if (propName == realPropName && elem.getAttribute(propName) == undefined) {\n              elem.setAttribute(propName, propValue);\n            }\n          }\n        }\n      }\n    }\n    return elem;\n  };\n})(/-([^-])/g, 'innerText', 'textContent',\n  {nodeName:'_',html:'innerHTML',text:'innerText',children:'$','for':'htmlFor','class':'className',cls:'className'});",
+      "code": "var dom;\n(function(RGX_DASH, INNER_TEXT, TEXT_CONTENT, PROP_HASH) {\n  function capAfterDash(m, afterDash) {\n    return afterDash.toUpperCase();\n  }\n  dom = function(input) {\n    var elem, realPropName, propName, propValue, i, l, j, c, style, stylePropName, kids;\n    if (typeOf(input) == 'String') {\n      elem = slice(dom({ _: 'DIV', html: input }).childNodes);\n    }\n    else {\n      elem = __DOCUMENT.createElement(input.nodeName || input._);\n      for (realPropName in input) {\n        propValue = input[realPropName];\n        if (has(input, realPropName) && (propName = has(PROP_HASH, realPropName) ? PROP_HASH[realPropName] : realPropName) != '_') {\n          if (propName == 'style') {\n            style = elem[propName];\n            if (typeOf(propValue) == 'String') {\n              style.cssText = propValue;\n            }\n            else {\n              for (stylePropName in propValue) {\n                if (has(propValue, stylePropName)) {\n                  style[stylePropName.replace(RGX_DASH, capAfterDash)] = propValue[stylePropName];\n                }\n              }\n            }\n          }\n          else if (propName == INNER_TEXT || propName == TEXT_CONTENT) {\n            elem[TEXT_CONTENT] = elem[INNER_TEXT] = propValue;\n          }\n          else if (propName == '$') {\n            propValue = toArray(propValue);\n            for (i = 0, l = propValue.length; i < l;) {\n              for (kids = toArray(dom(propValue[i++])), j = 0, c = kids.length; j < c;) {\n                elem.appendChild(kids[j++]);\n              }\n            }\n          }\n          else {\n            elem[propName] = propValue;\n            if (propName == realPropName && elem.getAttribute(propName) == undefined && 'function' != typeof propValue) {\n              elem.setAttribute(propName, propValue);\n            }\n          }\n        }\n      }\n    }\n    return elem;\n  };\n})(/-([^-])/g, 'innerText', 'textContent',\n  {nodeName:'_',html:'innerHTML',text:'innerText',children:'$','for':'htmlFor','class':'className',cls:'className'});",
       "description": "Creates HTML DOM objects.",
       "params": [
         {
@@ -1349,6 +1349,36 @@
       "requires": [
         "has"
       ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "formatDate",
+      "code": "var formatDate = (function(arrMonths, arrDays) {\n  function prefixZeroes(num, end) {\n    return ((new Array(end)).join(0) + Math.abs(num)).slice(-end);\n  }\n  return function(date, strFormat, opt_options) {\n    opt_options = opt_options || {};\n    var arrCustomMonths = opt_options.months || arrMonths,\n        arrCustomDays = opt_options.days || arrDays,\n        YYYY = date.getFullYear(),\n        M = date.getMonth(),\n        MMMM = arrCustomMonths[M++],\n        DDDD = arrCustomDays[date.getDay()],\n        D = date.getDate(),\n        H = date.getHours(),\n        h = H % 12,\n        m = date.getMinutes(),\n        s = date.getSeconds(),\n        S = date.getMilliseconds(),\n        tzOffset = date.getTimezoneOffset(),\n        subs = {\n          YYYY: YYYY,\n          YY: YYYY % 100,\n          MMMM: MMMM,\n          MMM: MMMM.slice(0, 3),\n          MM : prefixZeroes(M, 2),\n          M: M,\n          DDDD: DDDD,\n          DDD: DDDD.slice(0, 3),\n          DD: prefixZeroes(D, 2),\n          D: D,\n          HH: prefixZeroes(H, 2),\n          hh: prefixZeroes(h, 2),\n          H: H,\n          h: h,\n          mm: prefixZeroes(m, 2),\n          m: m,\n          ss: prefixZeroes(s, 2),\n          s: s,\n          a: H < 12 ? 'am' : 'pm',\n          A: H < 12 ? 'AM' : 'PM',\n          SSS: prefixZeroes(S, 3),\n          S: S,\n          Z: (tzOffset < 0 ? '+' : '-') + prefixZeroes(tzOffset / 60, 2) + prefixZeroes(tzOffset % 60, 2)\n        };\n    return strFormat.replace(\n      /YY(?:YY)?|M{1,4}|D{1,4}|HH?|hh?|mm?|ss?|a|A|S(?:SS)?|Z|'((?:[^']+|'')+)'/g,\n      function(m, quoted) {\n        return quoted ? quoted.replace(/''/g, \"'\") : subs[m]\n      }\n    );\n  };\n})(\n  'January February March April May June July August September October November December'.split(' '),\n  'Sunday Monday Tuesday Wednesday Thursday Friday Saturday'.split(' ')\n);",
+      "description": "Creates a string representation of the date using the specified format string.",
+      "params": [
+        {
+          "name": "date",
+          "description": "Date object to be formatted as a string.",
+          "type": "Date"
+        },
+        {
+          "name": "strFormat",
+          "description": "If part of the string is wrapped in single quotes, those single quotes will be removed, any groupings of 2 consecutive single quotes will be replaced with just one and the other characters will appear in the returned string as is.  `YYYY` will be replaced by the full year (eg. 2018).  `YY` will be replaced by a 2-digit representation of the year (eg. 18).  `MMMM` will be replaced by the name of the month (eg. September).  `MMM` will be replaced by the 1st 3 characters of the name of the month (eg. Sep).  `MM` will be replaced by a 2-digit representation of the month (eg. 09).  `M` will be replaced by a numeric representation of the month (eg. 9).  `DDDD` will be replaced by the name of the day of the week (eg. Sunday).  `DDD` will be replaced by the 1st 3 characters of the name of the day of the week (eg. Sun).  `DD` will be replaced by a 2-digit representation of the day of the month (eg. 02).  `D` will be replaced by a numeric representation of the day of the month (eg. 2).  `HH` will be replaced with a 24-hour 2-digit representation of the hour (eg. 15).  `H` will be replaced with a 24-hour numeric representation of the hour (eg. 15).  `hh` will be replaced with a 12-hour 2-digit representation of the hour (eg. 03).  `h` will be replaced with a 12-hour numeric representation of the hour (eg. 3).  `mm` will be replaced with a 2-digit representation of the minutes (eg. 26).  `m` will be replaced with a numeric representation of the minutes (eg. 26).  `ss` will be replaced with a 2-digit representation of the seconds (eg. 01).  `s` will be replaced with a numeric representation of the seconds (eg. 1).  `A` will be replaced with \"AM\" or \"PM\".  `a` will be replaced with \"am\" or \"pm\".  `SSS` will be replaced with a 3-digit representation of the milliseconds (eg. 000).  `S` will be replaced with a numeric representation of the milliseconds (eg. 0).  `Z` will be replaced with a representation of the timezone offset that starts off with \"+\" or \"-\", followed by 2 digits that represent the hours offset, followed by 2 digits that represent the minutes offset.",
+          "type": "string"
+        },
+        {
+          "name": "opt_overrides",
+          "description": "Object that can override the preset values.  If the `months` property is defined it should be an array of 12 month names starting with January.  If the `days` property is defined it should be an array of the 7 days of the week starting with Sunday.",
+          "type": "Object",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "A string representation of `date` where all of the rules for `strFormat` are followed."
+      },
+      "requires": [],
       "required": false,
       "tests": []
     },
