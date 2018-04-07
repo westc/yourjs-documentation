@@ -4111,7 +4111,7 @@
     },
     {
       "name": "root",
-      "code": "function root(number, n) {\n  var result = Math.pow(Math.abs(number), 1 / n);\n  return (number < 0 && n % 2 == 1) ? -result : result;\n}",
+      "code": "function root(number, n) {\n  var result = Math.pow(Math.abs(number), 1 / n);\n  return (number < 0 && n % 2) ? -result : result;\n}",
       "description": "Determines the nth-root of a number.",
       "params": [
         {
