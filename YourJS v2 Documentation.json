@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2018 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "parts": [
     {
       "name": "alias",
@@ -4632,6 +4632,32 @@
           "code": "var msg1 = 'Hello', msg2 = 'Cool!', endWithPunct = YourJS.suffix(undefined, '.', /[!.?]/);\ntest (\n  endWithPunct(msg1) + ' ' + endWithPunct(msg2),\n  'Hello. Cool!'\n);"
         }
       ]
+    },
+    {
+      "name": "suffixFileSize",
+      "code": "var suffixFileSize;\n(function(Math, SUFFIXES) {\n  suffixFileSize = function(count, opt_countInBits) {\n    var div = opt_countInBits ? 3 : 10,\n        base = opt_countInBits ? 10 : 2,\n        level = ~~Math.min(Math['log' + base](count < 0 ? -count : count) / div, 8);\n    count = (count / Math.pow(base, div * level)).toFixed(2).replace(/\\.?0+$/, '')\n      + ' ' + SUFFIXES[level];\n    return opt_countInBits ? count : count.toUpperCase();\n  };\n})(Math, ['b','kb','Mb','Gb','Tb','Pb','Eb','Zb','Yb']);",
+      "description": "Takes a the number of bytes or bits and converts it into a string indicating the number in the appropriate range (eg. KB, MB, etc.).",
+      "params": [
+        {
+          "name": "count",
+          "description": "Number of bytes or bits to represent as a string.",
+          "type": "number"
+        },
+        {
+          "name": "opt_countInBits",
+          "description": "Specifies whether `count` is given in bits instead of bytes.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "A string indicating `count` with the appropriate measure (eg. kb, Mb, etc.)."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
     },
     {
       "name": "sum",
