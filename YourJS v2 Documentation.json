@@ -3143,7 +3143,7 @@
     },
     {
       "name": "log",
-      "code": "var log;\n(function(realLog) {\n  log = function(x, base) { return realLog(x) / realLog(base); };\n})(Math.log10 || Math.log);",
+      "code": "var log;\n(function(CACHE_LOG_INVERSE_BASE) {\n  log = function(x, opt_base) {\n    opt_base = opt_base || Math.E;\n    return Math.log(x)\n      * (\n        CACHE_LOG_INVERSE_BASE[opt_base] = CACHE_LOG_INVERSE_BASE.hasOwnProperty(opt_base)\n          ? CACHE_LOG_INVERSE_BASE[opt_base]\n          : (5 / Math.log(Math.pow(opt_base, 5)))\n      );\n  };\n})({});",
       "description": "Gets the logarithm of any number in the specified base.  NOTE:  this function works best for values that don't rely on a base of `Math.E`.  If you want to find natural log it would be best to simply use `Math.log()`.",
       "params": [
         {
@@ -4111,7 +4111,7 @@
     },
     {
       "name": "root",
-      "code": "function root(number, n) {\n  var result = Math.pow(Math.abs(number), 1 / n);\n  return number < 0 ? -result : result;\n}",
+      "code": "function root(number, n) {\n  var result = Math.pow(Math.abs(number), 1 / n);\n  return (number < 0 && n % 2 == 1) ? -result : result;\n}",
       "description": "Determines the nth-root of a number.",
       "params": [
         {
