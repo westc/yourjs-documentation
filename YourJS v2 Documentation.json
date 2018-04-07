@@ -4636,7 +4636,7 @@
     {
       "name": "suffixFileSize",
       "code": "var suffixFileSize;\n(function(Math, SUFFIXES) {\n  suffixFileSize = function(count, opt_countInBits) {\n    var div = opt_countInBits ? 3 : 10,\n        base = opt_countInBits ? 10 : 2,\n        level = ~~Math.min(Math['log' + base](count < 0 ? -count : count) / div, 8);\n    count = (count / Math.pow(base, div * level)).toFixed(2).replace(/\\.?0+$/, '')\n      + ' ' + SUFFIXES[level];\n    return opt_countInBits ? count : count.toUpperCase();\n  };\n})(Math, ['b','kb','Mb','Gb','Tb','Pb','Eb','Zb','Yb']);",
-      "description": "Takes a the number of bytes or bits and converts it into a string indicating the number in the appropriate range (eg. KB, MB, etc.).",
+      "description": "Used to make a file size human readable.  Takes the number of bytes or bits and converts it into a string indicating the number in the appropriate range (eg. KB, MB, etc.).",
       "params": [
         {
           "name": "count",
