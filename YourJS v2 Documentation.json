@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2018 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "parts": [
     {
       "name": "alias",
@@ -97,6 +97,36 @@
           "code": "var result = YourJS.bind(function(a, b) { return [b,a,this,a,b]; }, 1, [2])(3);\ntest(result.join(','), '3,2,1,2,3');"
         }
       ]
+    },
+    {
+      "name": "bindCompare",
+      "code": "function bindCompare(namespaces, opt_negate) {\n  namespaces = namespaces.reduce(function(namespaces, ns) {\n    var nsIsArray = isArray(ns), l = nsIsArray && ns.length;\n    if (!nsIsArray || l) {\n      namespaces.push(nsIsArray ? ns : [ns]);\n    }\n    return namespaces;\n  }, []);\n  return (Function(\n    'c,g,n' + namespaces.map(function (_, i) { return i; }).join(',n'),\n    'return function(a,b){return'\n      + (opt_negate ? '-' : '')\n      + '('\n      + namespaces.map(function (_, i) { return 'c(g(a,n' + i + '),g(b,n' + i + '))'; }).join('||')\n      + ')}'\n  )).apply(namespaces, [compare, getNS].concat(namespaces));\n}",
+      "description": "Creates a compare function which binds the namespaces within the two given objects.",
+      "params": [
+        {
+          "name": "namespaces",
+          "description": "An array of namespaces to compare.  Each namespace can be an array of strings and/or numbers, a string or a number.  The order of the namespaces will determine the order in which the comparison occurs.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_negate",
+          "description": "Specifies whether or not the comparison value should be negated.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "A comparison function with the namespaces to be checked bound within the function."
+      },
+      "requires": [
+        "compare",
+        "getNS",
+        "isArray"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "call",
@@ -1532,6 +1562,39 @@
       "tests": []
     },
     {
+      "name": "getNS",
+      "code": "function getNS(root, namespace, opt_defaultValue) {\n  var test = testNS(root, namespace),\n      l = namespace.length;\n  return (l && test.length == l) ? test.slice(-1)[0] : opt_defaultValue;\n}",
+      "description": "Gets the value under the given `root` object and `namespace`.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Object to start at as the root of the proposed `namespace`.",
+          "type": "*"
+        },
+        {
+          "name": "namespace",
+          "description": "An array of strings and/or numbers that represent the namespace chain to be traversed under `root`.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_defaultValue",
+          "description": "The value to be returned if the given `namespace` doesn't fully exists under `root`.",
+          "type": "*",
+          "optional": true,
+          "default": "undefined"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "Either the value found under the given `namespace` starting at `root` or `opt_defaultValue` if the `namespace` doesn't fully exist under `root`."
+      },
+      "requires": [
+        "testNS"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "groupBy",
       "code": "function groupBy(arr, hasher, opt_initial) {\n  opt_initial = opt_initial || {};\n  for (var index, i = 0, l = arr.length; i < l; i++) {\n    if (has(arr, i)) {\n      if (typeOf(opt_initial[index = hasher(arr[i], i, arr)]) != 'Array') {\n        opt_initial[index] = [];\n      }\n      opt_initial[index].push(arr[i]);\n    }\n  }\n  return opt_initial;\n}",
       "description": "Takes an array and groups the items together based on a given hasher function.",
@@ -1612,6 +1675,32 @@
         "description": "`true` if a cookie with the specified `name` is found."
       },
       "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "hasNS",
+      "code": "function hasNS(root, namespace) {\n  return namespace.length > 0 && testNS(root, namespace).length == namespace.length;\n}",
+      "description": "Tests to see if the given namespace exists under a specific root object.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Object to start at as the root of the proposed `namespace`.",
+          "type": "*"
+        },
+        {
+          "name": "namespace",
+          "description": "An array of strings and/or numbers that represent the namespace chain to be tested under `root`.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if the specified `namespace` is found under `root`, otherwise `false`."
+      },
+      "requires": [
+        "testNS"
+      ],
       "required": false,
       "tests": []
     },
@@ -4353,6 +4442,38 @@
       "tests": []
     },
     {
+      "name": "setNS",
+      "code": "function setNS(root, namespace, value) {\n  var test = testNS(root, namespace),\n      i = namespace.length - 1,\n      setIt = i >= 0 && test.length >= i;\n  if (setIt = setIt && !isPrimitive(root = test[i - 1])) {\n    root[namespace[i]] = value;\n  }\n  return setIt;\n}",
+      "description": "Tries to set a value at the given `namespace` under the given `root` object.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Object to start at as the root of the proposed `namespace`.",
+          "type": "*"
+        },
+        {
+          "name": "namespace",
+          "description": "An array of strings and/or numbers that represent the namespace chain to be traversed under `root`.",
+          "type": "Array"
+        },
+        {
+          "name": "value",
+          "description": "The value to be assigned under the specified `namespace` within the `root` object.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is successfully set under the given namespace, otherwise `false`."
+      },
+      "requires": [
+        "testNS",
+        "isPrimitive"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "shuffle",
       "code": "// Done this way to account for partially or fully empty arrays\nfunction shuffle(arr) {\n  for (var t, j, result = [], l = arr.length, i = l; i--, result[i] = i;);\n  for (i = l; i; ) {\n    j = Math.round(Math.random() * --i);\n    if (i && i != j) {\n      t = result[i];\n      result[i] = result[j];\n      result[j] = t;\n    }\n    if (has(arr, result[i])) {\n      result[i] = arr[result[i]];\n    }\n    else {\n      delete result[i];\n    }\n  }\n  return result;\n}",
       "description": "Creates a new array with the items in a random order.",
@@ -4707,6 +4828,32 @@
       },
       "requires": [
         "sec"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "testNS",
+      "code": "function testNS(root, namespace) {\n  for (var result = [], i = 0, l = namespace.length; i < l; i++) {\n    if (root != undefined && has(root, namespace[i])) {\n      result[i] = root = root[namespace[i]];\n    }\n    else {\n      break;\n    }\n  }\n  return result;\n}",
+      "description": "Tests a given `namespace` under the given `root` object and returns the values at each step of that `namespace`.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Object to start at as the root of the proposed `namespace`.",
+          "type": "*"
+        },
+        {
+          "name": "namespace",
+          "description": "An array of strings and/or numbers that represent the namespace chain to be tested under `root`.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array having a length less than or equal to that of `namespace` where each will be the value for the corresponding `namespace` value."
+      },
+      "requires": [
+        "has"
       ],
       "required": false,
       "tests": []
