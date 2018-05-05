@@ -1937,7 +1937,7 @@
     },
     {
       "name": "isArguments",
-      "code": "eval('var Arguments,Array,Boolean,Date,Function,Null,Number,Object,RegExp,String,Undefined,Unknown'.replace(/[A-Z]\\w+/g, 'is$&'));\n'Arguments Array Boolean Date Function null Number Object RegExp String undefined Unknown'.replace(/(\\w)(\\w+)/g, function(all, first, rest) {\n  eval('(function(t){is' + first.toUpperCase() + rest + '=function(v){return t(v)==\"' + all + '\"}})')(typeOf);\n});",
+      "code": "eval('var Arguments,Array,Boolean,Date,Function,Null,Number,Object,RegExp,String,Undefined,Unknown'.replace(/[A-Z]\\w+/g, 'is$&'));\n'Arguments Array Boolean Date Function null Number Object RegExp String undefined Unknown'.replace(/(\\w)(\\w+)/g, function(all, first, rest) {\n  eval('(function(t){is' + first.toUpperCase() + rest + '=function(v){return t(v)===\"' + all + '\"}})')(typeOf);\n});",
       "description": "Determines if the given value is of type `Arguments` as specified by `typeOf()`.",
       "params": [
         {
