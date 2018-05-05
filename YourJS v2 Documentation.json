@@ -1733,6 +1733,7 @@
     {
       "name": "ifFail",
       "code": "",
+      "description": "Tests `subject` against `control` and if it results in a `false`-ish value `falsyValue` will be passed back.  Otherwise, if `opt_truthyValue` is given it will be passed back, but if not `subject` will be passed back.",
       "params": [
         {
           "name": "control",
@@ -1920,6 +1921,7 @@
     {
       "name": "ifPass",
       "code": "",
+      "description": "Tests `subject` against `control` and if it results in a `true`-ish value `truthyValue` will be passed back.  Otherwise, if `opt_falsyValue` is given it will be passed back, but if not `subject` will be passed back.",
       "params": [
         {
           "name": "control",
@@ -5810,7 +5812,7 @@
     {
       "name": "zip",
       "code": "function zip() {\n  for (var j, i = 0, arrays = arguments, maxArrLen = 0, result = [], argc = arrays.length; i < argc; i++) {\n    maxArrLen = Math.max(maxArrLen, arrays[i].length);\n  }\n  for (i = 0; i < maxArrLen; i++) {\n    result[i] = [];\n    for (j = 0; j < argc; j++) {\n      result[i][j] = arrays[j][i];\n    }\n  }\n  return result;\n}",
-      "description": "",
+      "description": "Takes one or more arrays and does a kind of matrix inverse option on them.",
       "params": [
         {
           "name": "array",
