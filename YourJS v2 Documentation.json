@@ -1731,6 +1731,230 @@
       "tests": []
     },
     {
+      "name": "ifFail",
+      "code": "",
+      "params": [
+        {
+          "name": "control",
+          "description": "If this is a function it will be called with `subject` being the only argument.  Otherwise, this regular expression will be tested against `subject`.",
+          "type": "Function|RegExp"
+        },
+        {
+          "name": "subject",
+          "description": "Value to test.",
+          "type": "*"
+        },
+        {
+          "name": "falsyValue",
+          "description": "Value to be returned if testing `subject` against `control` results in a `false`-ish value.",
+          "type": "*"
+        },
+        {
+          "name": "opt_truthyValue",
+          "description": "Value to be returned if testing `subject` against `control` results in a `true`-ish value.",
+          "type": "*",
+          "optional": true,
+          "default": "subject"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "`falsyValue` will be returned if testing `subject` against `control` results in a `false`-ish value.  Otherwise, if `opt_truthyValue` is given it will be returned, but if not given `subject` will be returned."
+      },
+      "requires": [
+        "ifIs"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "ifIn",
+      "code": "",
+      "description": "If the second argument is not in the first argument (array) the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
+      "params": [
+        {
+          "name": "arrControls",
+          "description": "Array of values to test `subject` against.",
+          "type": "Array"
+        },
+        {
+          "name": "subject",
+          "description": "Value to see if it is in `arrControls`.",
+          "type": "*"
+        },
+        {
+          "name": "trueValue",
+          "description": "Value to be returned if `subject` is found within `arrControls`.",
+          "type": "*"
+        },
+        {
+          "name": "opt_falseValue",
+          "description": "Value to be returned if `subject` is not found within `arrControls`.",
+          "type": "*",
+          "optional": true,
+          "default": "subject"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "`trueValue` will be returned if `subject` is found within `arrControls`.  Otherwise, if `opt_falseValue` is given it will be returned, but if not given `subject` will be returned."
+      },
+      "requires": [
+        "ifIs"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "ifIs",
+      "code": "eval(\n  'function if(a,b,c,d){return?c:(arguments.length>3?d:b)}'\n    .replace(/([\\w ]+)(.+return)(.+)/, '$1Is$2~$3$1Not$2~$3$1In$2`$3$1Out$2`$3$1Pass$2#$3$1Fail$2#$3')\n    .replace(/~/g, '!(@(a)?@(b):(a===b))')\n    .replace(/`/g, '!a.includes(b)')\n    .replace(/#/g, '!(Object.prototype.toString.call(a)===\"[object RegExp]\"?a.test(b):a(b))')\n    .replace(/!([^!]+(!|$))/g, ' $1')\n    .replace(/@/g, 'Number.isNaN')\n);",
+      "description": "If the first and second arguments are the same the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
+      "params": [
+        {
+          "name": "control",
+          "description": "Value that is being tested against.",
+          "type": "*"
+        },
+        {
+          "name": "subject",
+          "description": "Value to test.",
+          "type": "*"
+        },
+        {
+          "name": "trueValue",
+          "description": "Value to be returned if `control` and `subject` are the same.",
+          "type": "*"
+        },
+        {
+          "name": "opt_falseValue",
+          "description": "Value to be returned if `control` and `subject` are different.",
+          "type": "*",
+          "optional": true,
+          "default": "subject"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "`trueValue` will be returned if `control` is `subject`.  Otherwise, if `opt_falseValue` is given it will be returned, but if not given `subject` will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "ifNot",
+      "code": "",
+      "description": "If the first and second arguments are different the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
+      "params": [
+        {
+          "name": "control",
+          "description": "Value that is being tested against.",
+          "type": "*"
+        },
+        {
+          "name": "subject",
+          "description": "Value to test.",
+          "type": "*"
+        },
+        {
+          "name": "falseValue",
+          "description": "Value to be returned if `control` and `subject` are different.",
+          "type": "*"
+        },
+        {
+          "name": "opt_trueValue",
+          "description": "Value to be returned if `control` and `subject` are the same.",
+          "type": "*",
+          "optional": true,
+          "default": "subject"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "`opt_trueValue` will be returned if `control` is different from `subject`.  Otherwise, if `falseValue` is given it will be returned, but if not given `subject` will be returned."
+      },
+      "requires": [
+        "ifIs"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "ifOut",
+      "code": "",
+      "description": "If the second argument is not in the first argument (array) the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
+      "params": [
+        {
+          "name": "arrControls",
+          "description": "Array of values to test `subject` against.",
+          "type": "Array"
+        },
+        {
+          "name": "subject",
+          "description": "Value to see if it is in `arrControls`.",
+          "type": "*"
+        },
+        {
+          "name": "falseValue",
+          "description": "Value to be returned if `subject` is not found within `arrControls`.",
+          "type": "*"
+        },
+        {
+          "name": "opt_trueValue",
+          "description": "Value to be returned if `subject` is found within `arrControls`.",
+          "type": "*",
+          "optional": true,
+          "default": "subject"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "`falseValue` will be returned if `subject` is not found within `arrControls`.  Otherwise, if `opt_trueValue` is given it will be returned, but if not given `subject` will be returned."
+      },
+      "requires": [
+        "ifIs"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "ifPass",
+      "code": "",
+      "params": [
+        {
+          "name": "control",
+          "description": "If this is a function it will be called with `subject` being the only argument.  Otherwise, this regular expression will be tested against `subject`.",
+          "type": "Function|RegExp"
+        },
+        {
+          "name": "subject",
+          "description": "Value to test.",
+          "type": "*"
+        },
+        {
+          "name": "truthyValue",
+          "description": "Value to be returned if testing `subject` against `control` results in a `true`-ish value.",
+          "type": "*"
+        },
+        {
+          "name": "opt_falsyValue",
+          "description": "Value to be returned if testing `subject` against `control` results in a `false`-ish value.",
+          "type": "*",
+          "optional": true,
+          "default": "subject"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "`truthyValue` will be returned if testing `subject` against `control` results in a `true`-ish value.  Otherwise, if `opt_falsyValue` is given it will be returned, but if not given `subject` will be returned."
+      },
+      "requires": [
+        "ifIs"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "index",
       "code": "var index = (function(kNames, vNames) {\n  return function (subject, target, callback) {\n    forOf(subject, function (value, key) {\n      if (value = callback.call(target, value, key, subject)) {\n        for (var kName, vName, i = 0; kName = kNames[i], vName = vNames[i]; i++) {\n          if (has(value, kName) && has(value, vName)) {\n            target[value[kName]] = value[vName];\n            i = 2;\n          }\n        }\n      }\n    });\n    return target;\n  };\n})(\n  ['k', 0, 'key'],\n  ['v', 1, 'value', false]\n);",
       "description": "Indexes the `target` object based on the items found in `subject` and the `callback` function.",
