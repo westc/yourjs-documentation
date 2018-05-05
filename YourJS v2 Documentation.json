@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2018 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "parts": [
     {
       "name": "alias",
@@ -1727,6 +1727,38 @@
         "description": "HTMLified version of `str`."
       },
       "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "index",
+      "code": "var index = (function(kNames, vNames) {\n  return function (subject, target, callback) {\n    forOf(subject, function (value, key) {\n      if (value = callback.call(target, value, key, subject)) {\n        for (var kName, vName, i = 0; kName = kNames[i], vName = vNames[i]; i++) {\n          if (has(value, kName) && has(value, vName)) {\n            target[value[kName]] = value[vName];\n            i = 2;\n          }\n        }\n      }\n    });\n    return target;\n  };\n})(\n  ['k', 0, 'key'],\n  ['v', 1, 'value', false]\n);",
+      "description": "Indexes the `target` object based on the items found in `subject` and the `callback` function.",
+      "params": [
+        {
+          "name": "subject",
+          "description": "Array or object to traverse.",
+          "type": "Array|Object"
+        },
+        {
+          "name": "target",
+          "description": "Object that will be augmented based on the items traversed in `subject`.",
+          "type": "Object"
+        },
+        {
+          "name": "callback",
+          "description": "Function called for each item within `subject`.  In order to augment `target`, the return value must be an object (or array) that either has the `key` and `value` properties defined, `0` and `1` (for an array) values defined, or `k` and `v` properties defined.  All other types of values returned from this function will be ignored.",
+          "type": "Function"
+        }
+      ],
+      "return": {
+        "type": "Object|Array",
+        "description": "A reference to `target`."
+      },
+      "requires": [
+        "forOf",
+        "has"
+      ],
       "required": false,
       "tests": []
     },
@@ -5491,6 +5523,39 @@
           "code": "test(JSON.stringify(YourJS.whileExists([3,7,8,NaN,2,0,1,5], true)), '[1,5]');"
         }
       ]
+    },
+    {
+      "name": "isOf",
+      "code": "function isOf(value, opt_negate, opt_traverseArray) {\n  var parts, isNaN = Number.isNaN, xs = [];\n  \n  parts = ((opt_traverseArray && typeOf(value) === 'Array') ? value : [value]).map(function(x, i) {\n    return (isNaN(x) ? 'i(v)' : 'v===x').replace('x', xs[i] = 'x' + i);\n  });\n\n  return Function(\n    xs.join(',') + ',i',\n    ('return function(v){return ' + (opt_negate ? '!' : '') + '(' + parts.join('||') + ')}')\n  ).apply(isNaN, value.concat([isNaN]));\n}",
+      "description": "Creates functions for testing if a value \"is\" (or \"is not\") a value.",
+      "params": [
+        {
+          "name": "value",
+          "description": "The value that the returned function will always be used to check against.",
+          "type": "*"
+        },
+        {
+          "name": "opt_negate",
+          "description": "Determines if the returned function will always check if passed values are NOT `value`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        },
+        {
+          "name": "opt_traverseArray",
+          "description": "If `value` is an array, the returned function will check the passed value against all of the items within `value`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "Function that accepts one argument which will be checked against `value`.  The function will return a boolean value when called indicating if it matches `value` or not (also depending on the value of `opt_negate`)."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
     }
   ]
 }
