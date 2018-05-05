@@ -179,7 +179,7 @@
     },
     {
       "name": "calls",
-      "code": "function calls(value) {\n  for (var callArgs, args = slice(arguments), i = 0, l = args.length, i = l; i < l; i++) {\n    callArgs = args[i];\n    if (typeOf(callArgs) != 'Array') {\n      callArgs = [callArgs];\n    }\n    value = call.apply(undefined, slice(callArgs, 0, 1).concat([value], slice(callArgs, 1)));\n  }\n  return value;\n}",
+      "code": "function calls(value) {\n  for (var callArgs, args = slice(arguments), i = 0, l = args.length, i = l; i < l; i++) {\n    callArgs = args[i];\n    if (typeOf(callArgs) !== 'Array') {\n      callArgs = [callArgs];\n    }\n    value = call.apply(undefined, slice(callArgs, 0, 1).concat([value], slice(callArgs, 1)));\n  }\n  return value;\n}",
       "description": "Makes multiple calls using the YourJS `call()` function.",
       "params": [
         {
@@ -256,7 +256,7 @@
     },
     {
       "name": "capProto",
-      "code": "function capProto(fn, opt_maxArity, opt_staticArgs, opt_indexInArgs) {\n  var fnIsString = 'string' == typeof fn,\n      leftArgs = slice(\n        opt_staticArgs = opt_staticArgs || [],\n        0,\n        opt_indexInArgs = opt_indexInArgs == undefined ? opt_staticArgs.length : opt_indexInArgs\n      ),\n      rightArgs = slice(opt_staticArgs, opt_indexInArgs);\n  if (fnIsString) {\n    fn.replace(/^([\\w\\$]+(?=\\.|#))?(?:#|\\.?prototype\\.)(\\w+)$|[\\s\\S]*/, function(m, globalClassName, fnName) {\n      fnIsString = !globalClassName;\n      if (globalClassName) {\n        fn = __GLOBAL[globalClassName].prototype[fnName];\n        if ('function' != typeof fn) {\n          fn = 0;\n        }\n      }\n      else {\n        fn = fnName;\n      }\n      if (!fn) {\n        throw new Error('Cannot resolve prototype function for \"' + m + '\"');\n      }\n    });\n  }\n  return function(objThis) {\n    var f = fn;\n    if (fnIsString) {\n      f = Object(objThis)[f];\n      if ('function' !== typeof f) {\n        throw new Error(\"Invalid value for this prototype function\");\n      }\n    }\n    return f.apply(objThis, leftArgs.concat(\n      slice(arguments, 1, opt_maxArity == undefined ? f.length + 1 : opt_maxArity),\n      rightArgs\n    ));\n  };\n}",
+      "code": "function capProto(fn, opt_maxArity, opt_staticArgs, opt_indexInArgs) {\n  var fnIsString = 'string' === typeof fn,\n      leftArgs = slice(\n        opt_staticArgs = opt_staticArgs || [],\n        0,\n        opt_indexInArgs = opt_indexInArgs == undefined ? opt_staticArgs.length : opt_indexInArgs\n      ),\n      rightArgs = slice(opt_staticArgs, opt_indexInArgs);\n  if (fnIsString) {\n    fn.replace(/^([\\w\\$]+(?=\\.|#))?(?:#|\\.?prototype\\.)(\\w+)$|[\\s\\S]*/, function(m, globalClassName, fnName) {\n      fnIsString = !globalClassName;\n      if (globalClassName) {\n        fn = __GLOBAL[globalClassName].prototype[fnName];\n        if ('function' !== typeof fn) {\n          fn = 0;\n        }\n      }\n      else {\n        fn = fnName;\n      }\n      if (!fn) {\n        throw new Error('Cannot resolve prototype function for \"' + m + '\"');\n      }\n    });\n  }\n  return function(objThis) {\n    var f = fn;\n    if (fnIsString) {\n      f = Object(objThis)[f];\n      if ('function' !== typeof f) {\n        throw new Error(\"Invalid value for this prototype function\");\n      }\n    }\n    return f.apply(objThis, leftArgs.concat(\n      slice(arguments, 1, opt_maxArity == undefined ? f.length + 1 : opt_maxArity),\n      rightArgs\n    ));\n  };\n}",
       "description": "Creates a wrapper function for a prototype function that can be capped (limited in the amount of arguments it can receive).",
       "params": [
         {
@@ -331,7 +331,7 @@
     },
     {
       "name": "chain",
-      "code": "var chain, mixin;\n(function(RGX_INVALID_PROP_NAMES) {\n  function YourJSChain(value, previousWrap) {\n    this.$$ = previousWrap;\n    this.$ = value;\n  }\n\n  function value() { return this.$; }\n\n  YourJSChain.prototype = {\n    _: function(name) {\n      return new YourJSChain(this.$[name].apply(this.$, slice(arguments, 1)), this);\n    },\n    value: value,\n    end: function() { return this.$$; },\n    valueOf: value\n  };\n\n  __callsAfterDefs.push(function() {\n    forIn(YourJS, function(prop, name) {\n      if ('function' == typeof prop && !RGX_INVALID_PROP_NAMES.test(name)) {\n        YourJSChain.prototype[name] = function() {\n          return new YourJSChain(prop.apply(undefined, [this.$].concat(slice(arguments))), this);\n        };\n      }\n    });\n  });\n\n  typeOf(YourJSChain, 'YourJSChain');\n\n  chain = function(value) {\n    return new YourJSChain(value);\n  };\n\n  mixin = function(fn, name) {\n    if (RGX_INVALID_PROP_NAMES.test(name) || has(YourJS, name)) {\n      return false;\n    }\n\n    YourJS[name] = fn;\n    YourJSChain.prototype[name] = function() {\n      return new YourJSChain(fn.apply(undefined, [this.$].concat(slice(arguments))), this);\n    };\n    return true;\n  };\n})(/^(value|end|_|mixin|\\$\\$?)$/);",
+      "code": "var chain, mixin;\n(function(RGX_INVALID_PROP_NAMES) {\n  function YourJSChain(value, previousWrap) {\n    this.$$ = previousWrap;\n    this.$ = value;\n  }\n\n  function value() { return this.$; }\n\n  YourJSChain.prototype = {\n    _: function(name) {\n      return new YourJSChain(this.$[name].apply(this.$, slice(arguments, 1)), this);\n    },\n    value: value,\n    end: function() { return this.$$; },\n    valueOf: value\n  };\n\n  __callsAfterDefs.push(function() {\n    forIn(YourJS, function(prop, name) {\n      if ('function' === typeof prop && !RGX_INVALID_PROP_NAMES.test(name)) {\n        YourJSChain.prototype[name] = function() {\n          return new YourJSChain(prop.apply(undefined, [this.$].concat(slice(arguments))), this);\n        };\n      }\n    });\n  });\n\n  typeOf(YourJSChain, 'YourJSChain');\n\n  chain = function(value) {\n    return new YourJSChain(value);\n  };\n\n  mixin = function(fn, name) {\n    if (RGX_INVALID_PROP_NAMES.test(name) || has(YourJS, name)) {\n      return false;\n    }\n\n    YourJS[name] = fn;\n    YourJSChain.prototype[name] = function() {\n      return new YourJSChain(fn.apply(undefined, [this.$].concat(slice(arguments))), this);\n    };\n    return true;\n  };\n})(/^(value|end|_|mixin|\\$\\$?)$/);",
       "description": "Creates a chained version of a value.",
       "params": [
         {
@@ -2677,6 +2677,39 @@
           "code": "test(YourJS.isoDate(new Date(Date.UTC(2010,9,8,7,6,5,4))), '2010-10-08T07:06:05.004Z');"
         }
       ]
+    },
+    {
+      "name": "isOf",
+      "code": "function isOf(value, opt_negate, opt_traverseArray) {\n  var parts, isNaN = Number.isNaN, xs = [];\n  \n  parts = ((opt_traverseArray && typeOf(value) === 'Array') ? value : [value]).map(function(x, i) {\n    return (isNaN(x) ? 'i(v)' : 'v===x').replace('x', xs[i] = 'x' + i);\n  });\n\n  return Function(\n    xs.join(',') + ',i',\n    ('return function(v){return ' + (opt_negate ? '!' : '') + '(' + parts.join('||') + ')}')\n  ).apply(isNaN, value.concat([isNaN]));\n}",
+      "description": "Creates functions for testing if a value \"is\" (or \"is not\") a value.",
+      "params": [
+        {
+          "name": "value",
+          "description": "The value that the returned function will always be used to check against.",
+          "type": "*"
+        },
+        {
+          "name": "opt_negate",
+          "description": "Determines if the returned function will always check if passed values are NOT `value`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        },
+        {
+          "name": "opt_traverseArray",
+          "description": "If `value` is an array, the returned function will check the passed value against all of the items within `value`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "Function that accepts one argument which will be checked against `value`.  The function will return a boolean value when called indicating if it matches `value` or not (also depending on the value of `opt_negate`)."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
     },
     {
       "name": "isPositive",
@@ -5523,39 +5556,6 @@
           "code": "test(JSON.stringify(YourJS.whileExists([3,7,8,NaN,2,0,1,5], true)), '[1,5]');"
         }
       ]
-    },
-    {
-      "name": "isOf",
-      "code": "function isOf(value, opt_negate, opt_traverseArray) {\n  var parts, isNaN = Number.isNaN, xs = [];\n  \n  parts = ((opt_traverseArray && typeOf(value) === 'Array') ? value : [value]).map(function(x, i) {\n    return (isNaN(x) ? 'i(v)' : 'v===x').replace('x', xs[i] = 'x' + i);\n  });\n\n  return Function(\n    xs.join(',') + ',i',\n    ('return function(v){return ' + (opt_negate ? '!' : '') + '(' + parts.join('||') + ')}')\n  ).apply(isNaN, value.concat([isNaN]));\n}",
-      "description": "Creates functions for testing if a value \"is\" (or \"is not\") a value.",
-      "params": [
-        {
-          "name": "value",
-          "description": "The value that the returned function will always be used to check against.",
-          "type": "*"
-        },
-        {
-          "name": "opt_negate",
-          "description": "Determines if the returned function will always check if passed values are NOT `value`.",
-          "type": "boolean",
-          "optional": true,
-          "default": "false"
-        },
-        {
-          "name": "opt_traverseArray",
-          "description": "If `value` is an array, the returned function will check the passed value against all of the items within `value`.",
-          "type": "boolean",
-          "optional": true,
-          "default": "false"
-        }
-      ],
-      "return": {
-        "type": "Function",
-        "description": "Function that accepts one argument which will be checked against `value`.  The function will return a boolean value when called indicating if it matches `value` or not (also depending on the value of `opt_negate`)."
-      },
-      "requires": [],
-      "required": false,
-      "tests": []
     }
   ]
 }
