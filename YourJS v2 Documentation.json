@@ -3656,6 +3656,32 @@
       "tests": []
     },
     {
+      "name": "pair",
+      "code": "function pair(pairs, opt_objToAugment) {\n  opt_objToAugment = opt_objToAugment || {};\n  for (var i = 0, l = pairs.length; i < l; i++) {\n    opt_objToAugment[pairs[i][0]] = pairs[i][1];\n  }\n  return opt_objToAugment;\n}",
+      "description": "Takes an array of arrays (each inner array being a key-value pair) and returns the object with the keys and values set accordingly.",
+      "params": [
+        {
+          "name": "pairs",
+          "description": "An array of arrays where the inner arrays are key-value pairs.  The keys and values will be assigned to `opt_objToAugment`.",
+          "type": "Array<Array>"
+        },
+        {
+          "name": "opt_objToAugment",
+          "description": "If specified this is the object that will be augmented according to the keys and values found in `pairs`.",
+          "type": "Object",
+          "optional": true,
+          "default": "{}"
+        }
+      ],
+      "return": {
+        "type": "Object",
+        "description": "A reference to `opt_objToAugment`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "parseQS",
       "code": "function parseQS(url) {\n  var vars = {};\n  url.replace(/\\?[^#]+/, function(query) {\n    query.replace(/\\+/g, ' ').replace(/[\\?&]([^=&#]+)(?:=([^&#]*))?/g, function(m, key, value, arrIndicator, alreadyDefined, lastValue) {\n      key = decodeURIComponent(key);\n      arrIndicator = key.slice(-2) == '[]';\n      value = value && decodeURIComponent(value);\n      alreadyDefined = has(vars, key);\n      lastValue = vars[key];\n      vars[key] = (arrIndicator || alreadyDefined)\n        ? typeOf(lastValue) == 'Array'\n          ? lastValue.concat([value])\n          : alreadyDefined\n            ? [lastValue, value]\n            : [value]\n        : value;\n    });\n  });\n  return vars;\n}",
       "description": "Parses a URL to get the parameters specified in the query string.",
@@ -5556,6 +5582,26 @@
           "code": "test(JSON.stringify(YourJS.whileExists([3,7,8,NaN,2,0,1,5], true)), '[1,5]');"
         }
       ]
+    },
+    {
+      "name": "zip",
+      "code": "function zip() {\n  for (var j, i = 0, arrays = arguments, maxArrLen = 0, result = [], argc = arrays.length; i < argc; i++) {\n    maxArrLen = Math.max(maxArrLen, arrays[i].length);\n  }\n  for (i = 0; i < maxArrLen; i++) {\n    result[i] = [];\n    for (j = 0; j < argc; j++) {\n      result[i][j] = arrays[j][i];\n    }\n  }\n  return result;\n}",
+      "description": "",
+      "params": [
+        {
+          "name": "array",
+          "description": "One or more arrays whose array items will be used to create the returned array.",
+          "type": "Array",
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array of arrays where the first array contains the first item of each array and the second array contains the second item of each array and so on."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
     }
   ]
 }
