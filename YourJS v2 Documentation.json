@@ -1563,7 +1563,7 @@
     },
     {
       "name": "getNS",
-      "code": "function getNS(root, namespace, opt_defaultValue) {\n  var test = testNS(root, namespace),\n      l = namespace.length;\n  return (l && test.length == l) ? test.slice(-1)[0] : opt_defaultValue;\n}",
+      "code": "function getNS(root, namespace, opt_defaultValue) {\n  var test = testNS(root, namespace),\n      l = namespace.length;\n  return l ? test.length == l ? test.slice(-1)[0] : opt_defaultValue : root;\n}",
       "description": "Gets the value under the given `root` object and `namespace`.",
       "params": [
         {
@@ -1586,7 +1586,7 @@
       ],
       "return": {
         "type": "*",
-        "description": "Either the value found under the given `namespace` starting at `root` or `opt_defaultValue` if the `namespace` doesn't fully exist under `root`."
+        "description": "If `namespace` is an empty array `root` will be returned.  Otherwise either the value found under the given `namespace` starting at `root` or `opt_defaultValue` if the `namespace` doesn't fully exist under `root`."
       },
       "requires": [
         "testNS"
