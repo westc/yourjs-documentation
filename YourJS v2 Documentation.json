@@ -4464,6 +4464,39 @@
       "tests": []
     },
     {
+      "name": "repair",
+      "code": "function repair(obj, fnPairer, opt_initial) {\n  opt_initial = opt_initial || {};\n  forOf(obj, function(value, key) {\n    var result = fnPairer([key, value], obj);\n    if (result) {\n      opt_initial[result[0]] = result[1];\n    }\n  });\n  return opt_initial;\n}",
+      "description": "Creates a object where the keys and values are based on key/value pair returned by the specified pairing function.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "Object whose key/value pairs will be sent to the pairing function.",
+          "type": "*"
+        },
+        {
+          "name": "fnPairer",
+          "description": "Pairing function that will take (1) an array containing each key/value pair within `obj` and (2) a reference to `obj`.  If something is returned that is not `undefined` or `null` it should be an array containing the key/value pair to add to `opt_initial`.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_initial",
+          "description": "Object to return from `repair()` function which will contain the newly paired key/value pairs.  If not specified an empty object will be used.",
+          "type": "*",
+          "optional": true,
+          "default": "{}"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "A reference to `opt_initial` which has the key/value pairs returned by `fnPairer` added to it."
+      },
+      "requires": [
+        "forOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "repay",
       "code": "function repay(input) {\n  var args = arguments;\n  return Function('s,i,a', 'return function(){return ' + (args.length - 1 ? 's(a)' : 'i') + '}')(slice, input, args);\n}",
       "description": "Produces a function that when called will simply return was was passed in.",
