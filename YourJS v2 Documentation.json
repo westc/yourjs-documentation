@@ -1095,7 +1095,7 @@
     },
     {
       "name": "entries",
-      "code": "function entries(arrOrObj, opt_includeInheritance) {\n  var result = [];\n  forOf(arrOrObj, function(value, key) {\n    result.push([key, value]);\n  }, opt_includeInheritance);\n  return result;\n}",
+      "code": "function entries(arrOrObj, opt_includeInheritance) {\n  var i, l, arr, isString = typeOf(arrOrObj) === 'String', result = [];\n  if (isArrayLike(arrOrObj) || isString) {\n    for (i = 0, l = arrOrObj.length, arr = isString ? opt_includeInheritance.split('') : arrOrObj; i < l; i++) {\n      if (opt_includeInheritance || has(arr, i)) {\n        result.push([i, arr[i]]);\n      }\n    }\n  }\n  else {\n    for (i in arrOrObj) {\n      if (opt_includeInheritance || has(arrOrObj, i)) {\n        result.push([i, arrOrObj[i]]);\n      }\n    }\n  }\n  return result;\n}",
       "description": "Gets an array of pairs (array of length 2) indicating all of the keys and values within a given array or object.",
       "params": [
         {
@@ -1116,7 +1116,9 @@
         "description": "An array of pairs (arrays where the first item is the key and the second is the value)."
       },
       "requires": [
-        "forOf"
+        "typeOf",
+        "isArrayLike",
+        "has"
       ],
       "required": false,
       "tests": [
@@ -1317,7 +1319,7 @@
     },
     {
       "name": "forEach",
-      "code": "function forEach(a, fn, opt_traverseAll) {\n  function end(opt_getIfEnded) {\n    if(opt_getIfEnded) {\n      return !!endCalled;\n    }\n    throw endCalled = 1;\n  }\n  for (var endCalled, count = 0, i = 0, l = a.length, arr = 'string' == typeof a ? a.split('') : a; i < l; i++) {\n    if (opt_traverseAll || has(arr, i)) {\n      try {\n        fn.call(++count, arr[i], i, a, end);\n      }\n      catch (e) {\n        if (endCalled) {\n          break;\n        }\n        throw e;\n      }\n    }\n  }\n  return count;\n}",
+      "code": "function forEach(a, fn, opt_traverseAll) {\n  function end(opt_getIfEnded) {\n    if(opt_getIfEnded) {\n      return !!endCalled;\n    }\n    throw endCalled = 1;\n  }\n  for (var endCalled, count = 0, i = 0, l = a.length, arr = typeOf(a) === 'String' ? a.split('') : a; i < l; i++) {\n    if (opt_traverseAll || has(arr, i)) {\n      try {\n        fn.call(++count, arr[i], i, a, end);\n      }\n      catch (e) {\n        if (endCalled) {\n          break;\n        }\n        throw e;\n      }\n    }\n  }\n  return count;\n}",
       "description": "Traverses all the characters in a string or all of the elements in an array or an array-like object, executing a function on each one.",
       "params": [
         {
@@ -1344,7 +1346,8 @@
         "description": "The number of times `fn` was called."
       },
       "requires": [
-        "has"
+        "has",
+        "typeOf"
       ],
       "required": false,
       "tests": []
@@ -1414,7 +1417,7 @@
     },
     {
       "name": "forOf",
-      "code": "function forOf(obj, fn, opt_traverseAll) {\n  return (\n    (isArrayLike(obj) || typeOf(obj) == 'String') ? forEach : forIn\n  )(Object(obj), fn, opt_traverseAll);\n}",
+      "code": "function forOf(obj, fn, opt_traverseAll) {\n  return (\n    (isArrayLike(obj) || typeOf(obj) === 'String') ? forEach : forIn\n  )(Object(obj), fn, opt_traverseAll);\n}",
       "description": "Traverses all the characters in a string or all of the items in an array or an object, executing a function on each one.",
       "params": [
         {
@@ -2134,6 +2137,34 @@
           "code": "test(JSON.stringify(YourJS.intersect([1,2,2,2,3,3,4,5], [2,2,3,4,4,5])), '[2,2,3,4,5]');"
         }
       ]
+    },
+    {
+      "name": "invert",
+      "code": "function invert(obj, opt_initial) {\n  for (var result = opt_initial || {}, pairs = entries(obj), i = 0, l = pairs.length; i < l; i++) {\n    result[pairs[i][1]] = pairs[i][0];\n  }\n  return result;\n}",
+      "description": "Creates the inverse of an object by making a new object where the keys are the values and the values are the keys.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "Object whose keys and values will be inverted and returned.",
+          "type": "*"
+        },
+        {
+          "name": "opt_initial",
+          "description": "Object to which the value/key pairs should be added.  If not given an empty object will be used.",
+          "type": "*",
+          "optional": true,
+          "default": "{}"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "Adds the value/key pairs found in `obj` to `opt_initial` where all of the keys added will be the values from `obj` and all of the corresponding values will be the keys."
+      },
+      "requires": [
+        "entries"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "is",
