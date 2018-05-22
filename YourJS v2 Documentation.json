@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-2018 Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "parts": [
     {
       "name": "alias",
@@ -2194,7 +2194,7 @@
     },
     {
       "name": "isArguments",
-      "code": "eval('var Arguments,Array,Boolean,Date,Function,Null,Number,Object,RegExp,String,Undefined,Unknown'.replace(/[A-Z]\\w+/g, 'is$&'));\n'Arguments Array Boolean Date Function null Number Object RegExp String undefined Unknown'.replace(/(\\w)(\\w+)/g, function(all, first, rest) {\n  eval('(function(t){is' + first.toUpperCase() + rest + '=function(v){return t(v)===\"' + all + '\"}})')(typeOf);\n});",
+      "code": "eval('var Arguments,Array,Boolean,Date,Function,Null,Number,Object,RegExp,String,Undefined,Unknown'.replace(/[A-Z]\\w+/g, 'is$&'));\n'Arguments Array Boolean Date Function null Number Object RegExp String undefined *unknown'.replace(/\\*?(\\w)(\\w+)/g, function(all, first, rest) {\n  eval('(function(t){is' + first.toUpperCase() + rest + '=function(v){return t(v)===\"' + all + '\"}})')(typeOf);\n});",
       "description": "Determines if the given value is of type `Arguments` as specified by `typeOf()`.",
       "params": [
         {
@@ -3040,6 +3040,25 @@
       "tests": []
     },
     {
+      "name": "isPrototype",
+      "code": "function isPrototype(obj) {\n  var c = obj && obj.constructor;\n  return (c && 'function' === typeof c) ? c.prototype === obj : false;\n}",
+      "description": "Determines if an object is a prototype object.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "Object to check to see if it is a prototype.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "If `obj` is a prototype object `true` is returned, otherwise `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "isRegExp",
       "code": "",
       "description": "Determines if the given value is of type `RegExp` as specified by `typeOf()`.",
@@ -3489,6 +3508,27 @@
           "code": "function Person(name){this.name = name;}\nPerson.prototype.gender = 'Unknown';\ntest(JSON.stringify(YourJS.keys(new Person('Billie'))), '[\"name\"]');"
         }
       ]
+    },
+    {
+      "name": "kindsOf",
+      "code": "",
+      "description": "Retrieves all of the associated type names for a value.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value for which to get all of the associated type names.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "Array<string>",
+        "description": "An array of all of the types that `value` is."
+      },
+      "requires": [
+        "typeOf"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "lcm",
@@ -5543,7 +5583,7 @@
     },
     {
       "name": "typeOf",
-      "code": "var typeOf;\n(function(arrObjectTypes, arrLen) {\n  typeOf = function(value, opt_typeNameToAdd) {\n    var typeName, i;\n    if (opt_typeNameToAdd) {\n      for (i = 0; i < arrLen; i += 2) {\n        if (value === arrObjectTypes[i]) {\n          return false;\n        }\n      }\n      arrLen += 2;\n      arrObjectTypes.push(value, opt_typeNameToAdd);\n      return true;\n    }\n    else {\n      typeName = value == undefined ? value === undefined ? 'undefined' : 'null' : __EMPTY_OBJECT.toString.call(value).slice(8, -1);\n      if (typeName == 'Object') {\n        for (value = value.constructor, i = 0, typeName = 'Unknown'; i < arrLen; i += 2) {\n          if (value === arrObjectTypes[i]) {\n            return arrObjectTypes[i + 1];\n          }\n        }\n      }\n      return typeName;\n    }\n  };\n})([Object,'Object'], 2);",
+      "code": "var kindsOf, typeOf;\n(function (arrObjectTypes, arrLen) {\n  kindsOf = function (value) {\n    var isProto = isPrototype(value),\n      result = [],\n      typeName = __EMPTY_OBJECT.toString.call(value).slice(8, -1);\n    if (isPrimitive(value)) {\n      result.push('*primitive', typeName.toLowerCase());\n    }\n    else if (typeName !== 'Object') {\n      result.push('Object');\n    }\n    if (value != undefined) {\n      result.push(typeName);\n    }\n    if (typeName === 'Object') {\n      value = value.constructor;\n      typeName = (value && value.name) || '*unknown';\n      for (i = 0; i < arrLen; i += 2) {\n        if (value === arrObjectTypes[i]) {\n          typeName = arrObjectTypes[i + 1];\n          break;\n        }\n      }\n    }\n    if (isProto) {\n      result.push('*prototype');\n    }\n    return result;\n  };\n  typeOf = function (value, opt_typeNameToAdd) {\n    if (opt_typeNameToAdd) {\n      for (var i = 0; i < arrLen; i += 2) {\n        if (value === arrObjectTypes[i]) {\n          return false;\n        }\n      }\n      arrLen += 2;\n      arrObjectTypes.push(value, opt_typeNameToAdd);\n      return true;\n    }\n    value = kindsOf(value);\n    return value[value.length - 1];\n  };\n})([], 0);",
       "description": "Either gets the type of a value or adds a constructor registering its custom type name.",
       "params": [
         {
@@ -5562,7 +5602,11 @@
         "type": "string|boolean",
         "description": "If `opt_typeNameToAdd` was omitted a string representation of `value`'s type usually capitalized unless `\"null\"` or `\"undefined\"` is returned.  If `opt_typeNameToAdd` is given, the constructor passed as `value` will be searched and a boolean indicating whether or not it needed to be added will be returned."
       },
-      "requires": [],
+      "requires": [
+        "isPrimitive",
+        "isPrototype",
+        "kindsOf"
+      ],
       "tests": [],
       "required": false
     },
