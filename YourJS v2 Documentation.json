@@ -100,7 +100,7 @@
     },
     {
       "name": "bindCompare",
-      "code": "function bindCompare(namespaces, opt_negate) {\n  namespaces = namespaces.reduce(function(namespaces, ns) {\n    var nsIsArray = isArray(ns), l = nsIsArray && ns.length;\n    if (!nsIsArray || l) {\n      namespaces.push(nsIsArray ? ns : [ns]);\n    }\n    return namespaces;\n  }, []);\n  return (Function(\n    'c,g,n' + namespaces.map(function (_, i) { return i; }).join(',n'),\n    'return function(a,b){return'\n      + (opt_negate ? '-' : '')\n      + '('\n      + namespaces.map(function (_, i) { return 'c(g(a,n' + i + '),g(b,n' + i + '))'; }).join('||')\n      + ')}'\n  )).apply(namespaces, [compare, getNS].concat(namespaces));\n}",
+      "code": "function bindCompare(namespaces, opt_negate) {\n  namespaces = namespaces.reduce(function(namespaces, ns) {\n    var nsIsArray = isArray(ns), l = nsIsArray && ns.length;\n    if (!nsIsArray || l) {\n      namespaces.push(nsIsArray ? ns : [ns]);\n    }\n    return namespaces;\n  }, []);\n  return (Function(\n    'c,g,n' + namespaces.map(function (_, i) { return i; }).join(',n'),\n    'return function(a,b){return'\n      + (opt_negate ? '-' : '')\n      + '('\n      + namespaces.map(function (_, i) { return 'c(g(a,n' + i + '),g(b,n' + i + '))'; }).join('||')\n      + ')}'\n  )).apply(namespaces, [compare, getAt].concat(namespaces));\n}",
       "description": "Creates a compare function which binds the namespaces within the two given objects.",
       "params": [
         {
@@ -122,7 +122,7 @@
       },
       "requires": [
         "compare",
-        "getNS",
+        "getAt",
         "isArray"
       ],
       "required": false,
@@ -915,6 +915,32 @@
       ]
     },
     {
+      "name": "deleteAt",
+      "code": "function deleteAt(root, path) {\n  var objs = [root].concat(testAt(root, path)),\n      l = path.length - 1;\n  return (l + 1 && objs.length - 2 === l) ? delete objs[l][path[l]] : false;\n}",
+      "description": "Tries to delete the value at the specified `path` starting at `root`.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Root object at which the `path` to delete from will start.",
+          "type": "*"
+        },
+        {
+          "name": "path",
+          "description": "Array of numbers/strings that represents the path to the value that should be deleted.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if the value can be deleted from the specified `path` under `root`, otherwise `false`."
+      },
+      "requires": [
+        "testAt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "dice",
       "code": "function dice(str, delim, opt_limit) {\n  var arr = [], start = 0, i;\n  if (str) {\n    str.replace(\n      (typeOf(delim) == 'RegExp' ? modRegExp : quoteRegExp)(delim, 'g'),\n      function(m) {\n        i = arguments;\n        i = i[i.length - 2];\n        if (!(opt_limit-- < 1)) {\n          arr.push(str.slice(start, i));\n          start = i + (m.length || 1);\n        }\n      }\n    );\n    arr.push(str.slice(start));\n  }\n  return arr;\n}",
       "description": "Dices up a string splitting it on the passed in delimiter and placing the results in an array while making sure that the empty string is converted to an empty array.",
@@ -1535,6 +1561,39 @@
       "tests": []
     },
     {
+      "name": "getAt",
+      "code": "function getAt(root, path, opt_defaultValue) {\n  var test = testAt(root, path),\n      l = path.length;\n  return l ? test.length == l ? test.slice(-1)[0] : opt_defaultValue : root;\n}",
+      "description": "Gets the value under the given `root` object and `path`.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Object to start at as the root of the proposed `path`.",
+          "type": "*"
+        },
+        {
+          "name": "path",
+          "description": "An array of strings and/or numbers that represent the path to be traversed under `root`.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_defaultValue",
+          "description": "The value to be returned if the given `path` doesn't fully exists under `root`.",
+          "type": "*",
+          "optional": true,
+          "default": "undefined"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "If `path` is an empty array `root` will be returned.  Otherwise either the value found under the given `path` starting at `root` or `opt_defaultValue` if the `path` doesn't fully exist under `root`."
+      },
+      "requires": [
+        "testAt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "getCookie",
       "code": "function getCookie(name, opt_defaultValue) {\n  if(typeOf(name, 'RegExp')) {\n    var ret = getCookie();\n    for(var key in ret) {\n      if(!name.test(key)) {\n        delete ret[key];\n      }\n    }\n  }\n  else if(name == undefined) {\n    var ret = {};\n    __DOCUMENT.cookie.replace(/(?:^|;\\s*)(.+?)(?=;\\s*|$)/g, function($0, $1) {\n      $1 = $1.match(/(.*?)=(.*)/);\n      ret[decodeURIComponent($1[1])] = decodeURIComponent($1[2]);\n    });\n  }\n  else {\n    name = __DOCUMENT.cookie.match(new RegExp(\"(?:^|;\\\\s*)\" + encodeURIComponent(name) + \"=(.*?)(?:;\\\\s*|$)\"));\n    if(name) {\n      var ret = decodeURIComponent(name[1]);\n    }\n  }\n  return ret == undefined ? opt_defaultValue : ret;\n}",
       "description": "Retrieves one or more cookies.",
@@ -1560,39 +1619,6 @@
       },
       "requires": [
         "typeOf"
-      ],
-      "required": false,
-      "tests": []
-    },
-    {
-      "name": "getNS",
-      "code": "function getNS(root, namespace, opt_defaultValue) {\n  var test = testNS(root, namespace),\n      l = namespace.length;\n  return l ? test.length == l ? test.slice(-1)[0] : opt_defaultValue : root;\n}",
-      "description": "Gets the value under the given `root` object and `namespace`.",
-      "params": [
-        {
-          "name": "root",
-          "description": "Object to start at as the root of the proposed `namespace`.",
-          "type": "*"
-        },
-        {
-          "name": "namespace",
-          "description": "An array of strings and/or numbers that represent the namespace chain to be traversed under `root`.",
-          "type": "Array"
-        },
-        {
-          "name": "opt_defaultValue",
-          "description": "The value to be returned if the given `namespace` doesn't fully exists under `root`.",
-          "type": "*",
-          "optional": true,
-          "default": "undefined"
-        }
-      ],
-      "return": {
-        "type": "*",
-        "description": "If `namespace` is an empty array `root` will be returned.  Otherwise either the value found under the given `namespace` starting at `root` or `opt_defaultValue` if the `namespace` doesn't fully exist under `root`."
-      },
-      "requires": [
-        "testNS"
       ],
       "required": false,
       "tests": []
@@ -1663,6 +1689,32 @@
       "required": false
     },
     {
+      "name": "hasAt",
+      "code": "function hasAt(root, path) {\n  return path.length > 0 && testAt(root, path).length === path.length;\n}",
+      "description": "Tests to see if the given `path` exists under a specific `root` object.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Object to start at as the root of the proposed `path`.",
+          "type": "*"
+        },
+        {
+          "name": "path",
+          "description": "An array of strings and/or numbers that represent the path to be tested under `root`.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if the specified `path` is found under `root`, otherwise `false`."
+      },
+      "requires": [
+        "testAt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "hasCookie",
       "code": "function hasCookie(name) {\n  return (';' + __DOCUMENT.cookie).replace(/;\\s+/g, ';').indexOf(';' + encodeURIComponent(name) + '=') >= 0;\n}",
       "description": "Determines if there is a cookie with the specified name.",
@@ -1678,32 +1730,6 @@
         "description": "`true` if a cookie with the specified `name` is found."
       },
       "requires": [],
-      "required": false,
-      "tests": []
-    },
-    {
-      "name": "hasNS",
-      "code": "function hasNS(root, namespace) {\n  return namespace.length > 0 && testNS(root, namespace).length == namespace.length;\n}",
-      "description": "Tests to see if the given namespace exists under a specific root object.",
-      "params": [
-        {
-          "name": "root",
-          "description": "Object to start at as the root of the proposed `namespace`.",
-          "type": "*"
-        },
-        {
-          "name": "namespace",
-          "description": "An array of strings and/or numbers that represent the namespace chain to be tested under `root`.",
-          "type": "Array"
-        }
-      ],
-      "return": {
-        "type": "boolean",
-        "description": "`true` if the specified `namespace` is found under `root`, otherwise `false`."
-      },
-      "requires": [
-        "testNS"
-      ],
       "required": false,
       "tests": []
     },
@@ -2630,6 +2656,65 @@
       "tests": []
     },
     {
+      "name": "isKind",
+      "code": "function isKind(value) {\n  value = kindsOf(value);\n  for (\n    var args = slice(arguments), argc = args.length, i = 1;\n    i < argc && !value.includes(args[i]);\n    i++\n  );\n  return i < argc;\n}",
+      "description": "Checks to see if a value is of a specific kind.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to determine if it matches any of the type names given.",
+          "type": "*"
+        },
+        {
+          "name": "kindName",
+          "description": "Possible kind names to match `value` against.",
+          "type": "string",
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "A boolean indicating if the kinds of `value` matched against any of the `kindName` arguments passed."
+      },
+      "requires": [
+        "slice",
+        "kindsOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isKindFor",
+      "code": "function isKindFor() {\n  var args = slice(arguments),\n    argc = args.length,\n    negate = argc > 1 && 'boolean' === typeof args[argc - 1] && (argc-- , args.pop());\n  return function (value) {\n    return isKind.apply(isKind, [value].concat(args)) !== negate;\n  };\n}",
+      "description": "Creates a partial isKind() function.",
+      "params": [
+        {
+          "name": "kindName",
+          "description": "One or more kind names to check against values.",
+          "type": "string",
+          "optional": false,
+          "rest": true
+        },
+        {
+          "name": "opt_negate",
+          "description": "If specified the returned function's return value will always be negated.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "A function that can be used to see if any value passed to it is one of the kind names passed in as `kindName`. The return value will indicate if one of the kind names matches the kind of the value passed to it. If `opt_negate` is `true` the return value of this function will be the opposite."
+      },
+      "requires": [
+        "slice",
+        "isKind"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "isLeapYear",
       "code": "function isLeapYear(opt_year) {\n  if ('number' != typeof opt_year) {\n    opt_year = (opt_year == undefined ? new Date : opt_year).getFullYear();\n  }\n  return opt_year % (opt_year % 100 ? 4 : 400) == 0;\n}",
       "description": "Determine if the specified year is a leap year.",
@@ -3226,6 +3311,37 @@
         "description": "A boolean indicating if the type of `value` matched against any of the `typeName` arguments passed."
       },
       "requires": [
+        "typeOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isTypeFor",
+      "code": "function isTypeFor() {\n  var args = slice(arguments),\n    argc = args.length,\n    negate = argc > 1 && 'boolean' === typeof args[argc - 1] && (argc-- , args.pop());\n  return function (value) {\n    value = typeOf(value);\n    for (var i = 0; i < argc && args[i] != value; i++);\n    return i < argc !== negate;\n  };\n}",
+      "description": "Creates a partial `isType()` function.",
+      "params": [
+        {
+          "name": "typeNames",
+          "description": "One or more type names to check against values.",
+          "type": "string",
+          "rest": true,
+          "optional": false
+        },
+        {
+          "name": "opt_negate",
+          "description": "If specified the returned function's return value will always be negated.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "A function that can be used to see if any value passed to it is one of the type names passed in as `typeNames`.  The return value will indicate if one of the type names matches the type of the value passed to it.  If `opt_negate` is `true` the return value of this function will be the opposite."
+      },
+      "requires": [
+        "slice",
         "typeOf"
       ],
       "required": false,
@@ -4539,7 +4655,7 @@
     {
       "name": "repay",
       "code": "function repay(input) {\n  var args = arguments;\n  return Function('s,i,a', 'return function(){return ' + (args.length - 1 ? 's(a)' : 'i') + '}')(slice, input, args);\n}",
-      "description": "Produces a function that when called will simply return was was passed in.",
+      "description": "Produces a function that when called will simply return what was passed in.",
       "params": [
         {
           "name": "input",
@@ -4830,6 +4946,38 @@
       "tests": []
     },
     {
+      "name": "setAt",
+      "code": "function setAt(root, path, value) {\n  var test = testAt(root, path),\n      i = path.length - 1,\n      setIt = i >= 0 && test.length >= i;\n  if (setIt = setIt && !isPrimitive(root = test[i - 1])) {\n    root[path[i]] = value;\n  }\n  return setIt;\n}",
+      "description": "Tries to set a value at the given `path` under the given `root` object.",
+      "params": [
+        {
+          "name": "root",
+          "description": "Object to start at as the root of the proposed `path`.",
+          "type": "*"
+        },
+        {
+          "name": "path",
+          "description": "An array of strings and/or numbers that represent the path to be traversed under `root`.",
+          "type": "Array"
+        },
+        {
+          "name": "value",
+          "description": "The value to be assigned under the specified `path` within the `root` object.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if `value` is successfully set under the given path, otherwise `false`."
+      },
+      "requires": [
+        "isPrimitive",
+        "testAt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "setCookie",
       "code": "function setCookie(name, value, opt_options) {\n  opt_options = opt_options || {};\n  var maxAge = opt_options['max-age'] || opt_options.maxAge,\n    expires = maxAge ? +new Date + maxAge * 1000 : opt_options.expires,\n    path = opt_options.path,\n    domain = opt_options.domain,\n    secure = opt_options.secure;\n  __DOCUMENT.cookie = encodeURIComponent(name) + \"=\" + encodeURIComponent(value)\n    + (expires ? \"; expires=\" + (new Date(expires)).toGMTString() : \"\")\n    + (path ? \"; path=\" + path : \"; path=/\")\n    + (domain ? \"; domain=\" + opt_options.domain : \"\")\n    + (secure ? \"; secure\" : \"\");\n  return hasCookie(name);\n}",
       "description": "Takes the name of a cookie and sets its value.",
@@ -4858,38 +5006,6 @@
       },
       "requires": [
         "hasCookie"
-      ],
-      "required": false,
-      "tests": []
-    },
-    {
-      "name": "setNS",
-      "code": "function setNS(root, namespace, value) {\n  var test = testNS(root, namespace),\n      i = namespace.length - 1,\n      setIt = i >= 0 && test.length >= i;\n  if (setIt = setIt && !isPrimitive(root = test[i - 1])) {\n    root[namespace[i]] = value;\n  }\n  return setIt;\n}",
-      "description": "Tries to set a value at the given `namespace` under the given `root` object.",
-      "params": [
-        {
-          "name": "root",
-          "description": "Object to start at as the root of the proposed `namespace`.",
-          "type": "*"
-        },
-        {
-          "name": "namespace",
-          "description": "An array of strings and/or numbers that represent the namespace chain to be traversed under `root`.",
-          "type": "Array"
-        },
-        {
-          "name": "value",
-          "description": "The value to be assigned under the specified `namespace` within the `root` object.",
-          "type": "*"
-        }
-      ],
-      "return": {
-        "type": "boolean",
-        "description": "`true` if `value` is successfully set under the given namespace, otherwise `false`."
-      },
-      "requires": [
-        "testNS",
-        "isPrimitive"
       ],
       "required": false,
       "tests": []
@@ -5254,24 +5370,24 @@
       "tests": []
     },
     {
-      "name": "testNS",
-      "code": "function testNS(root, namespace) {\n  for (var result = [], i = 0, l = namespace.length; i < l; i++) {\n    if (root != undefined && has(root, namespace[i])) {\n      result[i] = root = root[namespace[i]];\n    }\n    else {\n      break;\n    }\n  }\n  return result;\n}",
-      "description": "Tests a given `namespace` under the given `root` object and returns the values at each step of that `namespace`.",
+      "name": "testAt",
+      "code": "function testAt(root, path) {\n  for (var result = [], i = 0, l = path.length; i < l; i++) {\n    if (root != undefined && has(root, path[i])) {\n      result[i] = root = root[path[i]];\n    }\n    else {\n      break;\n    }\n  }\n  return result;\n}",
+      "description": "Tests a given `path` under the given `root` object and returns the values at each step of that `path`.",
       "params": [
         {
           "name": "root",
-          "description": "Object to start at as the root of the proposed `namespace`.",
+          "description": "Object to start at as the root of the proposed `path`.",
           "type": "*"
         },
         {
-          "name": "namespace",
-          "description": "An array of strings and/or numbers that represent the namespace chain to be tested under `root`.",
+          "name": "path",
+          "description": "An array of strings and/or numbers that represent the path to be tested under `root`.",
           "type": "Array"
         }
       ],
       "return": {
         "type": "Array",
-        "description": "An array having a length less than or equal to that of `namespace` where each will be the value for the corresponding `namespace` value."
+        "description": "An array having a length less than or equal to that of `path` where each will be the value for the corresponding `path` value."
       },
       "requires": [
         "has"
