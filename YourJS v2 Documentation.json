@@ -1283,6 +1283,70 @@
       ]
     },
     {
+      "name": "findNth",
+      "code": "eval('var findNthIndex,findNth;(function(z,y){=function(b,c,e){var f=0>e,h=\"RegExp\"===typeOf(c);var a=\"String\"===typeOf(b);h&&(c=new RegExp(c.source,(c+\"g\").match(/\\\\w*$/)[0].replace(a?/g(.)/:/g()/g,\"$1\")));if(a){var g=[];b.replace(c,function(a){g.push(a)});var d=g.length;a=f?d+e:e;if(0<=a&&a<d)return g[a]}else{!f&&++e;var k=f?-1:1;d=b.length;for(a=f?d-1:0;f?0<=a:a<d;a+=k)if(has(b,a)&&(h?c.test(b[a]):c(b[a]))&&!(e-=k))return b[a]}};})'.replace(/=.+;/, 'findNthIndex$&findNth$&').replace('push(a)', 'push(arguments[arguments.length-2])').replace(/(return )b.a./, '$1a'))(typeOf, has);",
+      "description": "Gets the nth value matching `target` in `subject`.",
+      "params": [
+        {
+          "name": "subject",
+          "description": "Array or string to search for `target` in.",
+          "type": "Array|string"
+        },
+        {
+          "name": "target",
+          "description": "If `subject` is an array this must either be a function or a regular expression which will be tested against each element in `subject`.  If `subject` is a string this must be a regular expression which will be tested against it to find all of the matches.",
+          "type": "Function|RegExp"
+        },
+        {
+          "name": "n",
+          "description": "The number of the occurrence that will be searched for and returned.  `0` represents the first occurrence whereas `-1` represents the last.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "The nth occurrence of `target` within `subject`.  If not found `undefined` will be returned."
+      },
+      "requires": [
+        "has",
+        "typeOf",
+        "findNthIndex"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "findNthIndex",
+      "code": "",
+      "description": "Get the nth index of the `target` in `subject`.",
+      "params": [
+        {
+          "name": "subject",
+          "description": "Array or string to search for `target` in.",
+          "type": "Array|string"
+        },
+        {
+          "name": "target",
+          "description": "If `subject` is an array this must either be a function or a regular expression which will be tested against each element in `subject`. If `subject` is a string this must be a regular expression which will be tested against it to find all of the matches.",
+          "type": "Function|RegExp"
+        },
+        {
+          "name": "n",
+          "description": "The number of the occurrence that will be searched for and returned.  `0` represents the first occurrence whereas `-1` represents the last.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number|undefined",
+        "description": "If the nth occurrence of `target` can be found within `subject` the index will be returned otherwise `undefined` will be returned."
+      },
+      "requires": [
+        "findNth"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "flatten",
       "code": "function flatten(array, opt_depth) {\n  opt_depth = opt_depth == undefined ? 1 : opt_depth;\n  var result = [];\n  for (var nextDepth = opt_depth === true || (opt_depth - 1), i = 0, l = array.length; i < l; i++) {\n    if (opt_depth > 0 && typeOf(array[i]) == 'Array') {\n      result = result.concat(flatten(array[i], nextDepth));\n    }\n    else {\n      result.push(array[i]);\n    }\n  }\n  return result;\n}",
       "description": "Create a flattened copy of an array.",
