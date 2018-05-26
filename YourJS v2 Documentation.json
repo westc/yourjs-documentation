@@ -1506,6 +1506,30 @@
       "tests": []
     },
     {
+      "name": "formatTime",
+      "code": "function formatTime(ms, format) {\n  var floor = Math.floor;\n  ms = floor(ms);\n  return format.replace(\n    /(['\"])((?:(?:(?!\\1)[\\s\\S])+|\\1\\1)+)\\1|(([Ww])|([Dd])|(HH?|hh?)|(mm?)|(ss?)|(S(?:SS)?))(\\!)?/g,\n    function(all, quote, inner, num, w, d, h, m, s, S, full) {\n      if (quote) {\n        return inner.split(quote + quote).join(quote);\n      }\n      all = S\n        ? !full ? ms % 1e3 : ms\n        : s\n          ? (all = floor(ms / 1e3), !full ? all % 60 : all)\n          : m\n            ? (all = floor(ms / 6e4), !full ? all % 60 : all)\n            : h\n              ? (all = floor(ms / 36e5), !full ? all % 24 : all)\n              : d\n                ? (all = floor(ms / 864e5), !full ? all % 7 : all)\n                : floor(ms / 6048e5);\n      num = num.length;\n      return (full || num === 1) ? all : ('00' + all).slice(-num);\n    }\n  );\n}",
+      "description": "Formats the number of milliseconds given based on a format string.",
+      "params": [
+        {
+          "name": "ms",
+          "description": "Number of milliseconds that will be represented in the returned string.",
+          "type": "number"
+        },
+        {
+          "name": "format",
+          "description": "Format string where `W` (or `w`) will be replaced by the number of weeks, `D` (or `d`) by the number of days (maximum being 6), `H` (or `h`) by the number of hours (maximum being 23), `m` by the number of minutes (maximum being 59), `s` by the number of seconds (maximum being 59), and `S` by the number of milliseconds (maximum being 999).  Adding an exclamation point to the end of any of those characters (eg. `S!`) will result in the corresponding value not being truncated based on the next highest time increment.  Using `HH`, `hh`, `mm`, `ss` or `SSS` will result in leading zeroes for those corresponding values.  Wrapping a substring in single quotes or double quotes will cause that substring to be escaped and any instances of that same quote character being repeated once will be replaced with just one.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "The value of `ms` formatted based on `format`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "forOf",
       "code": "function forOf(obj, fn, opt_traverseAll) {\n  return (\n    (isArrayLike(obj) || typeOf(obj) === 'String') ? forEach : forIn\n  )(Object(obj), fn, opt_traverseAll);\n}",
       "description": "Traverses all the characters in a string or all of the items in an array or an object, executing a function on each one.",
@@ -3688,6 +3712,31 @@
           "code": "function Person(name){this.name = name;}\nPerson.prototype.gender = 'Unknown';\ntest(JSON.stringify(YourJS.keys(new Person('Billie'))), '[\"name\"]');"
         }
       ]
+    },
+    {
+      "name": "keysMatch",
+      "code": "function keysMatch(obj1) {\n  for (var j, keys2, keys1 = Object.keys(Object(obj1)).sort(), args = arguments, i = args.length; --i; ) {\n    keys2 = Object.keys(Object(args[i])).sort();\n    j = keys1.length;\n    if (j !== keys2.length) {\n      return false;\n    }\n    while (j--) {\n      if (keys1[j] !== keys2[j]) {\n        return false;\n      }\n    }\n  }\n  return true;\n}",
+      "description": "Tests two or more objects to make sure they have the same keys.",
+      "params": [
+        {
+          "name": "obj1",
+          "description": "First object whose keys will be compared to the keys of the other objects passed in.",
+          "type": "*"
+        },
+        {
+          "name": "objX",
+          "description": "The other objects whose keys will be compared to the keys of `obj1`.",
+          "type": "*",
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "A boolean value indicating whether or not the keys of the objects that were passed in matched each other."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
     },
     {
       "name": "kindsOf",
