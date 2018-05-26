@@ -1507,8 +1507,8 @@
     },
     {
       "name": "formatTime",
-      "code": "function formatTime(ms, format) {\n  var floor = Math.floor;\n  ms = floor(ms);\n  return format.replace(\n    /(['\"])((?:(?:(?!\\1)[\\s\\S])+|\\1\\1)+)\\1|(([Ww])|([Dd])|(HH?|hh?)|(mm?)|(ss?)|(S(?:SS)?))(\\!)?/g,\n    function(all, quote, inner, num, w, d, h, m, s, S, full) {\n      if (quote) {\n        return inner.split(quote + quote).join(quote);\n      }\n      all = S\n        ? !full ? ms % 1e3 : ms\n        : s\n          ? (all = floor(ms / 1e3), !full ? all % 60 : all)\n          : m\n            ? (all = floor(ms / 6e4), !full ? all % 60 : all)\n            : h\n              ? (all = floor(ms / 36e5), !full ? all % 24 : all)\n              : d\n                ? (all = floor(ms / 864e5), !full ? all % 7 : all)\n                : floor(ms / 6048e5);\n      num = num.length;\n      return (full || num === 1) ? all : ('00' + all).slice(-num);\n    }\n  );\n}",
-      "description": "Formats the number of milliseconds given based on a format string.",
+      "code": "function formatTime(ms, format) {\n  var floor = Math.floor, isNegative = ms < 0 || 1 / ms < 0;\n  ms = Math.abs(floor(ms));\n  return format.replace(\n    /(['\"])((?:(?:(?!\\1)[\\s\\S])+|\\1\\1)+)\\1|(\\+)|(\\-)|(([Ww])|([Dd])|(HH?|hh?)|(mm?)|(ss?)|(S(?:SS)?))(\\!)?/g,\n    function (all, quote, inner, plus, minus, num, w, d, h, m, s, S, full) {\n      if (num) {\n        all = S\n          ? !full ? ms % 1e3 : ms\n          : s\n            ? (all = floor(ms / 1e3), !full ? all % 60 : all)\n            : m\n              ? (all = floor(ms / 6e4), !full ? all % 60 : all)\n              : h\n                ? (all = floor(ms / 36e5), !full ? all % 24 : all)\n                : d\n                  ? (all = floor(ms / 864e5), !full ? all % 7 : all)\n                  : floor(ms / 6048e5);\n        num = num.length;\n        return (full || num === 1) ? all : ('00' + all).slice(-num);\n      }\n      return quote\n        ? inner.split(quote + quote).join(quote)\n        : isNegative ? '-' : plus ? '+' : '';\n    }\n  );\n}",
+      "description": "Formats the time (number of milliseconds) given based on a format string.",
       "params": [
         {
           "name": "ms",
@@ -1517,7 +1517,7 @@
         },
         {
           "name": "format",
-          "description": "Format string where `W` (or `w`) will be replaced by the number of weeks, `D` (or `d`) by the number of days (maximum being 6), `H` (or `h`) by the number of hours (maximum being 23), `m` by the number of minutes (maximum being 59), `s` by the number of seconds (maximum being 59), and `S` by the number of milliseconds (maximum being 999).  Adding an exclamation point to the end of any of those characters (eg. `S!`) will result in the corresponding value not being truncated based on the next highest time increment.  Using `HH`, `hh`, `mm`, `ss` or `SSS` will result in leading zeroes for those corresponding values.  Wrapping a substring in single quotes or double quotes will cause that substring to be escaped and any instances of that same quote character being repeated once will be replaced with just one.",
+          "description": "Format string where `W` (or `w`) will be replaced by the number of weeks, `D` (or `d`) by the number of days (maximum being 6), `H` (or `h`) by the number of hours (maximum being 23), `m` by the number of minutes (maximum being 59), `s` by the number of seconds (maximum being 59), and `S` by the number of milliseconds (maximum being 999).  Adding an exclamation point to the end of any of those characters (eg. `S!`) will result in the corresponding value not being truncated based on the next highest time increment.  Using `HH`, `hh`, `mm`, `ss` or `SSS` will result in leading zeroes for those corresponding values.  Instances of `-` will be removed only if `ms` is positive.  Instances of `+` will be replaced with `-` only if `ms` is negative, otherwise `+` will remain.  Wrapping a substring in single quotes or double quotes will cause that substring to be escaped and any instances of that same quote character being repeated once will be replaced with just one.",
           "type": "string"
         }
       ],
@@ -5534,6 +5534,30 @@
       "return": {
         "type": "Function",
         "description": "The throttled version of `fn` function."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "time",
+      "code": "function time(fn, times) {\n  var timesIsFunction = 'function' === typeof times;\n  return function() {\n    var startTime = +new Date,\n        result = fn.apply(this, arguments),\n        endTime = +new Date,\n        timingData = {\n          elapsed: endTime - startTime,\n          start: startTime,\n          end: endTime,\n          returnValue: result,\n          'function': fn,\n          'this': this,\n          'arguments': arguments\n        };\n    timesIsFunction ? times(timingData) : times.push(timingData);\n  };\n}",
+      "description": "Creates timed functions which on every successful execution will indicate the amount of time it took to execute.",
+      "params": [
+        {
+          "name": "func",
+          "description": "Function to wrap and be timed.",
+          "type": "Function"
+        },
+        {
+          "name": "times",
+          "description": "If this is an array, on each successful execution of `func` an object will be added to the end containing the following properties:  `elapsed` (time taken), `start` (starting time stamp), `end` (ending time stamp), `returnValue`, `function` (a reference to `func`), `this` (context object passed to `func`), and `arguments` (those passed to `func`).  If this is a function, upon successful execution of `func` it will be called and passed the aforementioned object.",
+          "type": "Array|Function"
+        }
+      ],
+      "return": {
+        "type": "Function",
+        "description": "A wrapped version of `func` which will take the context and arguments and pass them to `func` and then return the return value from `func`.  All timing information will be given to `times`."
       },
       "requires": [],
       "required": false,
