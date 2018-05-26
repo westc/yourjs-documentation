@@ -3678,34 +3678,32 @@
     },
     {
       "name": "keys",
-      "code": "function keys(arrOrObj, opt_includeInheritance) {\n  var result = [];\n  forOf(arrOrObj, function(value, key) {\n    result.push(key);\n  }, opt_includeInheritance);\n  return result;\n}",
-      "description": "Gets the keys of a specified array or object.",
+      "code": "function keys(value, opt_onlyNonEnums) {\n  var enumKeys = Object.keys(value = Object(value));\n  return opt_onlyNonEnums == undefined\n    ? enumKeys\n    : (value = Object.getOwnPropertyNames(value), opt_onlyNonEnums)\n      ? value.filter(function (key) { return !enumKeys.includes(key); })\n      : value;\n}",
+      "description": "Gets the keys of a specified value.",
       "params": [
         {
-          "name": "arrOrObj",
-          "description": "Array or object whose keys will be retrieved.",
-          "type": "Array|Object"
+          "name": "value",
+          "description": "Value for which you would like the property names retrieved.",
+          "type": "*"
         },
         {
-          "name": "opt_includeInheritance",
-          "description": "Indicates whether or not inherited keys should be retrieved.",
+          "name": "opt_onlyNonEnums",
+          "description": "If specified and is not `null` or `undefined` but is `false`-ish, all of the property names (enumerable or not) will be returned.  If this is `true`-ish only the non-enumerable property names will be returned.  If this is not given or is `null` or `undefined` all of the enumerable property names will be returned.",
           "type": "boolean",
           "optional": true,
-          "default": "false"
+          "default": ""
         }
       ],
       "return": {
         "type": "Array",
         "description": "An array of all of the keys of `arrOrObj`."
       },
-      "requires": [
-        "forOf"
-      ],
+      "requires": [],
       "required": false,
       "tests": [
         {
           "name": "Simple Array Test",
-          "code": "var arr = [4,6];\narr[5] = 2;\ntest(JSON.stringify(YourJS.keys(arr)), '[0,1,5]');"
+          "code": "var arr = [4,6];\narr[5] = 2;\ntest(JSON.stringify(YourJS.keys(arr)), '[\"0\",\"1\",\"5\"]');"
         },
         {
           "name": "Simple Object Test",
