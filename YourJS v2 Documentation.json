@@ -386,6 +386,27 @@
       "tests": []
     },
     {
+      "name": "commaNumber",
+      "code": "function commaNumber(num) {\n  if (num = fullNumber(num)) {\n    num = num.split('.');\n    num[0] = num[0].replace(/\\d(?=(\\d{3})+$)/g, '$&,');\n    return num.join('.');\n  }\n}",
+      "description": "Turns a number into a string in its fullest form with commas separating the integral part at the thousands mark, millions mark, billions mark, etc.",
+      "params": [
+        {
+          "name": "num",
+          "description": "Number that will be converted to a string and will have commas added to it to separate the hundreds from thousands, the thousands from the millions, etc.",
+          "type": "number|string"
+        }
+      ],
+      "return": {
+        "type": "string|undefined",
+        "description": "A string representation of `num` with commas separating the hundreds from thousands, the thousands from the millions, etc.  If `num` is not a finite number `undefined` will be returned."
+      },
+      "requires": [
+        "fullNumber"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "compact",
       "code": "function compact(arr) {\n  var result = [];\n  for (var i = 0, l = arr.length; i < l; i++) {\n    if (arr[i]) {\n      result.push(arr[i]);\n    }\n  }\n  return result;\n}",
       "description": "Create a new array with all of the `false`-ish values removed.",
@@ -1579,6 +1600,25 @@
       "return": {
         "type": "number",
         "description": "Returns `num` without the integral part while keeping the sign."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "fullNumber",
+      "code": "function fullNumber(num) {\n  return isFinite(num = +num)\n    ? (num + '').replace(/(\\d)(?:\\.(\\d+))?e(\\+|\\-)(\\d+)/, function (m, start, end, dir, digits) {\n      end = end || '';\n      return dir === '+'\n        ? start + end + Array(+digits + 1 - end.length).join('0')\n        : ('0.' + Array(+digits).join('0') + start + end);\n    })\n    : undefined;\n}",
+      "description": "Takes a number in any form and returns it as a string in its fullest form (removing exponents).",
+      "params": [
+        {
+          "name": "num",
+          "description": "Number to return in its fullest form.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "string|undefined",
+        "description": "If `num` is a finite number it will be returned as a number in its fullest form without exponents of any kind.  If `num` is not a finite number `undefined` will be returned."
       },
       "requires": [],
       "required": false,
