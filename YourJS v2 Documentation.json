@@ -1166,20 +1166,20 @@
     },
     {
       "name": "entries",
-      "code": "function entries(arrOrObj, opt_includeInheritance) {\n  var i, l, arr, isString = typeOf(arrOrObj) === 'String', result = [];\n  if (isArrayLike(arrOrObj) || isString) {\n    for (i = 0, l = arrOrObj.length, arr = isString ? opt_includeInheritance.split('') : arrOrObj; i < l; i++) {\n      if (opt_includeInheritance || has(arr, i)) {\n        result.push([i, arr[i]]);\n      }\n    }\n  }\n  else {\n    for (i in arrOrObj) {\n      if (opt_includeInheritance || has(arrOrObj, i)) {\n        result.push([i, arrOrObj[i]]);\n      }\n    }\n  }\n  return result;\n}",
+      "code": "function entries(value, opt_onlyNonEnums) {\n  for (var result = keys(value, opt_onlyNonEnums), i = result.length; i--;) {\n    result[i] = [result[i], value[result[i]]];\n  }\n  return result;\n}",
       "description": "Gets an array of pairs (array of length 2) indicating all of the keys and values within a given array or object.",
       "params": [
         {
-          "name": "arrOrObj",
-          "description": "Array or object to traverse to get all of the key/value pairs.",
-          "type": "Array|Object"
+          "name": "value",
+          "description": "Value for which you would like the property names retrieved.",
+          "type": "*"
         },
         {
-          "name": "opt_includeInheritance",
-          "description": "Indicates whether inherited key/value pairs should be included in the returned array of entries.",
+          "name": "opt_onlyNonEnums",
+          "description": "If specified and is not `null` or `undefined` but is `false`-ish, all of the property key/value pairs (enumerable or not) will be returned.  If this is `true`-ish only the non-enumerable property key/value pairs will be returned.  If this is not given or is `null` or `undefined` all of the enumerable property key/value pairs will be returned.",
           "type": "boolean",
           "optional": true,
-          "default": "false"
+          "default": ""
         }
       ],
       "return": {
@@ -1187,15 +1187,13 @@
         "description": "An array of pairs (arrays where the first item is the key and the second is the value)."
       },
       "requires": [
-        "typeOf",
-        "isArrayLike",
-        "has"
+        "keys"
       ],
       "required": false,
       "tests": [
         {
           "name": "Sparse Array",
-          "code": "var arr = [5];\narr[9] = \"7\";\narr[13] = 11;\ntest(JSON.stringify(YourJS.entries(arr)), '[[0,5],[9,\"7\"],[13,11]]');"
+          "code": "var arr = [5];\narr[9] = \"7\";\narr[13] = 11;\ntest(JSON.stringify(YourJS.entries(arr)), '[[\"0\",5],[\"9\",\"7\"],[\"13\",11]]');"
         }
       ]
     },
@@ -6240,28 +6238,28 @@
     },
     {
       "name": "values",
-      "code": "function values(arrOrObj, opt_includeInheritance) {\n  var result = [];\n  forOf(arrOrObj, function(value) {\n    result.push(value);\n  }, opt_includeInheritance);\n  return result;\n}",
+      "code": "function values(value, opt_onlyNonEnums) {\n  for (var result = keys(value, opt_onlyNonEnums), i = result.length; i--;) {\n    result[i] = value[result[i]];\n  }\n  return result;\n}",
       "description": "Gets an array of all of the values within a given array or object.",
       "params": [
         {
-          "name": "arrOrObj",
-          "description": "Array or object containing all of the values that will be returned.",
-          "type": "Array|Object"
+          "name": "value",
+          "description": "Value for which you would like the property names retrieved.",
+          "type": "*"
         },
         {
-          "name": "opt_includeInheritance",
-          "description": "Indicates whether or not even the inherited values should be returned.",
+          "name": "opt_onlyNonEnums",
+          "description": "If specified and is not `null` or `undefined` but is `false`-ish, all of the properties (enumerable or not) will be returned.  If this is `true`-ish only the non-enumerable properties will be returned.  If this is not given or is `null` or `undefined` all of the enumerable properties will be returned.",
           "type": "boolean",
           "optional": true,
-          "default": "false"
+          "default": ""
         }
       ],
       "return": {
         "type": "Array",
-        "description": "An array of all of the values in `arrOrObj`."
+        "description": "An array of all of the values in `value`."
       },
       "requires": [
-        "forOf"
+        "keys"
       ],
       "required": false,
       "tests": [
