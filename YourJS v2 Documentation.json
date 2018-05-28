@@ -1258,6 +1258,34 @@
       "tests": []
     },
     {
+      "name": "expandRegExp",
+      "code": "var expandRegExp;\n(function(store, casingInitialized) {\n  function addTo(groupName, index) {\n    var arr = !has(store, groupName += 'case') ? store[groupName] = [] : store[groupName];\n    var last = store['~' + groupName];\n    if (last && last[last.length - 1] + 1 === index) {\n      last[1] = index;\n    }\n    else {\n      arr.push(store['~' + groupName] = [index]);\n    }\n  }\n\n  function makeCasingRanges() {\n    for (var ch, lower, upper, groupName, i = 0; i <= 0xFFFF; i++) {\n      ch = String.fromCharCode(i);\n      lower = ch.toLowerCase();\n      upper = ch.toUpperCase();\n      groupName = upper === lower ? 'no' : upper === ch ? 'upper' : lower === ch ? 'lower' : 'mix';\n      addTo(groupName, i);\n    }\n    ['upper', 'lower', 'mix', 'no'].forEach(function (name) {\n      name += 'case';\n      store[name] = store[name].map(function(range) {\n        return range.map(function(value) {\n          return '\\\\u' + ('000' + value.toString(16)).slice(-4);\n        }).join('-');\n      }).join('');\n    });\n  }\n\n  expandRegExp = function(rgxOrExtName, opt_extension) {\n    if (typeOf(rgxOrExtName) === 'RegExp') {\n      var oldSource,\n          newSource = rgxOrExtName.source,\n          flags = (rgxOrExtName + '').replace(/[^]+\\/(\\w*)$/, '$1');\n      do {\n        oldSource = newSource;\n        newSource = oldSource.replace(\n          /\\[:(\\w+):\\]|\\[((?:\\\\.|[^\\]])*)\\[:(\\w+):\\]((?:[^\\[\\]]+|\\[:\\w+:\\]|\\[|\\\\])*)\\]/g,\n          function(m, byItself, pre, name, post) {\n            byItself = byItself || name;\n            if (!casingInitialized && /^(upper|lower|mix|no)case$/.test(byItself)) {\n              makeCasingRanges();\n              casingInitialized = 1;\n            }\n            return has(store, byItself)\n              ? '[' + (name ? pre + store[byItself] + post : store[byItself]) + ']'\n              : m;\n          }\n        );\n      } while (oldSource !== newSource);\n      rgxOrExtName = rgxOrExtName.source.replace(/\\[\\]/);\n      return new RegExp(newSource, flags);\n    }\n    else if (oldSource = /^\\w+$/.test(rgxOrExtName)) {\n      store[rgxOrExtName] = opt_extension.replace(/\\\\?]/g, '\\\\]');\n    }\n    return oldSource;  // works cuz of hoisting\n  };\n})({\n  space: '\\\\s',\n  alpha: 'A-Za-z',\n  punct: '!\"\\#$%&\\'()*+,\\\\-./:;<=>?@\\\\[\\\\\\\\\\\\]^_`{|}~',\n  digit: '\\\\d',\n  alnum: 'A-Za-z\\\\d',\n  xdigit: 'A-Fa-f0-9'\n});",
+      "description": "Expands regular expressions by expanding the character classes.  Supports `[:alnum:]`, `[:alpha:]`, `[:digit:]`, `[:punct:]`, `[:space:]`, or `[:xdigit:]` and allows for addition of other character classes.",
+      "params": [
+        {
+          "name": "rgxOrCharClsName",
+          "description": "Regular expression or name of the character class to add to future regular expressions passed to this function.",
+          "type": "RegExp|string"
+        },
+        {
+          "name": "opt_charClass",
+          "description": "If `rgxOrCharClsName` is a string this should be defined and should be the definition of the character class without brackets.  This character class will be added and will be used to expand future regular expressions passed into this function.",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "RegExp|boolean",
+        "description": "If `rgxOrCharClsName` is a regular expression this will be a modified version of it with the character classes expanded, otherwise this will be a boolean value indicating if the character class was successfully added."
+      },
+      "requires": [
+        "has",
+        "typeOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "extend",
       "code": "function extend(objToExtend, objProps) {\n  for (var k, args = arguments, i = 1; objProps = args[i++]; ) {\n    for (k in objProps) {\n      if (has(objProps, k)) {\n        objToExtend[k] = objProps[k];\n      }\n    }\n  }\n  return objToExtend;\n}",
       "description": "Adds extra properties to an object based on the properties owned by other specified objects.",
@@ -1387,6 +1415,27 @@
       },
       "requires": [
         "findNth"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "first",
+      "code": "var first = nth(0);",
+      "description": "Gets the last element in an array or an array-like object.",
+      "params": [
+        {
+          "name": "array",
+          "description": "The array or array-like object from which to pull the first element.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "The first value of `array`."
+      },
+      "requires": [
+        "nth"
       ],
       "required": false,
       "tests": []
@@ -3817,6 +3866,27 @@
       },
       "requires": [
         "typeOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "last",
+      "code": "var last = nth(-1);",
+      "description": "Gets the last element in an array or an array-like object.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array or array-like object from which to retrieve the last value.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "The last value in `array`."
+      },
+      "requires": [
+        "nth"
       ],
       "required": false,
       "tests": []
