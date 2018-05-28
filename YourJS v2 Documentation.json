@@ -455,6 +455,30 @@
       "tests": []
     },
     {
+      "name": "compareTitle",
+      "code": "function compareTitle(title1, title2) {\n  var parts1, parts2, part1, part2, i, l, isDigits = /^\\d/.test(title1 += '');\n  if (isDigits === /^\\d/.test(title2 += '') || (!/\\d/.test(title1) && !/\\d/.test(title2))) {\n    l = Math.min(\n      (parts1 = title1.match(/\\D+|\\d+/g)).length,\n      (parts2 = title2.match(/\\D+|\\d+/g)).length\n    );\n    for (i = 0; i < l; i++, isDigits = !isDigits) {\n      part1 = parts1[i];\n      part2 = parts2[i];\n      if (part1 !== part2) {\n        return isDigits ? Math.ceil(part1) - Math.ceil(part2) : part1 < part2 ? -1 : 1;\n      }\n    }\n  }\n  return title1 < title2 ? -1 : title1 > title2 ? 1 : 0;\n}",
+      "description": "Compares 2 titles by splitting the titles into sections where each section is either full of digits or non-digits.",
+      "params": [
+        {
+          "name": "title1",
+          "description": "First title to compare to `title2`.",
+          "type": "string"
+        },
+        {
+          "name": "title2",
+          "description": "Second title to compare to `title1`.",
+          "type": "string"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "If `title1` comes before `title2` a negative number will be returned.  If `title1` comes after `title2` a positive number will be returned.  In all other cases `0` will be returned. "
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "compose",
       "code": "function compose(fnWrapper, fnToWrap, opt_applyArgs) {\n  return Function('x,y', 'return function(){return x.' + (opt_applyArgs ? 'apply' : 'call') + '(this,y.apply(this,arguments))}')(fnWrapper, fnToWrap);\n}",
       "description": "Create a new function which is basically the composition of two functions.",
