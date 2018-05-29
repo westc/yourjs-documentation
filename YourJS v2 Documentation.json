@@ -4,8 +4,8 @@
   "parts": [
     {
       "name": "alias",
-      "code": "function alias(context, name) {\n  return function() {\n    return context[name].apply(context, arguments);\n  };\n}",
-      "description": "Creates a function wrapper that calls the function with the given name in the given context.",
+      "code": "function alias(context, name) { return context[name].bind(context); }",
+      "description": "Binds a context to a given function within that context.",
       "params": [
         {
           "name": "context",
