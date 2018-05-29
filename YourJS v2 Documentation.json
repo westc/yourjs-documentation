@@ -986,6 +986,32 @@
       "tests": []
     },
     {
+      "name": "deleteKeys",
+      "code": "function deleteKeys(obj, keys) {\n  function deleteKeys(obj) {\n    obj = Object(obj);\n    for (var value, key, result = {}, i = keys.length; i--; ) {\n      if (has(obj, key = keys[i])) {\n        value = obj[key];\n        if (delete obj[key]) {\n          result[key] = value;\n        }\n      }\n    }\n    return result;\n  }\n  return obj == undefined ? deleteKeys : deleteKeys(obj);\n}",
+      "description": "Deletes one or more keys from an object of some sort.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "If `undefined` or `null`, a partial function waiting for this value will be returned.  Otherwise this will be the object from which the specified keys will be deleted.",
+          "type": "Object|undefined|null"
+        },
+        {
+          "name": "keys",
+          "description": "Array of keys to be deleted from `obj`.",
+          "type": "Arrays"
+        }
+      ],
+      "return": {
+        "type": "Function|Object",
+        "description": "If `obj` is `undefined` or `null` this will be a partial function which will simply accept the given `obj`.  The return value of the partial function is the same as the return value of this function in the case that `obj` is not `undefined` or `null`.  All keys that are found and successfully deleted will be returned within an object."
+      },
+      "requires": [
+        "has"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "dice",
       "code": "function dice(str, delim, opt_limit) {\n  var arr = [], start = 0, i;\n  if (str) {\n    str.replace(\n      (typeOf(delim) == 'RegExp' ? modRegExp : quoteRegExp)(delim, 'g'),\n      function(m) {\n        i = arguments;\n        i = i[i.length - 2];\n        if (!(opt_limit-- < 1)) {\n          arr.push(str.slice(start, i));\n          start = i + (m.length || 1);\n        }\n      }\n    );\n    arr.push(str.slice(start));\n  }\n  return arr;\n}",
       "description": "Dices up a string splitting it on the passed in delimiter and placing the results in an array while making sure that the empty string is converted to an empty array.",
@@ -1938,6 +1964,32 @@
       "tests": []
     },
     {
+      "name": "hasKeys",
+      "code": "function hasKeys(obj, keys) {\n  function hasKeys(obj) {\n    obj = Object(obj);\n    for (var i = keys.length; i--; ) {\n      if (!has(obj, keys[i])) {\n        return false;\n      }\n    }\n    return true;\n  }\n  return obj == undefined ? hasKeys : hasKeys(obj);\n}",
+      "description": "Tests to see if all of the given property names are owned by the specified object.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "If `undefined` or `null`, a partial function waiting for this value will be returned.  Otherwise this will be the object from which the specified keys will be deleted.",
+          "type": "Object|null|undefined"
+        },
+        {
+          "name": "keys",
+          "description": "Array of keys to see if they are owned by `obj`.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `obj` is `undefined` or `null` this will be a partial function which will simply accept the given `obj`.  The return value of the partial function is the same as the return value of this function in the case that `obj` is not `undefined` or `null`.  If all of the keys are owned by `obj`, `true` will be returned, otherwise `false`."
+      },
+      "requires": [
+        "has"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "htmlify",
       "code": "function htmlify(str, opt_keepWhitespace) {\n  str = str.replace(/&/g, '&amp;')\n           .replace(/</g, '&lt;')\n           .replace(/>/g, '&gt;')\n           .replace(/\"/g, '&quot;')\n           .replace(/'/g, '&#x27;')\n           .replace(/`/g, '&#x60;');\n  return opt_keepWhitespace\n    ? str.replace(/\\r?\\n|\\r/g, '<br />')\n         .replace(/\\t/g, '    ')\n         .replace(/^ | (?= )| $/g, '&nbsp;')\n    : str;\n}",
       "description": "Converts a normal string into a string that can be treated as raw HTML.",
@@ -2290,7 +2342,7 @@
     },
     {
       "name": "info",
-      "code": "function info() {\n  return { name: __VARIABLE_NAME, version: __VERSION, toString: YourJS.toString };\n}",
+      "code": "function info() {\n  return { name: __VARIABLE_NAME, version: __VERSION, toString: toString };\n}",
       "required": true,
       "description": "Gets the information for this version of YourJS.",
       "return": {
