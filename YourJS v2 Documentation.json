@@ -4129,6 +4129,39 @@
       "required": false
     },
     {
+      "name": "modEach",
+      "code": "function modEach(obj, fn, opt_mapReturns) {\n  forOf(obj, function(v, k, obj) {\n    v = fn(v, k, obj);\n    if (opt_mapReturns) {\n      obj[k] = v;\n    }\n  });\n  return obj;\n}",
+      "description": "Takes an array or an object and traverses all of its key/value pairs allowing for modifications while in the end returning a reference to that same array or object.",
+      "params": [
+        {
+          "name": "obj",
+          "description": "Array or object that will be traversed.",
+          "type": "Array|Object"
+        },
+        {
+          "name": "fn",
+          "description": "Function that can make changes for each value within `obj`.  For each value within `obj` this function will be called with (1) the value, (2) the key and (3) a reference to `obj`.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_mapReturns",
+          "description": "Indicates whether or no the return value from `fn` should be assigned to that corresponding key for `obj`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Array|Object",
+        "description": "A reference to `obj`."
+      },
+      "requires": [
+        "forOf"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "modRegExp",
       "code": "function modRegExp(rgx, modifiers) {\n  var flags = (rgx + '').replace(/[\\s\\S]+\\//, '');\n  modifiers.replace(/([-+!]?)(\\w)/g, function(index, op, flag) {\n    index = flags.indexOf(flag)\n    flags = op == '-' || (op == '!' && index >= 0)\n      ? flags.replace(flag, '')\n      : index < 0\n        ? flags + flag\n        : flags;\n  });\n  return new RegExp(rgx.source, flags);\n}\n",
       "description": "Creates a new copy of a regular expression with modified flags.",
