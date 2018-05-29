@@ -511,7 +511,7 @@
     },
     {
       "name": "construct",
-      "code": "function construct(constructor) {\n  for (var args = slice(arguments, 1), argNames = '', i = args.length; i--;) {\n    argNames += (argNames ? ',a' : 'a') + i;\n  }\n  return Function(argNames, 'return new this(' + argNames + ')').apply(constructor, args);\n}",
+      "code": "function construct(constructor) {\n  return new(constructor.bind.apply(constructor, [null].concat(slice(arguments, 1))));\n}",
       "description": "Constructs an object with an arbitrary number of arguments passed via an array (or an array-like object).",
       "params": [
         {
@@ -5543,6 +5543,32 @@
           "code": "function sum(a, b) {\n  return a + (arguments.length < 3 ? b : sum.apply(this, [].slice.call(arguments, 1)));\n}\ntest(YourJS.spread(sum,1,2,3,[4,5],6,[7,8,9]), sum(1,2,3,4,5,6,7,8,9));"
         }
       ]
+    },
+    {
+      "name": "spreadNew",
+      "code": "function spreadNew(constructor, args) {\n  return new(constructor.bind.apply(constructor, [null].concat(slice(args))));\n}",
+      "description": "Passes an array as the arguments to a construct thusly allowing a variable number of arguments to be passed to the constructor.",
+      "params": [
+        {
+          "name": "constructor",
+          "description": "Constructor function to be called with a variable number of arguments.",
+          "type": "Function"
+        },
+        {
+          "name": "args",
+          "description": "Array or array-like object that will be treated as the arguments to pass to `constructor`.",
+          "type": "Array"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "Constructed object."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "sub",
