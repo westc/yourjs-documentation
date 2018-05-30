@@ -386,6 +386,30 @@
       "tests": []
     },
     {
+      "name": "closestMultOf",
+      "code": "function closestMultOf(factor, target) {\n  return Math.round(target / factor) * factor;\n}",
+      "description": "Finds the closest multiple of a number to another number.",
+      "params": [
+        {
+          "name": "factor",
+          "description": "The number to find a multiple of.",
+          "type": "number"
+        },
+        {
+          "name": "target",
+          "description": "The number that the multiple of `factor` should approximate.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "A multiple of `factor` that approximates `target`.  If `factor` is 0 or not a number, `NaN` will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "commaNumber",
       "code": "function commaNumber(num) {\n  if (num = fullNumber(num)) {\n    num = num.split('.');\n    num[0] = num[0].replace(/\\d(?=(\\d{3})+$)/g, '$&,');\n    return num.join('.');\n  }\n}",
       "description": "Turns a number into a string in its fullest form with commas separating the integral part at the thousands mark, millions mark, billions mark, etc.",
@@ -4214,6 +4238,37 @@
         "parseQS",
         "typeOf"
       ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "multOf",
+      "code": "function multOf(factor, target, opt_roundOut) {\n  return Math[(target < 0 || 1 / target < 0) === !opt_roundOut ? 'ceil' : 'floor'](target / factor) * factor;\n}",
+      "description": "Gets a multiple of a number that approximates another number.",
+      "params": [
+        {
+          "name": "factor",
+          "description": "The number to get a multiple of.",
+          "type": "number"
+        },
+        {
+          "name": "target",
+          "description": "The number that the multiple of should approximate.",
+          "type": "number"
+        },
+        {
+          "name": "opt_roundOut",
+          "description": "If `true`-ish the return value will be at least the same as `target` or further away from `0` than `target`, otherwise it will be `target` or closer to `0` than `target`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "A multiple of `factor` that approximates `target`.  If `opt_roundOut` is `true`-ish this will be a value that is either `target` or a little further away from `0` than `target`.  If `opt_roundOut` is `false`-ish this will be a value that is either `target` or a little closer to `0` than `target`."
+      },
+      "requires": [],
       "required": false,
       "tests": []
     },
