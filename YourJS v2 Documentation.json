@@ -894,6 +894,65 @@
       "tests": []
     },
     {
+      "name": "defaulter",
+      "code": "",
+      "description": "Creates a partial function which will always default to another value when non-values are passed to it.",
+      "params": [
+        {
+          "name": "defaultValue",
+          "description": "Value to default to if the value passed to the partial function is not sufficient.",
+          "type": "*"
+        },
+        {
+          "name": "opt_beStrict",
+          "description": "Specifies whether or not to only check if the value passed to the partial function is `undefined`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "A partial function which will return either the value passed in or `defaultValue` based on the following criteria:  If `opt_beStrict` is `true`-ish and `value` is `undefined`, `defaultValue` will be returned.  If `opt_beStrict` is `false`-ish and `value` is `undefined`, `null` or `NaN`, `defaultValue` will be returned.  In all other cases `value` will be returned."
+      },
+      "requires": [
+        "defaultTo"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "defaultTo",
+      "code": "eval('){return(c?void 0===a:null==a||isNaN(a)&&\"number\"===typeof a)?b:a}'.replace(/.+/, 'function defaultTo(a,b,c$&function defaulter(b,c){return function(a$&}'))",
+      "description": "Defaults specific non-values to another given value.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to test out.",
+          "type": "*"
+        },
+        {
+          "name": "defaultValue",
+          "description": "Value to default to if `value` is not sufficient.",
+          "type": "*"
+        },
+        {
+          "name": "opt_beStrict",
+          "description": "Specifies whether or not to only check if `value` is `undefined`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "If `opt_beStrict` is `true`-ish and `value` is `undefined`, `defaultValue` will be returned.  If `opt_beStrict` is `false`-ish and `value` is `undefined`, `null` or `NaN`, `defaultValue` will be returned.  In all other cases `value` will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "defer",
       "code": "function defer(fn, opt_args) {\n  var objThis = this;\n  opt_args = slice(opt_args || []);\n  return setTimeout(function() { fn.apply(objThis, opt_args); }, 0);\n}",
       "description": "Defers calling a function until the current call stack is done.  Similar to using the global `setTimeout` function.",
