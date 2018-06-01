@@ -208,6 +208,34 @@
       "tests": []
     },
     {
+      "name": "canDefault",
+      "code": "",
+      "description": "Determines whether or not a value would be defaulted to another value.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Value to test out.",
+          "type": "*"
+        },
+        {
+          "name": "opt_beStrict",
+          "description": "Specifies whether or not to only check if `value` is `undefined`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "If `opt_beStrict` is `true`-ish and `value` is `undefined`, `true` will be returned.  If `opt_beStrict` is `false`-ish and `value` is `undefined`, `null` or `NaN`, `true` will be returned.  In all other cases `false` will be returned."
+      },
+      "requires": [
+        "defaultTo"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "cap",
       "code": "function cap(fn, opt_maxArity, opt_staticArgs, opt_indexInArgs) {\n  var leftArgs = slice(\n        opt_staticArgs = opt_staticArgs || [],\n        0,\n        opt_indexInArgs = opt_indexInArgs == undefined ? opt_staticArgs.length : opt_indexInArgs\n      ),\n      rightArgs = slice(opt_staticArgs, opt_indexInArgs);\n  if ('string' == typeof fn) {\n    fn = YourJS[fn];\n    if ('function' != typeof fn) {\n      throw new Error('Cannot resolve cap function for \"' + fn + '\"');\n    }\n  }\n  opt_maxArity = opt_maxArity != undefined ? opt_maxArity : fn.length;\n  return function(arg1) {\n    return fn.apply(\n      this,\n      leftArgs.concat(slice(arguments, 0, opt_maxArity), rightArgs)\n    );\n  };\n}",
       "description": "Puts a cap (limit) on the amount of arguments that a function can receive.",
@@ -923,7 +951,7 @@
     },
     {
       "name": "defaultTo",
-      "code": "eval('){return(c?void 0===a:null==a||isNaN(a)&&\"number\"===typeof a)?b:a}'.replace(/.+/, 'function defaultTo(a,b,c$&function defaulter(b,c){return function(a$&}'))",
+      "code": "eval('function c?void 0===a:null==a||\"number\"===typeof a&&isNaN(a)return '.replace(/(.{9})(.+)(.{7})/, '$1canDefault(a,c){$3$2}$1defaultTo(a,b,c){$3($2)?b:a}$1defaulter(b,c){$3$1(a){$3($2)?b:a}}'));",
       "description": "Defaults specific non-values to another given value.",
       "params": [
         {
@@ -948,7 +976,10 @@
         "type": "*",
         "description": "If `opt_beStrict` is `true`-ish and `value` is `undefined`, `defaultValue` will be returned.  If `opt_beStrict` is `false`-ish and `value` is `undefined`, `null` or `NaN`, `defaultValue` will be returned.  In all other cases `value` will be returned."
       },
-      "requires": [],
+      "requires": [
+        "canDefault",
+        "defaulter"
+      ],
       "required": false,
       "tests": []
     },
