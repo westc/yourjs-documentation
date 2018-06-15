@@ -4152,6 +4152,32 @@
       ]
     },
     {
+      "name": "loop",
+      "code": "function loop(array, opt_reverse) {\n  var first = array[opt_reverse ? 'pop' : 'shift']();\n  if (array.length) {\n    array[opt_reverse ? 'unshift' : 'push'](first);\n  }\n  return first;\n}",
+      "description": "Progressively loops the values within an array on each iteration while at the same time retrieving one of the end values of the specified array.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array from which to pull the value which will also be modified because the value will then be placed on the opposite end.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_reverse",
+          "description": "Boolean indicating that instead of retrieving the first value, the last value should be retrieved and then placed at the beginning of `array`.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "If `opt_reverse` is `true`-ish the last value in `array` will be returned and also placed at the beginning of `array`.  Otherwise the first value in `array` will be returned and also placed at the end of `array`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "matchAll",
       "code": "function matchAll(str, rgx, opt_fnMapper) {\n  var count = 0, matches = [];\n  str.replace(rgx, function(match) {\n    match = slice(arguments, 0, -1);\n    match.index = match.pop();\n    match.input = str;\n    match.source = rgx;\n    if (opt_fnMapper) {\n      match = opt_fnMapper(match, ++count);\n    }\n    if (match !== undefined) {\n      matches.push(match);\n    }\n  });\n  return matches.length ? matches : null;\n}",
       "description": "Gets all of the matches found when matching a regular expression against a string.",
