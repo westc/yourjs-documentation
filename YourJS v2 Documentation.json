@@ -3,6 +3,35 @@
   "version": "2.8.0",
   "parts": [
     {
+      "name": "afterAll",
+      "code": "function afterAll(objects, binder, callback) {\n  objects = objects.slice();\n  var arr = [], result = [], callsLeft = objects.length;\n  objects.forEach(function(object, index) {\n    result[index] = false;\n    function registerAction() {\n      if (callsLeft) {\n        if (!arr[index]) {\n          callsLeft--;\n        }\n        result[index] = true;\n        arr[index] = { arguments: arguments, timeStamp: +new Date };\n        if (!callsLeft) {\n          callback(objects, arr);\n        }\n      }\n    }\n    if ('function' === typeof binder) {\n      binder(registerAction, object, index);\n    }\n    else {\n      binder.forEach(function(eventName) {\n        object.addEventListener(eventName, registerAction);\n      });\n    }\n  });\n  return result;\n}",
+      "description": "Calls a function after all of the objects in an array have had an action carried out.",
+      "params": [
+        {
+          "name": "objects",
+          "description": "Array of objects for which a function is sure to be called.",
+          "type": "Array"
+        },
+        {
+          "name": "binder",
+          "description": "If this is a function it will be called for each object in `objects` and will be passed (1) a function that is to be called when action is to be taken (eg. on an event), (2) an object from `objects` and (3) the corresponding index of that object from `objects`.  Call If this is an array of strings the strings will be treated as event names that will be listened to.",
+          "type": "Function|Array<string>"
+        },
+        {
+          "name": "callback",
+          "description": "Function to be called once either action was taken for all of the objects in `objects`.  If `binder` is an array of strings this means once at least one of the events was called for each object in `objects`.  This function will be called with (1) a copy of `objects` and (2) an array of objects that will have a `arguments` property containing the arguments passed when the action was taken and a `timeStamp` property containing the epoch value of when the action was taken.  The objects in the second argument passed will always correspond to the objects in the first argument.",
+          "type": "Function"
+        }
+      ],
+      "return": {
+        "type": "Array<boolean>",
+        "description": "Returns an array of booleans each one indicating if the corresponding object from `objects` has had an action take place."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "alias",
       "code": "function alias(context, name) { return context[name].bind(context); }",
       "description": "Binds a context to a given function within that context.",
@@ -30,6 +59,39 @@
         }
       ],
       "required": false
+    },
+    {
+      "name": "attempt",
+      "code": "function attempt(root, path) {\n  if ('string' === typeof path) {\n    path = [path];\n  }\n  for (var fn = root, i = 0, l = path.length; fn != undefined && i < l;) {\n    root = fn;\n    fn = root[path[i++]];\n  }\n  if ('function' === typeof fn) {\n    return fn.apply(root, slice(arguments, 2));\n  }\n}",
+      "description": "Attempts to call a function if one exists at the given path starting at the given root object.",
+      "params": [
+        {
+          "name": "root",
+          "description": "The root object for which to begin traversing the `path` the find the corresponding function to be called.",
+          "type": "*"
+        },
+        {
+          "name": "path",
+          "description": "If this is a string it represents the name of `root`'s function that will be called.  If this is an array it represents a path to the object and then the underlying function that will be called.",
+          "type": "string|Array<string>"
+        },
+        {
+          "name": "opt_argX",
+          "description": "Zero or more arguments to be passed to the function at `path`.",
+          "type": "*",
+          "rest": true,
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "If there is a function found at `path` under root it will be executed and the return value will be returned.  Otherwise `undefined` is returned."
+      },
+      "requires": [
+        "slice"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "best",
