@@ -1338,6 +1338,60 @@
       ]
     },
     {
+      "name": "eq",
+      "code": "",
+      "description": "Determines if one value is equal to (`==`) another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is equal to (`==`) `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is equal to (`==`) `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is equal to (`==`) `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is equal to (`==`) `value1`."
+      },
+      "requires": [
+        "lt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "eqs",
+      "code": "",
+      "description": "Determines if one value is strictly equal to (`===`) another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is strictly equal to (`===`) `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is strictly equal to (`===`) `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is strictly equal to (`===`) `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is strictly equal to (`===`) `value1`."
+      },
+      "requires": [
+        "lt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "escape",
       "code": "function escape(str) {\n  return encodeURIComponent(str)\n    .replace(/!/g, '%21')\n    .replace(/'/g, '%27')\n    .replace(/\\(/g, '%28')\n    .replace(/\\)/g, '%29')\n    .replace(/\\*/g, '%2A')\n    .replace(/%20/g, '+');\n}",
       "description": "Encodes a string to be used in a query part of a URL.",
@@ -1497,6 +1551,102 @@
           "code": "test(\n  JSON.stringify(YourJS.fill(new Array(10), 5, 1, -1)),\n  '[null,5,5,5,5,5,5,5,5,null]'\n);"
         }
       ]
+    },
+    {
+      "name": "filterByProp",
+      "code": "",
+      "description": "Looks for all of the items in an array whose given property matches the criteria.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array to traverse.",
+          "type": "Array"
+        },
+        {
+          "name": "propName",
+          "description": "Name of the property of each `array` item to inspect.  If no such property exists for any `array` item that item will simply be skipped.",
+          "type": "string"
+        },
+        {
+          "name": "tester",
+          "description": "Criteria by which to test the property of each item in `array`.  If this is a function it will be passed the value of the property and the return value will be coerced to a boolean to see if the property fits the criteria.  If this is a regular expression it will be tested against the property to see if the property fits the criteria.  Any other type of value will be checked to see if the property is this value to see if it fits the criteria.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array of the items in `array` for which `tester` matches the specified property."
+      },
+      "requires": [
+        "findByProp"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "findByProp",
+      "code": "var findByProp = Function('T,I', ('return [find,findIndex,filter]').replace(/\\w+(?=,|\\])/g, 'function $&ByProp(d,e,a){var b=T(a),f=\"RegExp\"===b,g=\"Function\"===b||I(a)&&(a=isNaN);return d.$&(function(b,d){if(void 0==b)return!1;var c=b[e];return f?a.test(c):g?a(c):c===a})}'))(typeOf, isNaN),\n    filterByProp = findByProp.pop(),\n    findIndexByProp = findByProp.pop();\nfindByProp = findByProp.pop();",
+      "description": "Looks for the first value in an array whose given property matches the criteria.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array to traverse.",
+          "type": "Array"
+        },
+        {
+          "name": "propName",
+          "description": "Name of the property of each `array` item to inspect.  If no such property exists for any `array` item that item will simply be skipped.",
+          "type": "string"
+        },
+        {
+          "name": "tester",
+          "description": "Criteria by which to test the property of each item in `array`.  If this is a function it will be passed the value of the property and the return value will be coerced to a boolean to see if the property fits the criteria.  If this is a regular expression it will be tested against the property to see if the property fits the criteria.  Any other type of value will be checked to see if the property is this value to see if it fits the criteria.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "The first item in `array` for which `tester` matches the specified property.  If `tester` never matches any of the properties `undefined` will be returned."
+      },
+      "requires": [
+        "isNaN",
+        "typeOf",
+        "findIndexByProp",
+        "filterByProp"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "findIndexByProp",
+      "code": "",
+      "description": "Looks for the first index in an array whose given property matches the criteria.",
+      "params": [
+        {
+          "name": "array",
+          "description": "Array to traverse.",
+          "type": "Array"
+        },
+        {
+          "name": "propName",
+          "description": "Name of the property of each `array` item to inspect.  If no such property exists for any `array` item that item will simply be skipped.",
+          "type": "string"
+        },
+        {
+          "name": "tester",
+          "description": "Criteria by which to test the property of each item in `array`.  If this is a function it will be passed the value of the property and the return value will be coerced to a boolean to see if the property fits the criteria.  If this is a regular expression it will be tested against the property to see if the property fits the criteria.  Any other type of value will be checked to see if the property is this value to see if it fits the criteria.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The first index in `array` for which `tester` matches the specified property.  If `tester` never matches any of the properties `-1` will be returned."
+      },
+      "requires": [
+        "findByProp"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "findNth",
@@ -2005,6 +2155,60 @@
           "code": "var names = ['Andrew','Chris','Stacey','Whitney'];\nvar obj = YourJS.groupBy(names, function(name) { return name.length; });\ntest(obj[5].concat(obj[6],obj[7]).join(','), 'Chris,Andrew,Stacey,Whitney');"
         }
       ]
+    },
+    {
+      "name": "gt",
+      "code": "",
+      "description": "Determines if one value is greater than another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is less than `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is greater than `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is greater than `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is greater than `value1`."
+      },
+      "requires": [
+        "lt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "gte",
+      "code": "",
+      "description": "Determines if one value is greater than or equal to another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is less than or equal to `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is greater than or equal to `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is greater than or equal to `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is greater than or equal to `value1`."
+      },
+      "requires": [
+        "lt"
+      ],
+      "required": false,
+      "tests": []
     },
     {
       "name": "has",
@@ -4178,6 +4382,66 @@
       "tests": []
     },
     {
+      "name": "lt",
+      "code": "eval('lt<gt>eq==ne!=lte<=gte>=eqs===nes!=='.replace(/(\\w+)(\\W+)/g, 'function $1(a,b){return arguments.length-1?a$2b:function(b){return b$2a}}'));",
+      "description": "Determines if one value is less than another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is greater than `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is less than `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is less than `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is less than `value1`."
+      },
+      "requires": [
+        "gt",
+        "eq",
+        "ne",
+        "lte",
+        "gte",
+        "eqs",
+        "nes"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "lte",
+      "code": "",
+      "description": "Determines if one value is less than or equal to another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is greater than or equal to `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is less than or equal to `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is less than or equal to `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is less than or equal to `value1`."
+      },
+      "requires": [
+        "lt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "matchAll",
       "code": "function matchAll(str, rgx, opt_fnMapper) {\n  var count = 0, matches = [];\n  str.replace(rgx, function(match) {\n    match = slice(arguments, 0, -1);\n    match.index = match.pop();\n    match.input = str;\n    match.source = rgx;\n    if (opt_fnMapper) {\n      match = opt_fnMapper(match, ++count);\n    }\n    if (match !== undefined) {\n      matches.push(match);\n    }\n  });\n  return matches.length ? matches : null;\n}",
       "description": "Gets all of the matches found when matching a regular expression against a string.",
@@ -4385,6 +4649,60 @@
         "description": "A multiple of `factor` that approximates `target`.  If `opt_roundOut` is `true`-ish this will be a value that is either `target` or a little further away from `0` than `target`.  If `opt_roundOut` is `false`-ish this will be a value that is either `target` or a little closer to `0` than `target`."
       },
       "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "ne",
+      "code": "",
+      "description": "Determines if one value is not equal to (`!=`) another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is not equal to (`!=`) `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is not equal to (`!=`) `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is not equal to (`!=`) `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is not equal to (`!=`) `value1`."
+      },
+      "requires": [
+        "lt"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "nes",
+      "code": "",
+      "description": "Determines if one value is strictly not equal to (`!==`) another value.",
+      "params": [
+        {
+          "name": "value1",
+          "description": "Value to be checked to see if it is strictly not equal to (`!==`) `value2`.",
+          "type": "*"
+        },
+        {
+          "name": "value2",
+          "description": "Value to be checked to see if it is strictly not equal to (`!==`) `value1`.",
+          "type": "*",
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean|Function",
+        "description": "If `value1` and `value2` are given a boolean indicating if `value1` is strictly not equal to (`!==`) `value2` will be returned.  Otherwise a partial function will be returned which when called will accept on value and will return a boolean indicating if that value is strictly not equal to (`!==`) `value1`."
+      },
+      "requires": [
+        "lt"
+      ],
       "required": false,
       "tests": []
     },
