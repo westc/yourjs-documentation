@@ -2401,14 +2401,14 @@
       "description": "Tests `subject` against `control` and if it results in a `false`-ish value `falsyValue` will be passed back.  Otherwise, if `opt_truthyValue` is given it will be passed back, but if not `subject` will be passed back.",
       "params": [
         {
-          "name": "control",
-          "description": "If this is a function it will be called with `subject` being the only argument.  Otherwise, this regular expression will be tested against `subject`.",
-          "type": "Function|RegExp"
-        },
-        {
           "name": "subject",
           "description": "Value to test.",
           "type": "*"
+        },
+        {
+          "name": "control",
+          "description": "If this is a function it will be called with `subject` being the only argument.  Otherwise, this regular expression will be tested against `subject`.",
+          "type": "Function|RegExp"
         },
         {
           "name": "falsyValue",
@@ -2439,14 +2439,14 @@
       "description": "If the second argument is not in the first argument (array) the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
       "params": [
         {
-          "name": "arrControls",
-          "description": "Array of values to test `subject` against.",
-          "type": "Array"
-        },
-        {
           "name": "subject",
           "description": "Value to see if it is in `arrControls`.",
           "type": "*"
+        },
+        {
+          "name": "arrControls",
+          "description": "Array of values to test `subject` against.",
+          "type": "Array"
         },
         {
           "name": "trueValue",
@@ -2473,17 +2473,17 @@
     },
     {
       "name": "ifIs",
-      "code": "eval(\n  'function if(a,b,c,d){return?c:(arguments.length>3?d:b)}'\n    .replace(/([\\w ]+)(.+return)(.+)/, '$1Is$2~$3$1Not$2~$3$1In$2`$3$1Out$2`$3$1Pass$2#$3$1Fail$2#$3')\n    .replace(/~/g, '!(@(a)?@(b):(a===b))')\n    .replace(/`/g, '!a.includes(b)')\n    .replace(/#/g, '!(Object.prototype.toString.call(a)===\"[object RegExp]\"?a.test(b):a(b))')\n    .replace(/!([^!]+(!|$))/g, ' $1')\n    .replace(/@/g, 'Number.isNaN')\n);",
+      "code": "eval(\n  'function if(a,b,c,d){return?c:(arguments.length>3?d:a)}'\n    .replace(/([\\w ]+)(.+return)(.+)/, '$1Is$2~$3$1Not$2~$3$1In$2`$3$1Out$2`$3$1Pass$2#$3$1Fail$2#$3')\n    .replace(/~/g, '!(@(b)?@(a):(b===a))')\n    .replace(/`/g, '!b.includes(a)')\n    .replace(/#/g, '!(Object.prototype.toString.call(b)===\"[object RegExp]\"?b.test(a):b(a))')\n    .replace(/!([^!]+(!|$))/g, ' $1')\n    .replace(/@/g, 'Number.isNaN')\n);",
       "description": "If the first and second arguments are the same the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
       "params": [
         {
-          "name": "control",
-          "description": "Value that is being tested against.",
+          "name": "subject",
+          "description": "Value to test.",
           "type": "*"
         },
         {
-          "name": "subject",
-          "description": "Value to test.",
+          "name": "control",
+          "description": "Value that is being tested against.",
           "type": "*"
         },
         {
@@ -2503,7 +2503,13 @@
         "type": "*",
         "description": "`trueValue` will be returned if `control` is `subject`.  Otherwise, if `opt_falseValue` is given it will be returned, but if not given `subject` will be returned."
       },
-      "requires": [],
+      "requires": [
+        "ifFail",
+        "ifIn",
+        "ifNot",
+        "ifOut",
+        "ifPass"
+      ],
       "required": false,
       "tests": []
     },
@@ -2513,13 +2519,13 @@
       "description": "If the first and second arguments are different the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
       "params": [
         {
-          "name": "control",
-          "description": "Value that is being tested against.",
+          "name": "subject",
+          "description": "Value to test.",
           "type": "*"
         },
         {
-          "name": "subject",
-          "description": "Value to test.",
+          "name": "control",
+          "description": "Value that is being tested against.",
           "type": "*"
         },
         {
@@ -2551,14 +2557,14 @@
       "description": "If the second argument is not in the first argument (array) the third argument is passed back, otherwise the fourth argument (or if not given the second argument) is passed back.",
       "params": [
         {
-          "name": "arrControls",
-          "description": "Array of values to test `subject` against.",
-          "type": "Array"
-        },
-        {
           "name": "subject",
           "description": "Value to see if it is in `arrControls`.",
           "type": "*"
+        },
+        {
+          "name": "arrControls",
+          "description": "Array of values to test `subject` against.",
+          "type": "Array"
         },
         {
           "name": "falseValue",
@@ -2589,14 +2595,14 @@
       "description": "Tests `subject` against `control` and if it results in a `true`-ish value `truthyValue` will be passed back.  Otherwise, if `opt_falsyValue` is given it will be passed back, but if not `subject` will be passed back.",
       "params": [
         {
+          "name": "subject",
+          "description": "Value to test",
+          "type": "*"
+        },
+        {
           "name": "control",
           "description": "If this is a function it will be called with `subject` being the only argument.  Otherwise, this regular expression will be tested against `subject`.",
           "type": "Function|RegExp"
-        },
-        {
-          "name": "subject",
-          "description": "Value to test.",
-          "type": "*"
         },
         {
           "name": "truthyValue",
