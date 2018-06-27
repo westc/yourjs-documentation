@@ -5252,7 +5252,7 @@
     },
     {
       "name": "postURL",
-      "code": "function postURL(url, opt_data) {\n  var body = __DOCUMENT.body,\n      form = extend(__DOCUMENT.createElement(\"FORM\"), {\n        method: 'POST',\n        action: url\n      });\n  form.style.display = \"none\";\n  entries(opt_data).forEach(function(pair) {\n    form.appendChild(extend(__DOCUMENT.createElement(\"TEXTAREA\"), {\n      name: decodeURIComponent(pair[0]),\n      value: decodeURIComponent(pair[1])\n    }));\n  });\n  body.appendChild(form);\n  form.submit();\n  body.removeChild(form);\n  return form;\n}",
+      "code": "function postURL(url, opt_data) {\n  var body = __DOCUMENT.body,\n      form = extend(__DOCUMENT.createElement(\"FORM\"), {\n        method: 'POST',\n        action: url\n      });\n  form.style.display = \"none\";\n  entries(opt_data).forEach(function(pair) {\n    form.appendChild(extend(__DOCUMENT.createElement(\"TEXTAREA\"), {\n      name: pair[0],\n      value: JSON.stringify(pair[1])\n    }));\n  });\n  body.appendChild(form);\n  form.submit();\n  body.removeChild(form);\n  return form;\n}",
       "description": "Takes a URL and goes to it using the POST method.",
       "params": [
         {
