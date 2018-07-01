@@ -1,5 +1,5 @@
 /**
- * Creates an array with the range of numbers going from `first` and ending at
+ * Creates an array with the span of numbers going from `first` and ending at
  * `last` if possible depending on the specified step value.
  * @param {number} first
  *   First number that should appear in the returned array.
@@ -18,7 +18,7 @@
  *   empty array will be returned.  If `opt_mapper` is given the array will
  *   contain the sequence of mapped.
  */
-function fromTo(first, last, opt_step, opt_mapper) {
+function span(first, last, opt_step, opt_mapper) {
   opt_step = +opt_step || 1;
   for (var result = [], mult = opt_step < 0 ? -1 : 1; mult * (last - first) >= 0; first += opt_step) {
     result.push(opt_mapper ? opt_mapper(first) : first);
