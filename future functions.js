@@ -25,3 +25,8 @@ function span(first, last, opt_step, opt_mapper) {
   }
   return result;
 }
+
+var around = Function('P,T,M,Q', 'return[ , [0], [1]]'.replace(/ ([^,]{3})?/g, 'function(a,b,d){var e,c=[];d=P(d||1,10);b=(T(b)==="RegExp"?M:Q)(b,"g");a.replace(b,function(a,b){e=arguments;c.push([b=e[e.length-2],a.length+b])});a=(c=c[d+(0<d?-1:c.length)])?[a.slice(0,c[0]),a.slice(c[1])]:[null,null];return a$1}'))(parseInt, YourJS.typeOf, YourJS.modRegExp, YourJS.quoteRegExp),
+    before = around[1],
+    after = around[2];
+around = around[0];
