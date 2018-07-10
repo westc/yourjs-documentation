@@ -39,3 +39,6 @@ function avg(array) {
   }
   return sum / count;
 }
+
+// Generates lowerFirst(), lowerRest(), upperFirst(), and upperRest()
+eval("function st(s){return s.slice(0,1)erCase()".replace(/(\w+ )(.{13}(.{8})....)(.+)/g,"$1lowerFir$2.toLow$4+$31);}$1lowerRe$2+$31).toLow$4;}$1upperFir$2.toUpp$4+$31);}$1upperRe$2+$31).toUpp$4}"));
