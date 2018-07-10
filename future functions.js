@@ -20,5 +20,5 @@ eval(
 )(getAt);
 
 // EDIT:  lt
-// Generates add, subtract, multiply, divide, lt, gt, eq, ne, lte, gte, eqs and nes
-eval('add+subtract-multiply*divide/lt<gt>eq==ne!=lte<=gte>=eqs===nes!=='.replace(/(\w+)(\W+)/g, 'function $1(a,b){return arguments.length-1?a$2b:function(b){return b$2a}}'));
+// Generates xorBits, orBits, andBits, add, subtract, multiply, divide, modulo, lt, gt, eq, ne, lte, gte, eqs and nes
+eval('xorBits^orBits|andBits&add+subtract-multiply*divide/rem%lt<gt>eq==ne!=lte<=gte>=eqs===nes!=='.replace(/(\w+)(\W+)/g, 'function $1(a,b){return arguments.length-1?a$2b:function(b){return b$2a}}'));
