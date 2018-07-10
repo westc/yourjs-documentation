@@ -22,3 +22,9 @@ eval(
 // EDIT:  lt
 // Generates xorBits, orBits, andBits, add, subtract, multiply, divide, modulo, lt, gt, eq, ne, lte, gte, eqs and nes
 eval('xorBits^orBits|andBits&add+subtract-multiply*divide/rem%lt<gt>eq==ne!=lte<=gte>=eqs===nes!=='.replace(/(\w+)(\W+)/g, 'function $1(a,b){return arguments.length-1?a$2b:function(b){return b$2a}}'));
+
+function toBase(opt_num, base) {
+  return base
+    ? (+opt_num).toString(base)
+    : function(x) { return (+x).toString(opt_num); };
+}
