@@ -4,13 +4,17 @@ var countBy = Function('G,H,T', ('return[@"number"!==typeof c[f=g?d(b[a],a,b):G(
     indexBy = countBy[2];
 countBy = countBy[0];
 
-// requires getAt
+// Requires getAt
+// Generates minIndex, minIndexBy, min, minBy, maxIndex, maxIndexBy, max, maxBy, minMax, minMaxBy, minMaxIndex and minMaxIndexBy
 eval(
-  "in<ax>".replace(
-    /(..)(.)/g,
-    "!!b[d]!b[a]!!!!By!,e!a&&g?e(b[d]):G(b[d],e)!g?e(b[a]):G(b[a],e)!,i!e='string'===typeof e?[e]:e;!g='function'===typeof e,!".replace(
-      /([^! ]*)!([^!]*)!([^!]*)!([^!]*)!([^!]*)!([^!]*)!([^!]*)!/g,
-      "m$$1Index$1=function(b$2){$6for(var c,$7a=1,d=0,h=b.length,f=$3;a<h;a++)c=$4,c$$2f&&(f=c,d=a);return d},m$$1$1=function(a$5){return a[m$$1Index$1(a$5)]},"
+  "minIndex t.min!min a[t.min]!maxIndex t.max!max a[t.max]!minMax{min:a[t.min],max:a[t.max]}!".replace(
+    /(\w+)([^!]+)!/g,
+    " By,i".replace(
+      /\W|(..)(..)/g,
+      "@ $$1$1(a$2){var t=#$1(a$2);return$$2}"
     )
-  ).replace(/(.+)./, 'var min,minBy,max,maxBy,minIndex,minIndexBy,maxIndex,maxIndexBy;min=function(G){$1}')
+  ).replace(
+    /.+/,
+    '$&var #,#By;#=@(G){#=@(h){for(var a,c,e,f,g,b=0,k=h.length;b<k;b++)a=h[b],b?a<c?(c=a,e=b):a>f&&(f=a,g=b):(c=f=a,e=g=b);return{min:e,max:g}};#By=@(h,a){a="string"===typeof a?[a]:a;for(var c,e,f,g,b,k="@"===typeof a,d=0,l=h.length;d<l;d++)c=k?a(h[d]):G(h[d],a),d?c<e?(e=c,f=d):c>g&&(g=c,b=d):(e=g=c,f=b=d);return{min:f,max:b}}}'
+  ).replace(/#/g, 'minMaxIndex').replace(/@/g, 'function')
 )(getAt);
