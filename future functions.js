@@ -2,6 +2,8 @@ function mapFilter() {} // https://www.yourjs.com/console/?gist=f7062146ad31a501
 
 function only() {} // https://www.yourjs.com/console/?gist=21095b56aa3aa03300fce3aed6f77c3b&file=only.js
 
+function chunk() {} // https://www.yourjs.com/console/?gist=83212999f5de5dd92a6fa79bc4c6f285&file=chunk.js
+
 // Fix for time():  Added return for wrapper function
 function time(fn, times) {
   var timesIsFunction = 'function' === typeof times;
