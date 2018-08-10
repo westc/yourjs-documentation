@@ -1,5 +1,7 @@
 function mapFilter() {} // https://www.yourjs.com/console/?gist=f7062146ad31a501ec0e37f0f89c2eb0&file=mapFilter.js
 
+function only() {} // https://www.yourjs.com/console/?gist=21095b56aa3aa03300fce3aed6f77c3b&file=only.js
+
 // Fix for time():  Added return for wrapper function
 function time(fn, times) {
   var timesIsFunction = 'function' === typeof times;
