@@ -4,6 +4,10 @@ function only() {} // https://www.yourjs.com/console/?gist=21095b56aa3aa03300fce
 
 function chunk() {} // https://www.yourjs.com/console/?gist=83212999f5de5dd92a6fa79bc4c6f285&file=chunk.js
 
+function includes() {} // https://www.yourjs.com/console/?gist=e7eb0bf516827fa7b0380d8da4fe05c6&file=includes+and+indexOf.js
+
+function indexOf() {} // https://www.yourjs.com/console/?gist=e7eb0bf516827fa7b0380d8da4fe05c6&file=includes+and+indexOf.js
+
 // Fix is() by removing explicit reference to YourJS
 function is(x, y) {
   x = x === y
@@ -14,5 +18,14 @@ function is(x, y) {
     : x;
 }
 
-function includes() {} // https://www.yourjs.com/console/?gist=e7eb0bf516827fa7b0380d8da4fe05c6&file=includes+and+indexOf.js
-function indexOf() {} // https://www.yourjs.com/console/?gist=e7eb0bf516827fa7b0380d8da4fe05c6&file=includes+and+indexOf.js
+// Fix copyProps() by removing big arrow function (=>)
+function copyProps(target, source, keys) {
+  if (target != undefined && source != undefined) {
+    keys.forEach(function(k) {
+      if (has(source, k)) {
+        target[k] = source[k];
+      }
+    });
+  }
+  return target;
+}
