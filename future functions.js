@@ -36,6 +36,12 @@ function log10() {} // https://www.yourjs.com/console/?gist=df3a1c88054516d28974
 
 function repeat() {} // https://www.yourjs.com/console/?gist=bb937db3001f6c1a91a68db34db7bf09&file=repeat.js
 
+// Used to always get the native name of a value.
+// This is different from typeOf() because it solely relies on the environment to get the type name.
+function nativeName(x) {
+  return __EMPTY_OBJECT.toString.call(x).slice(8, -1);
+}
+
 // Fix is() by removing explicit reference to YourJS
 function is(x, y) {
   x = x === y
