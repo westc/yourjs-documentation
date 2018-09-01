@@ -16,6 +16,26 @@ function startsWith() {} // https://www.yourjs.com/console/?gist=7b98abf484dd8a3
 
 function flatMap() {} // https://www.yourjs.com/console/?gist=c15e64baea1773744923777130feec68&file=flatMap.js
 
+function int8() {} // https://www.yourjs.com/console?gist=8069af4c97dd6dd1148e271d0314aba2&file=integer+functions.js
+
+function uint8() {} // https://www.yourjs.com/console?gist=8069af4c97dd6dd1148e271d0314aba2&file=integer+functions.js
+
+function int16() {} // https://www.yourjs.com/console?gist=8069af4c97dd6dd1148e271d0314aba2&file=integer+functions.js
+
+function uint16() {} // https://www.yourjs.com/console?gist=8069af4c97dd6dd1148e271d0314aba2&file=integer+functions.js
+
+function int32() {} // https://www.yourjs.com/console?gist=8069af4c97dd6dd1148e271d0314aba2&file=integer+functions.js
+
+function uint32() {} // https://www.yourjs.com/console?gist=8069af4c97dd6dd1148e271d0314aba2&file=integer+functions.js
+
+function fround() {} // https://www.yourjs.com/console/?gist=b2cf4654d579575da6c929622edfc499&file=fround.js
+
+function log2() {} // https://www.yourjs.com/console/?gist=df3a1c88054516d2897428d2e6d3d6b0&file=log2+and+log10.js
+
+function log10() {} // https://www.yourjs.com/console/?gist=df3a1c88054516d2897428d2e6d3d6b0&file=log2+and+log10.js
+
+function repeat() {} // https://www.yourjs.com/console/?gist=bb937db3001f6c1a91a68db34db7bf09&file=repeat.js
+
 // Fix is() by removing explicit reference to YourJS
 function is(x, y) {
   x = x === y
