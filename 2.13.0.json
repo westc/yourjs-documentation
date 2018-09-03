@@ -6566,6 +6566,37 @@
       "tests": []
     },
     {
+      "name": "sameSign",
+      "code": "function sameSign() {\n  for (\n    var args = arguments, b = args[0], mustBeNeg = b === b ? b < 0 || 1 / b < 0 : b, i = args.length;\n    b = args[--i], i && mustBeNeg === (b === b ? b < 0 || 1 / b < 0 : b);\n  );\n  return !i;\n}",
+      "description": "Determines if two or more numbers have the same sign (negative or positive).",
+      "params": [
+        {
+          "name": "number1",
+          "description": "First number to be compared to all of the other passed numbers.",
+          "type": "number"
+        },
+        {
+          "name": "number2",
+          "description": "Second number to be compared to all of the other numbers passed.",
+          "type": "number"
+        },
+        {
+          "name": "numberX",
+          "description": "All additional numbers, if any, to be compared to `number1`.",
+          "type": "number",
+          "rest": true,
+          "optional": true
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "Returns `true` if all of the numbers are positive or all of them are negative, otherwise `false` is returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "sample",
       "code": "// Done this way to account for partially or fully empty arrays\nfunction sample(arr, opt_count) {\n  var t, j, result = [], l = arr.length, i = l;\n  if (l) {\n    for (opt_count = Math.max(1, Math.min(opt_count || 1, l)); i--, result[i] = i;);\n    for (i = l; opt_count > l - i; ) {\n      j = Math.round(Math.random() * --i);\n      if (i && i != j) {\n        t = result[i];\n        result[i] = result[j];\n        result[j] = t;\n      }\n      if (has(arr, result[i])) {\n        result[i] = arr[result[i]];\n      }\n      else {\n        delete result[i];\n      }\n    }\n  }\n  return slice(result, -opt_count);\n}",
       "description": "Takes an array and returns a new array with some or all of the original values not usually in the same order.",
@@ -8059,37 +8090,6 @@
       "return": {
         "type": "Array",
         "description": "An array of arrays where the first array contains the first item of each array and the second array contains the second item of each array and so on."
-      },
-      "requires": [],
-      "required": false,
-      "tests": []
-    },
-    {
-      "name": "sameSign",
-      "code": "function sameSign() {\n  for (\n    var args = arguments, b = args[0], mustBeNeg = b === b ? (b < 0 || 1 / b < 0) : NaN, i = args.length;\n    b = args[--i], i && mustBeNeg === (b === b ? (b < 0 || 1 / b < 0) : NaN);\n  );\n  return !i;\n}",
-      "description": "Determines if two or more numbers have the same sign (negative or positive).",
-      "params": [
-        {
-          "name": "number1",
-          "description": "First number to be compared to all of the other passed numbers.",
-          "type": "number"
-        },
-        {
-          "name": "number2",
-          "description": "Second number to be compared to all of the other numbers passed.",
-          "type": "number"
-        },
-        {
-          "name": "numberX",
-          "description": "All additional numbers, if any, to be compared to `number1`.",
-          "type": "number",
-          "rest": true,
-          "optional": true
-        }
-      ],
-      "return": {
-        "type": "boolean",
-        "description": "Returns `true` if all of the numbers are positive or all of them are negative, otherwise `false` is returned."
       },
       "requires": [],
       "required": false,
