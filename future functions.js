@@ -38,6 +38,8 @@ function copySign() {} // https://www.yourjs.com/console?gist=e1dc5ccb4771b1df5f
 
 function sameSign() {} // https://www.yourjs.com/console?gist=f3813f782ca82c36ee6883fe87f6fbc0&file=sameSign.js
 
+function array() {} // https://www.yourjs.com/console?gist=247c495830d39d778237d1d9192a15cb&file=array.js
+
 // Used to always get the native name of a value.
 // This is different from typeOf() because it solely relies on the environment to get the type name.
 function nativeName(x) {
