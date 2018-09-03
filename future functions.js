@@ -42,7 +42,7 @@ function array() {} // https://www.yourjs.com/console?gist=247c495830d39d778237d
 
 // Used to always get the native name of a value.
 // This is different from typeOf() because it solely relies on the environment to get the type name.
-function nativeName(x) {
+function nativeType(x) {
   return __EMPTY_OBJECT.toString.call(x).slice(8, -1);
 }
 
