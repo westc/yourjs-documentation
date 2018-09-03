@@ -5418,6 +5418,30 @@
       "tests": []
     },
     {
+      "name": "nativeType",
+      "code": "function nativeType(x) {\n  return __EMPTY_OBJECT.toString.call(x).slice(8, -1);\n}",
+      "description": "Gets the native type name of a primitive or an object.  Unlike YourJS.typeOf(), the types are solely determined by the system.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Primitive or object whose native type name will be returned.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "The native type name of the specified value.  All type names start with an uppercase character."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Test basics",
+          "code": "test(\n  JSON.stringify([5, NaN, true, null, undefined, 'cool', {}, [], new function(){}, /z/].map(YourJS.nativeType)),\n  '[\"Number\",\"Number\",\"Boolean\",\"Null\",\"Undefined\",\"String\",\"Object\",\"Array\",\"Object\",\"RegExp\"]'\n);"
+        }
+      ]
+    },
+    {
       "name": "ne",
       "code": "",
       "description": "Determines if one value is not equal to (`!=`) another value.",
@@ -8041,28 +8065,35 @@
       "tests": []
     },
     {
-      "name": "nativeType",
-      "code": "// Used to always get the native name of a value.\n// This is different from typeOf() because it solely relies on the environment to get the type name.\nfunction nativeType(x) {\n  return __EMPTY_OBJECT.toString.call(x).slice(8, -1);\n}",
-      "description": "Gets the native type name of a primitive or an object.  Unlike YourJS.typeOf(), the types are solely determined by the system.",
+      "name": "sameSign",
+      "code": "function sameSign() {\n  for (\n    var args = arguments, b = args[0], mustBeNeg = b === b ? (b < 0 || 1 / b < 0) : NaN, i = args.length;\n    b = args[--i], i && mustBeNeg === (b === b ? (b < 0 || 1 / b < 0) : NaN);\n  );\n  return !i;\n}",
+      "description": "Determines if two or more numbers have the same sign (negative or positive).",
       "params": [
         {
-          "name": "value",
-          "description": "Primitive or object whose native type name will be returned.",
-          "type": "*"
+          "name": "number1",
+          "description": "First number to be compared to all of the other passed numbers.",
+          "type": "number"
+        },
+        {
+          "name": "number2",
+          "description": "Second number to be compared to all of the other numbers passed.",
+          "type": "number"
+        },
+        {
+          "name": "numberX",
+          "description": "All additional numbers, if any, to be compared to `number1`.",
+          "type": "number",
+          "rest": true,
+          "optional": true
         }
       ],
       "return": {
-        "type": "string",
-        "description": "The native type name of the specified value.  All type names start with an uppercase character."
+        "type": "boolean",
+        "description": "Returns `true` if all of the numbers are positive or all of them are negative, otherwise `false` is returned."
       },
       "requires": [],
       "required": false,
-      "tests": [
-        {
-          "name": "Test basics",
-          "code": "test(\n  JSON.stringify([5, NaN, true, null, undefined, 'cool', {}, [], new function(){}, /z/].map(YourJS.nativeType)),\n  '[\"Number\",\"Number\",\"Boolean\",\"Null\",\"Undefined\",\"String\",\"Object\",\"Array\",\"Object\",\"RegExp\"]'\n);"
-        }
-      ]
+      "tests": []
     }
   ]
 }
