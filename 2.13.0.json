@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS v{{VERSION}} - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-{{CURRENT_YEAR}} Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.12.4",
+  "version": "2.13.0",
   "parts": [
     {
       "name": "add",
@@ -8039,6 +8039,30 @@
       "requires": [],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "nativeType",
+      "code": "// Used to always get the native name of a value.\n// This is different from typeOf() because it solely relies on the environment to get the type name.\nfunction nativeType(x) {\n  return __EMPTY_OBJECT.toString.call(x).slice(8, -1);\n}",
+      "description": "Gets the native type name of a primitive or an object.  Unlike YourJS.typeOf(), the types are solely determined by the system.",
+      "params": [
+        {
+          "name": "value",
+          "description": "Primitive or object whose native type name will be returned.",
+          "type": "*"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "The native type name of the specified value.  All type names start with an uppercase character."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Test basics",
+          "code": "test(\n  JSON.stringify([5, NaN, true, null, undefined, 'cool', {}, [], new function(){}, /z/].map(YourJS.nativeType)),\n  '[\"Number\",\"Number\",\"Boolean\",\"Null\",\"Undefined\",\"String\",\"Object\",\"Array\",\"Object\",\"RegExp\"]'\n);"
+        }
+      ]
     }
   ]
 }
