@@ -1,5 +1,3 @@
-function mapFilter() {} // https://www.yourjs.com/console/?gist=f7062146ad31a501ec0e37f0f89c2eb0&file=mapFilter.js
-
 function only() {} // https://www.yourjs.com/console/?gist=21095b56aa3aa03300fce3aed6f77c3b&file=only.js
 
 function chunk() {} // https://www.yourjs.com/console/?gist=83212999f5de5dd92a6fa79bc4c6f285&file=chunk.js
@@ -35,6 +33,10 @@ function log2() {} // https://www.yourjs.com/console/?gist=df3a1c88054516d289742
 function log10() {} // https://www.yourjs.com/console/?gist=df3a1c88054516d2897428d2e6d3d6b0&file=log2+and+log10.js
 
 function repeat() {} // https://www.yourjs.com/console/?gist=bb937db3001f6c1a91a68db34db7bf09&file=repeat.js
+
+function copySign() {} // https://www.yourjs.com/console?gist=e1dc5ccb4771b1df5f3ed4f378465aac&file=copySign.js
+
+function sameSign() {} // https://www.yourjs.com/console?gist=f3813f782ca82c36ee6883fe87f6fbc0&file=sameSign.js
 
 // Used to always get the native name of a value.
 // This is different from typeOf() because it solely relies on the environment to get the type name.
