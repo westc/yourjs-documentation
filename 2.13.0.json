@@ -3462,7 +3462,7 @@
     },
     {
       "name": "isArrayLike",
-      "code": "function isArrayLike(o) {\n  var l, i, t = typeOf(o);\n  return t == 'Array'\n      || (!!o\n        && !o.nodeName\n        && typeOf(l = o.length) == 'Number'\n        && !['Function', 'String'].includes(t)\n        && (!l || (l > 0 && (i = l - 1) % 1 == 0 && i in o)));\n}",
+      "code": "function isArrayLike(o) {\n  var l, i, t = typeOf(o);\n  return t == 'Array'\n      || (!!o\n        && !o.nodeName\n        && typeOf(l = o.length) == 'Number'\n        && 'Function' !== t && 'String' !== t\n        && (!l || (l > 0 && (i = l - 1) % 1 == 0 && i in o)));\n}",
       "description": "Determines if an object is an array or at least array-like.",
       "params": [
         {
