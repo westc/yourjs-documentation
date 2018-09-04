@@ -2932,6 +2932,44 @@
       "tests": []
     },
     {
+      "name": "includes",
+      "code": "function includes(subject, target, opt_start) {\n  subject = indexOf(subject, target, opt_start);\n  return 'number' === typeof subject ? subject >= 0 : (subject !== undefined);\n}",
+      "description": "Determines whether or not a `target` is present within a given string, array or object.  Unlike `Array.prototype.includes()`, this function differentiates between `-0` and `0`.",
+      "params": [
+        {
+          "name": "subject",
+          "description": "The array, object or string in which `target` should be searched for.",
+          "type": "Array|Object|string"
+        },
+        {
+          "name": "target",
+          "description": "The target value to search for within `subject`.",
+          "type": "*"
+        },
+        {
+          "name": "opt_start",
+          "description": "The position at which to start the search for strings or arrays.  This will be ignored for objects.  Negative values will be calculated from the end.",
+          "type": "number",
+          "optional": true,
+          "default": "0"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "A boolean value indicating if `target` is present within `subject` at or after `opt_start`."
+      },
+      "requires": [
+        "indexOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Array test",
+          "code": "test(YourJS.includes([0,NaN,-0,undefined], -0), true);"
+        }
+      ]
+    },
+    {
       "name": "index",
       "code": "var index = (function(kNames, vNames) {\n  return function (subject, target, callback) {\n    forOf(subject, function (value, key) {\n      if (value = callback.call(target, value, key, subject)) {\n        for (var kName, vName, i = 0; kName = kNames[i], vName = vNames[i]; i++) {\n          if (has(value, kName) && has(value, vName)) {\n            target[value[kName]] = value[vName];\n            i = 2;\n          }\n        }\n      }\n    });\n    return target;\n  };\n})(\n  ['k', 0, 'key'],\n  ['v', 1, 'value', false]\n);",
       "description": "Indexes the `target` object based on the items found in `subject` and the `callback` function.",
@@ -2998,6 +3036,44 @@
         {
           "name": "Simple",
           "code": "var a = ['a','b'], o = YourJS.indexBy(a, function(v){return v});\ntest(\n  [o.b,o.a].join(','),\n  'b,a'\n);"
+        }
+      ]
+    },
+    {
+      "name": "indexOf",
+      "code": "function indexOf(subject, target, opt_start) {\n  var k, i, item, t = typeOf(subject), isNaN = target !== target, isNegZero = target === 0 && 1 / target < 0;\n  if (t === 'String') {\n    return subject.indexOf(target, opt_start);\n  }\n  else if (t === 'Array') {\n    opt_start = ~~opt_start;\n    if (opt_start < 0) {\n      opt_start = Math.max(0, subject.length + opt_start);\n    }\n\n    for (i = subject.length; i-- > opt_start;) {\n      item = subject[i];\n      if (isNaN ? item !== item : (isNegZero ? item === 0 && 1 / item < 0 : (target === item))) {\n        return i;\n      }\n    }\n    return -1;\n  }\n\n  t = Object.keys(subject);\n  for (i = t.length; i--;) {\n    item = subject[k = t[i]];\n    if (isNaN ? item !== item : (isNegZero ? item === 0 && 1 / item < 0 : (target === item))) {\n      return k;\n    }\n  }\n}",
+      "description": "Gets the index of a specified target value in a string, array or an object.  Unlike `Array.prototype.indexOf()`, this function works for finding `NaN` and differentiates between `-0` and `0`.",
+      "params": [
+        {
+          "name": "subject",
+          "description": "The array, object or string in which `target` should be searched for.",
+          "type": "Array|Object|string"
+        },
+        {
+          "name": "target",
+          "description": "The target value to search for within `subject`.",
+          "type": "*"
+        },
+        {
+          "name": "opt_start",
+          "description": "The position at which to start the search for strings or arrays.  This will be ignored for objects.  Negative values will be calculated from the end.",
+          "type": "number",
+          "optional": true,
+          "default": "0"
+        }
+      ],
+      "return": {
+        "type": "number|string|undefined",
+        "description": "If `subject` is an array or a string this will be a integer representing the first position at which `target` is found within `subject` or this will be `-1` which represents that `target` was not found.  If `subject` is an object this will be key at which `target` was first found (based on `Object.keys()`) or `undefined` if `target` was not found."
+      },
+      "requires": [
+        "typeOf"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Array test",
+          "code": "test(YourJS.indexOf([0,NaN,-0,undefined], -0), 2);"
         }
       ]
     },
