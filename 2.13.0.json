@@ -3373,7 +3373,7 @@
     },
     {
       "name": "is",
-      "code": "function is(x, y) {\n  x = x === y\n    ? x !== 0 || 1 / x == 1 / y // -0 vs 0\n    : (x != x && y != y); // NaN\n  return x && arguments.length > 2\n    ? is.apply(0, slice(arguments, 1))\n    : x;\n}",
+      "code": "// // Original is():\n// function is() {\n//   for (\n//     var a, b, args = arguments, i = args.length;\n//     a = args[--i], b = args[i - 1], i && (a === a ? a === 0 ? 1 / a === 1 / b : a === b : b !== b);\n//   );\n//   return i < 1;\n// }\neval('>Not<='.replace(/(\\w*)(.=?)/g, 'function is$1(){for(var a,b,d=arguments,c=d.length;a=d[--c],b=d[c-1],c&&(a===a?0===a?1/a===1/b:a===b:b!==b););return 1$2c}'));",
       "description": "Tests to see if two or more values are exactly the same. This is similar to `===` but will also indicate that `NaN` is `NaN` and will indicate that `-0` is not `0`.",
       "params": [
         {
@@ -3383,16 +3383,24 @@
         },
         {
           "name": "y",
-          "description": "Values to be compared to `x` for equality.",
+          "description": "Value to be compared to `x` for equality.",
           "type": "*"
+        },
+        {
+          "name": "otherValues",
+          "description": "Any additional values to be compared to `x` and `y`.",
+          "type": "*",
+          "optional": true,
+          "rest": true
         }
       ],
       "return": {
         "type": "boolean",
-        "description": "`true` if all of the parameters passed in are the same, otherwise `false` is returned."
+        "description": "`true` if all of the parameters passed in are exactly the same, otherwise `false` is returned."
       },
       "requires": [
-        "slice"
+        "slice",
+        "isNot"
       ],
       "required": false,
       "tests": []
@@ -4063,6 +4071,39 @@
       },
       "requires": [
         "isMixCase"
+      ],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "isNot",
+      "code": "",
+      "description": "Tests to see if two or more values are not exactly the same. This is similar to `!==` but will also work with `NaN` and can differentiate between `-0` and `0`.",
+      "params": [
+        {
+          "name": "x",
+          "description": "A value.",
+          "type": "*"
+        },
+        {
+          "name": "y",
+          "description": "Value to be compared to `x` for inequality.",
+          "type": "*"
+        },
+        {
+          "name": "otherValues",
+          "description": "Any additional values to be compared to `x` and `y`.",
+          "type": "*",
+          "optional": true,
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "`true` if any of the parameters passed are not exactly the same, otherwise `false` is returned."
+      },
+      "requires": [
+        "is"
       ],
       "required": false,
       "tests": []
