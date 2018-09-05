@@ -2097,6 +2097,49 @@
       "tests": []
     },
     {
+      "name": "flatMap",
+      "code": "function flatMap(arrOrObj, callback, thisArg) {\n  if (Array.isArray(arrOrObj)) {\n    for (var returned, insertI = 0, i = 0, l = arrOrObj.length, result = new Array(l); i < l; i++ , insertI++) {\n      if (i in arrOrObj) {\n        if (!Array.isArray(returned = callback.call(thisArg, arrOrObj[i], i, arrOrObj))) {\n          returned = [returned];\n        }\n        result.splice.apply(result, [insertI, 1].concat(returned));\n        insertI = insertI + returned.length - 1;\n      }\n    }\n  }\n  else {\n    var result = {};\n    for (var i in arrOrObj) {\n      if (has(arrOrObj, i)) {\n        extend(result, callback.call(thisArg, arrOrObj[i], i, arrOrObj));\n      }\n    }\n  }\n  return result;\n}",
+      "description": "Iterates through each item in an array or an object, passing the item to a mapping function, and flattens the result into the array or object.",
+      "params": [
+        {
+          "name": "arrOrObj",
+          "description": "Array or object whose items should be iterated through and passed to the mapping function.",
+          "type": "Array|Object"
+        },
+        {
+          "name": "mapper",
+          "description": "Mapping function which will be passed (1) the item be analyzed, (2) the corresponding index or key for said item, and (3) a reference to `arrOrObj`.  The return value will be flattened into the array or object returned from `flatMap()`.",
+          "type": "Function"
+        },
+        {
+          "name": "opt_thisArg",
+          "description": "The value that will be referenced when using the `this` keyword within `mapper`.  If not given this will refer to the global object.",
+          "type": "*",
+          "optional": true,
+          "default": ""
+        }
+      ],
+      "return": {
+        "type": "Array|Object",
+        "description": "If `arrOrObj` was an array then an array will be returned, otherwise an object will be returned.  If an array, the values returned from `mapper` for each item will occupy the position of the original item in this new array.  If an object, the values returned from `mapper` will be used instead of the items that were passed in and the new object will use the key(s) from the objects returned for this new object."
+      },
+      "requires": [
+        "extend",
+        "has"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple Array",
+          "code": "test(\n  JSON.stringify(YourJS.flatMap(['This', 'is a wonderful', 'day!'], function(x) { return x.split(' ') })),\n  '[\"This\",\"is\",\"a\",\"wonderful\",\"day!\"]'\n);"
+        },
+        {
+          "name": "Simple Object",
+          "code": "var obj = YourJS.flatMap({ name: 'Chris West' }, function(x) { return { first: x.split(' ')[0], last: x.split(' ')[1] }; });\nvar keys = Object.keys(obj).sort();\nvar values = keys.map(function(x) { return obj[x]; });\ntest(JSON.stringify(keys.concat(values)), '[\"first\",\"last\",\"Chris\",\"West\"]');"
+        }
+      ]
+    },
+    {
       "name": "flatten",
       "code": "function flatten(array, opt_depth) {\n  opt_depth = opt_depth == undefined ? 1 : opt_depth;\n  var result = [];\n  for (var nextDepth = opt_depth === true || (opt_depth - 1), i = 0, l = array.length; i < l; i++) {\n    if (opt_depth > 0 && typeOf(array[i]) == 'Array') {\n      result = result.concat(flatten(array[i], nextDepth));\n    }\n    else {\n      result.push(array[i]);\n    }\n  }\n  return result;\n}",
       "description": "Create a flattened copy of an array.",
