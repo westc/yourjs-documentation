@@ -4290,7 +4290,7 @@
     },
     {
       "name": "isNaN",
-      "code": "function isNaN(value) {\n  return 'number' == typeof value && value != value;\n}",
+      "code": "function isNaN(value) {\n  return value !== value;\n}",
       "description": "Determines whether or not a value is actually `NaN`.  Different from the global `isNaN` function because it only tests for the presence of the `NaN` value.",
       "params": [
         {
@@ -4555,7 +4555,7 @@
     },
     {
       "name": "isOf",
-      "code": "function isOf(value, opt_negate, opt_traverseArray) {\n  var parts, isNaN = Number.isNaN, xs = [];\n  \n  parts = ((opt_traverseArray && typeOf(value) === 'Array') ? value : [value]).map(function(x, i) {\n    return (isNaN(x) ? 'i(v)' : 'v===x').replace('x', xs[i] = 'x' + i);\n  });\n\n  return Function(\n    xs.join(',') + ',i',\n    ('return function(v){return ' + (opt_negate ? '!' : '') + '(' + parts.join('||') + ')}')\n  ).apply(isNaN, value.concat([isNaN]));\n}",
+      "code": "function isOf(value, opt_negate, opt_traverseArray) {\n  var parts, xs = [];\n\n  parts = (value = (opt_traverseArray && nativeType(value) === 'Array') ? value : [value]).map(function (x, i) {\n    return (x !== x ? 'v!==v' : 'v===x').replace('x', xs[i] = 'x' + i);\n  });\n\n  return Function(\n    xs.join(','),\n    ('return function(v){return' + (opt_negate ? '!' : '') + '(' + parts.join('||') + ')}')\n  ).apply(0, value);\n}",
       "description": "Creates functions for testing if a value \"is\" (or \"is not\") a value.",
       "params": [
         {
@@ -4582,9 +4582,16 @@
         "type": "Function",
         "description": "Function that accepts one argument which will be checked against `value`.  The function will return a boolean value when called indicating if it matches `value` or not (also depending on the value of `opt_negate`)."
       },
-      "requires": [],
+      "requires": [
+        "nativeType"
+      ],
       "required": false,
-      "tests": []
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var nan = YourJS.isOf([NaN], false, true);\nvar nnan = YourJS.isOf(NaN, true);\ntest(JSON.stringify([nan(NaN), nnan(NaN), nan(0), nnan(0)]), '[true,false,false,true]');"
+        }
+      ]
     },
     {
       "name": "isPositive",
