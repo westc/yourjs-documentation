@@ -185,6 +185,44 @@
       "tests": []
     },
     {
+      "name": "array",
+      "code": "function array(length, opt_filler, opt_callFiller) {\n  opt_callFiller = !!opt_callFiller && 'function' === typeof opt_filler;\n  for (var result = Array(length), i = 0; i < length; i++) {\n    result[i] = opt_callFiller ? opt_filler(i) : opt_filler;\n  }\n  return result;\n}",
+      "description": "Creates a new array with the given length and fills the array with the given value.",
+      "params": [
+        {
+          "name": "length",
+          "description": "Integer that represents the length of the array (minimum of 0).",
+          "type": "number"
+        },
+        {
+          "name": "opt_filler",
+          "description": "Either a filler value or if this is a function and `opt_callFiller` is `true`-ish then this function will be called with the index to be filled and the return value will be used as the value added at that index.",
+          "type": "Function|*",
+          "optional": true,
+          "default": "undefined"
+        },
+        {
+          "name": "opt_callFiller",
+          "description": "If specified as `true`-ish and `opt_filler` is a function then `opt_filler` will be called as a function to generate the values at for each item in the new array.",
+          "type": "boolean",
+          "optional": true,
+          "default": "false"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "A new array of the specified length with the specified value used for each item."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.array(10, function(x) { return x * x; }, true)), '[0,1,4,9,16,25,36,49,64,81]');"
+        }
+      ]
+    },
+    {
       "name": "attempt",
       "code": "function attempt(root, path) {\n  if ('string' === typeof path) {\n    path = [path];\n  }\n  for (var fn = root, i = 0, l = path.length; fn != undefined && i < l;) {\n    root = fn;\n    fn = root[path[i++]];\n  }\n  if ('function' === typeof fn) {\n    return fn.apply(root, slice(arguments, 2));\n  }\n}",
       "description": "Attempts to call a function if one exists at the given path starting at the given root object.",
@@ -570,6 +608,30 @@
       ]
     },
     {
+      "name": "cbrt",
+      "code": "function cbrt(x) {\n  var y = Math.pow(Math.abs(x), 1 / 3);\n  return x < 0 ? -y : y;\n}",
+      "description": "Gets the cube root of a number.",
+      "params": [
+        {
+          "name": "x",
+          "description": "A number.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The cube root of the given number."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.cbrt(27), 3)"
+        }
+      ]
+    },
+    {
       "name": "ceil",
       "code": "",
       "description": "Rounds towards `Infinity` with the specified precision.",
@@ -623,6 +685,32 @@
       ],
       "tests": [],
       "required": false
+    },
+    {
+      "name": "chunk",
+      "code": "function chunk(array, opt_size) {\n  opt_size = opt_size >= 1 ? ~~opt_size : 1;\n  for (var chunks = [], i = Math.floor((array.length - 1) / opt_size) * opt_size; i >= 0; i -= opt_size) {\n    chunks.unshift(array.slice(i, i + opt_size));\n  }\n  return chunks;\n}",
+      "description": "Takes an array, splits it up into chunks of a specified size and returns a new array containing said array chunks.",
+      "params": [
+        {
+          "name": "array",
+          "description": "The array that will be used to make the chunks.  This array will not be modified.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_chunkLimit",
+          "description": "The maximum number of items in each chunk.  All chunks will contain this amount of items with the exception of the final chunk.",
+          "type": "number",
+          "optional": true,
+          "default": "1"
+        }
+      ],
+      "return": {
+        "type": "Array",
+        "description": "An array of arrays where each subarray contains a chunk of the values from `array`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
     },
     {
       "name": "clamp",
@@ -1636,6 +1724,37 @@
       ]
     },
     {
+      "name": "endsWith",
+      "code": "function endsWith(string, target, opt_length) {\n  opt_length = opt_length != undefined ? opt_length || 0 : string.length;\n  if (opt_length < 0) {\n    opt_length += string.length;\n    if (opt_length < 0) {\n      opt_length = 0;\n    }\n  }\n  return string.slice(opt_length - ('' + target).length, opt_length) === target;\n}",
+      "description": "Determines whether a string ends with the characters of a specified string.",
+      "params": [
+        {
+          "name": "string",
+          "description": "The string that will be searched.",
+          "type": "string"
+        },
+        {
+          "name": "target",
+          "description": "The characters to be searched for at the end of `string`.",
+          "type": "string"
+        },
+        {
+          "name": "opt_length",
+          "description": "If provided it is used as the length of `string`. If omitted, the default value is the length of `string`.",
+          "type": "number",
+          "optional": true,
+          "default": "string.length"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "A boolean value indicating whether or not `target` is found at the end of `string`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "entries",
       "code": "function entries(value, opt_onlyNonEnums) {\n  for (var result = keys(value, opt_onlyNonEnums), i = result.length; i--;) {\n    result[i] = [result[i], value[result[i]]];\n  }\n  return result;\n}",
       "description": "Gets an array of pairs (array of length 2) indicating all of the keys and values within a given array or object.",
@@ -2376,6 +2495,30 @@
       "requires": [],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "fround",
+      "code": "var fround;\n(function (array) {\n  fround = function(x) {\n    return array[0] = x, array[0];\n  };\n})(new Float32Array(1));",
+      "description": "Gets the nearest 32-bit single precision float representation of a number.",
+      "params": [
+        {
+          "name": "doubleFloat",
+          "description": "A Number. If the parameter is of a different type, it will get converted to a number or to `NaN` if it cannot be converted.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The nearest 32-bit single precision float representation of the given number."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple MDN Example",
+          "code": "test(YourJS.fround(1.337), 1.3370000123977661);"
+        }
+      ]
     },
     {
       "name": "fullNumber",
@@ -3381,6 +3524,88 @@
         {
           "name": "Simple",
           "code": "test(JSON.stringify(YourJS.insert([2,4],1,3)), '[2,3,4]');"
+        }
+      ]
+    },
+    {
+      "name": "int16",
+      "code": "",
+      "description": "Takes a number and converts it to a twos-complement 16-bit signed integer.",
+      "params": [
+        {
+          "name": "number",
+          "description": "Number to be converted to a twos-complement 16-bit signed integer.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns the specified number as a twos-complement 16-bit signed integer."
+      },
+      "requires": [
+        "int8"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.int16(65600.819), 64)"
+        }
+      ]
+    },
+    {
+      "name": "int32",
+      "code": "",
+      "description": "Takes a number and converts it to a twos-complement 32-bit signed integer.",
+      "params": [
+        {
+          "name": "number",
+          "description": "Number to be converted to a twos-complement 32-bit signed integer.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns the specified number as a twos-complement 32-bit signed integer."
+      },
+      "requires": [
+        "int8"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.int32(-4294967400.42), -104)"
+        }
+      ]
+    },
+    {
+      "name": "int8",
+      "code": "// Creates the following functions:  int8(), uint8(), int16(), uint16(), int32(), and uint32()\n// Works in IE10+\neval('uUi32I32uUi16I16uUi8I8'.replace(/(u?)([UI]i?)(\\d\\d?)/g, 'var $1int$3;(function(a){$1int$3=function(x){return a[0]=x,a[0]}})(new $2nt$3Array(1));'));",
+      "description": "Takes a number and converts it to a twos-complement 8-bit signed integer.",
+      "params": [
+        {
+          "name": "number",
+          "description": "Number to be converted to a twos-complement 8-bit signed integer.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns the specified number as a twos-complement 8-bit signed integer."
+      },
+      "requires": [
+        "int16",
+        "int32",
+        "uint8",
+        "uint16",
+        "uint32"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.int8(304.8), 48)"
         }
       ]
     },
@@ -5092,6 +5317,58 @@
       ]
     },
     {
+      "name": "log10",
+      "code": "",
+      "description": "Gets the base 10 logarithm of a number.",
+      "params": [
+        {
+          "name": "x",
+          "description": "A number.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The base 2 logarithm of the given number. If the number is negative, `NaN` is returned."
+      },
+      "requires": [
+        "log2"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.log10(2), 0.3010299956639812);"
+        }
+      ]
+    },
+    {
+      "name": "log2",
+      "code": "// Math.log2() and Math.log10() don't exist in IE.\neval('102'.replace(/..?/g, 'function log$&(x){return Math.log(x)*Math.LOG$&E}'));",
+      "description": "Gets the base 2 logarithm of a number.",
+      "params": [
+        {
+          "name": "x",
+          "description": "A number.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The base 2 logarithm of the given number. If the number is negative, `NaN` is returned."
+      },
+      "requires": [
+        "log10"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.log2(3), 1.584962500721156);"
+        }
+      ]
+    },
+    {
       "name": "loop",
       "code": "function loop(array, opt_reverse) {\n  var first = array[opt_reverse ? 'pop' : 'shift']();\n  if (array.length) {\n    array[opt_reverse ? 'unshift' : 'push'](first);\n  }\n  return first;\n}",
       "description": "Progressively loops the values within an array on each iteration while at the same time retrieving one of the end values of the specified array.",
@@ -5956,6 +6233,44 @@
       ]
     },
     {
+      "name": "only",
+      "code": "function only(opt_subject, keys, opt_initial) {\n  function f(subject, opt_initial) {\n    var result = {};\n    return keys.reduce(function (result, key) {\n      if (has(subject, key)) {\n        result[key] = subject[key];\n      }\n      return result;\n    }, opt_initial || {});\n  }\n\n  return keys ? f(opt_subject, opt_initial) : ((keys = opt_subject), f);\n}",
+      "description": "Creates a new object with only the specified keys copied from the specified object to this new object.",
+      "params": [
+        {
+          "name": "opt_subject",
+          "description": "If `undefined` this indicates that a partial function will be returned.  Otherwise this is the object from which the properties should be copied.",
+          "type": "Object|undefined"
+        },
+        {
+          "name": "keys",
+          "description": "Keys of the subject to be copied to the new object.",
+          "type": "Array"
+        },
+        {
+          "name": "opt_initial",
+          "description": "If given this is the object that will be returned and into which the properties will be copied.",
+          "type": "*",
+          "optional": true,
+          "default": "{}"
+        }
+      ],
+      "return": {
+        "type": "*",
+        "description": "If `opt_subject` was given `opt_initial` with the specified keys copied into it will be returned.  Otherwise a partial function will be returned which will accept (1) the mandatory object from which to copy the properties and (2) the optional initial object that will be augmented and returned."
+      },
+      "requires": [
+        "has"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(JSON.stringify(YourJS.only({a:1,b:2}, ['a','c'])), '{\"a\":1}');"
+        }
+      ]
+    },
+    {
       "name": "orBits",
       "code": "",
       "description": "Finds the bitwise `or` of two numbers.",
@@ -6731,6 +7046,35 @@
       "tests": []
     },
     {
+      "name": "repeat",
+      "code": "function repeat(string, count) {\n  return Array(count + 1).join(string);\n}",
+      "description": "Creates a new string which is the given string repeated the specified number of times.",
+      "params": [
+        {
+          "name": "string",
+          "description": "String to be repeated.",
+          "type": "string"
+        },
+        {
+          "name": "count",
+          "description": "Number of times that `string` should be repeated.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "A new string which will be `string` repeated `count` times."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.repeat('dumb-', 5) + YourJS.repeat('.', 3), 'dumb-dumb-dumb-dumb-dumb-...');"
+        }
+      ]
+    },
+    {
       "name": "replace",
       "code": "var replace;\n(function(breakError) {\n  function end() { throw breakError; }\n  replace = function(subject, target, replacer) {\n    var match, matches, i, l,\n        count = 0,\n        replacement = replacer,\n        targetType = typeOf(target = 'string' == typeof target ? [target] : target),\n        targetIsRegExp = targetType == 'RegExp',\n        isObject = !targetIsRegExp && targetType != 'Array',\n        rgx = targetIsRegExp ? target : new RegExp(\n          (isObject ? Object.keys(target) : target).map(function(v){return quoteRegExp(v);}).join('|'),\n          'g'\n        ),\n        result = subject;\n\n    try {\n      for (matches = matchAll(subject, rgx), i = 0, l = matches.length; i < l; i++) {\n        match = matches[i];\n        if (isObject) {\n          replacer = target[match];\n        }\n        if ('function' == typeof replacer) {\n          replacement = replacer.call(result, match, ++count, end);\n        }\n        result = result.slice(0, match.index) + replacement + result.slice(match.index + match[0].length);\n      }\n    }\n    catch (e) {\n      if (e != breakError) {\n        throw e;\n      }\n    }\n\n    return result;\n  };\n})({});",
       "description": "Replace targeted substrings with new strings.",
@@ -7384,6 +7728,37 @@
       "tests": []
     },
     {
+      "name": "startsWith",
+      "code": "// Similar to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith\n// Different from String.prototype.startsWith() because 3rd arg can be negative.\nfunction startsWith(string, target, opt_fromIndex) {\n  opt_fromIndex = opt_fromIndex || 0;\n  if (opt_fromIndex < 0) {\n    opt_fromIndex += string.length;\n    if (opt_fromIndex < 0) {\n      opt_fromIndex = 0;\n    }\n  }\n  return string.slice(opt_fromIndex, opt_fromIndex + ('' + target).length) === target;\n}",
+      "description": "Determines whether a string starts with the characters of a specified string.",
+      "params": [
+        {
+          "name": "string",
+          "description": "The string that will be searched.",
+          "type": "string"
+        },
+        {
+          "name": "target",
+          "description": "The characters to be searched for at the start of `string`.",
+          "type": "string"
+        },
+        {
+          "name": "opt_fromIndex",
+          "description": "The position in `string` at which to begin searching for `target`.",
+          "type": "number",
+          "optional": true,
+          "default": "0"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "A boolean indicating whether or not `target` is at the start of `string`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
       "name": "sub",
       "code": "function sub(template, opt_subs, opt_funcs) {\n  opt_subs = opt_subs || __GLOBAL;\n  opt_funcs = opt_funcs || YourJS;\n  for (\n    var result;\n    result !== template;\n    template = template.replace(\n      /\\{([\\w\\$]+)(?:\\?((?:\\\\.|[^\\\\\\{\\}:])*):((?:\\\\.|[^\\\\\\{\\}:])*)(?::((?:\\\\.|[^\\\\\\{\\}:])*))?|#([\\w\\$]+))?\\}/ig,\n      function(match, arg, multi, one, none, fn) {\n        if (has(opt_subs, arg)) {\n          arg = opt_subs[arg];\n          if ('function' == typeof arg) {\n            arg = arg(multi, one, none, match);\n          }\n          match = multi === undefined ? arg : (arg == 1 ? one : ((!arg && none !== undefined) ? none : multi));\n          if (fn != undefined) {\n            fn = fn ? opt_funcs[fn] : opt_funcs;\n            if ('function' == typeof fn) {\n              match = fn(match);\n            }\n          }\n        }\n        return match;\n      }\n    )\n  ) {\n    result = template;\n  }\n  return result.replace(/\\\\(\\W)/g, '$1');\n}",
       "description": "Substitute values into strings where the corresponding placeholders have been entered.",
@@ -7973,6 +8348,84 @@
       ],
       "tests": [],
       "required": false
+    },
+    {
+      "name": "uint16",
+      "code": "",
+      "description": "Takes a number and converts it to a 16-bit unsigned integer.",
+      "params": [
+        {
+          "name": "number",
+          "description": "Number to be converted to a 16-bit unsigned integer.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns the specified number as a 16-bit unsigned integer."
+      },
+      "requires": [
+        "int8"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.uint16(-543), Math.pow(2, 16) - 543)"
+        }
+      ]
+    },
+    {
+      "name": "uint32",
+      "code": "",
+      "description": "Takes a number and converts it to a 32-bit unsigned integer.",
+      "params": [
+        {
+          "name": "number",
+          "description": "Number to be converted to a 32-bit unsigned integer.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns the specified number as a 32-bit unsigned integer."
+      },
+      "requires": [
+        "int8"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.uint32(-100), Math.pow(2, 32) - 100)"
+        }
+      ]
+    },
+    {
+      "name": "uint8",
+      "code": "",
+      "description": "Takes a number and converts it to a 8-bit unsigned integer.",
+      "params": [
+        {
+          "name": "number",
+          "description": "Number to be converted to a 8-bit unsigned integer.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns the specified number as a 8-bit unsigned integer."
+      },
+      "requires": [
+        "int8"
+      ],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.uint8(-200), Math.pow(2, 8) - 200)"
+        }
+      ]
     },
     {
       "name": "unbind",
