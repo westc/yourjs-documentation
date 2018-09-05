@@ -866,6 +866,35 @@
       "tests": []
     },
     {
+      "name": "copySign",
+      "code": "function copySign(a, b) {\n  return (a < 0 || 1 / a < 0) === (b < 0 || 1 / b < 0) ? a : -a;\n}",
+      "description": "Takes the sign of the number from the second argument and uses it as the sign of the number given in the first argument.",
+      "params": [
+        {
+          "name": "number1",
+          "description": "The number that will be returned with the sign specified by `number2`.",
+          "type": "number"
+        },
+        {
+          "name": "number2",
+          "description": "The number that has the sign (positive or negative) to use as the sign for `number1` when it is returned from this function.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "`number1` will be returned but with the same sign (positive or negative) as the one specified for `number2`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.copySign(1, -0), -1);"
+        }
+      ]
+    },
+    {
       "name": "cos",
       "code": "",
       "description": "Determines the cosine of a given number either in radians or in degrees.",
