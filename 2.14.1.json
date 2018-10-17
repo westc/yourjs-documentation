@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS v{{VERSION}} - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-{{CURRENT_YEAR}} Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.14.0",
+  "version": "2.14.1",
   "parts": [
     {
       "name": "add",
@@ -6377,6 +6377,35 @@
       "return": {
         "type": "string",
         "description": "If `opt_excludeNum` is `false`-ish a string version of `num` with the appropriate ordinal string will be returned.  If `opt_excludeNum` is `true`-ish just the ordinal corresponding to `num` will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": []
+    },
+    {
+      "name": "pacman",
+      "code": "function pacman(x, inclusive, exclusive) {\n  exclusive -= inclusive;\n  return ((x - inclusive) % exclusive + exclusive) % exclusive + inclusive;\n}",
+      "description": "Confines a number to a specified range by looping number that are too large back to the beginning of the range and numbers that are too small back to the end of the range (just like in Pacman).",
+      "params": [
+        {
+          "name": "x",
+          "description": "The number that you want to confine to the specified range.",
+          "type": "number"
+        },
+        {
+          "name": "inclusive",
+          "description": "An extreme of the range to which to confine `x`.  This number IS included in the range of valid numbers.",
+          "type": "number"
+        },
+        {
+          "name": "exclusive",
+          "description": "An extreme of the range to which to confine `x`.  This number IS NOT included in the range of valid numbers.  If `x` is equal to this number, `inclusive` will be returned from this function.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "A number representing `x` within the range `inclusive` and `exclusive` where `x` can be `inclusive` but cannot be `exclusive`."
       },
       "requires": [],
       "required": false,
