@@ -1,6 +1,6 @@
 {
   "base": "/**\n * @preserve YourJS v{{VERSION}} - Your Very Own JS Library\n * http://yourjs.com\n *\n * Copyright (c) 2015-{{CURRENT_YEAR}} Christopher West\n * Licensed under the MIT license.\n */\n(function(__VERSION, __VARIABLE_NAME, undefined) {\n  var YourJS,\n      __GLOBAL = this,\n      __EMPTY_ARRAY = [],\n      __EMPTY_OBJECT = {},\n      __DOCUMENT = __GLOBAL.document,\n      __callsAfterDefs = [];\n  \n  /*{DEFINITIONS}*/\n\n  /**\n   * YourJS object.\n   * @name {{VARIABLE_NAME}}\n   * @namespace\n   * @global\n   */\n  YourJS = /*{MEMBERS_OBJECT}*/;\n\n  __callsAfterDefs.forEach(function(fn) { fn(); });\n\n  // Add to browser/node environment correctly.\n  if(typeof exports !== 'undefined') {\n    if(typeof module !== 'undefined' && module.exports) {\n      exports = module.exports = YourJS;\n    }\n    (exports[__VARIABLE_NAME] = YourJS)[__VARIABLE_NAME] = undefined;\n  } \n  else {\n    __GLOBAL[__VARIABLE_NAME] = YourJS;\n  }\n})(/*{VERSION}*/, /*{VARIABLE_NAME}*/);\n",
-  "version": "2.14.1",
+  "version": "2.14.2",
   "parts": [
     {
       "name": "add",
@@ -6293,7 +6293,7 @@
     },
     {
       "name": "only",
-      "code": "function only(opt_subject, keys, opt_initial) {\n  function f(subject, opt_initial) {\n    var result = {};\n    return keys.reduce(function (result, key) {\n      if (has(subject, key)) {\n        result[key] = subject[key];\n      }\n      return result;\n    }, opt_initial || {});\n  }\n\n  return keys ? f(opt_subject, opt_initial) : ((keys = opt_subject), f);\n}",
+      "code": "function only(opt_subject, keys, opt_initial) {\n  function f(subject, opt_initial) {\n    var result = {};\n    var arrKeys = 'function' === typeof keys\n      ? entries(subject).reduce(function (carry, kv) {\n        if (keys(kv[0], kv[1])) {\n          carry.push(kv[0]);\n        }\n        return carry;\n      }, [])\n      : keys;\n    return arrKeys.reduce(function (result, key) {\n      if (has(subject, key)) {\n        result[key] = subject[key];\n      }\n      return result;\n    }, opt_initial || {});\n  }\n\n  return keys ? f(opt_subject, opt_initial) : ((keys = opt_subject), f);\n}",
       "description": "Creates a new object with only the specified keys copied from the specified object to this new object.",
       "params": [
         {
@@ -6303,8 +6303,8 @@
         },
         {
           "name": "keys",
-          "description": "Keys of the subject to be copied to the new object.",
-          "type": "Array"
+          "description": "If this is an array it must be the keys of the subject to be copied to the new object.  If this is a function it will be called for each key/value pair (receiving the key as argument 1 and the value as argument 2) and whenever the return value is `true`-ish the key/value pair will be copied to the new object.",
+          "type": "Array|Function"
         },
         {
           "name": "opt_initial",
@@ -6319,13 +6319,18 @@
         "description": "If `opt_subject` was given `opt_initial` with the specified keys copied into it will be returned.  Otherwise a partial function will be returned which will accept (1) the mandatory object from which to copy the properties and (2) the optional initial object that will be augmented and returned."
       },
       "requires": [
-        "has"
+        "has",
+        "entries"
       ],
       "required": false,
       "tests": [
         {
           "name": "Simple",
           "code": "test(JSON.stringify(YourJS.only({a:1,b:2}, ['a','c'])), '{\"a\":1}');"
+        },
+        {
+          "name": "Simple Copy Number Values",
+          "code": "test(JSON.stringify(YourJS.only({a:\"1\",b:2}, (k,v) => \"number\" === typeof v)), '{\"b\":2}');"
         }
       ]
     },
@@ -6703,7 +6708,7 @@
     },
     {
       "name": "postURL",
-      "code": "function postURL(url, opt_data) {\n  var body = __DOCUMENT.body,\n      form = extend(__DOCUMENT.createElement(\"FORM\"), {\n        method: 'POST',\n        action: url\n      });\n  form.style.display = \"none\";\n  entries(opt_data).forEach(function(pair) {\n    form.appendChild(extend(__DOCUMENT.createElement(\"TEXTAREA\"), {\n      name: pair[0],\n      value: 'object' === typeof pair[1] ? JSON.stringify(pair[1]) : pair[1]\n    }));\n  });\n  body.appendChild(form);\n  form.submit();\n  body.removeChild(form);\n  return form;\n}",
+      "code": "function postURL(url, opt_data, opt_target) {\n  var body = __DOCUMENT.body,\n      form = extend(__DOCUMENT.createElement(\"FORM\"), {\n        method: 'POST',\n        action: url\n      });\n  if (opt_target) {\n    form.target = opt_target;\n  }\n  form.style.display = \"none\";\n  entries(opt_data).forEach(function(pair) {\n    form.appendChild(extend(__DOCUMENT.createElement(\"TEXTAREA\"), {\n      name: pair[0],\n      value: 'object' === typeof pair[1] ? JSON.stringify(pair[1]) : pair[1]\n    }));\n  });\n  body.appendChild(form);\n  form.submit();\n  body.removeChild(form);\n  return form;\n}",
       "description": "Takes a URL and goes to it using the POST method.",
       "params": [
         {
@@ -6716,6 +6721,11 @@
           "description": "Data to be passed when posting to the URL.",
           "type": "Object",
           "optional": true
+        },
+        {
+          "name": "opt_target",
+          "description": "Target frame for where to post to.",
+          "type": "string"
         }
       ],
       "return": {
