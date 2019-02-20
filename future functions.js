@@ -2,10 +2,10 @@
 //   JS.only(o, (k, v) => v != undefined)
 // The above would essentially create a new object with all of the key-value pairs where the value is not null or undefined
 
-// Scales a number using minIn to maxIn as the input range and minOut and maxOut
+// Scales a number using minX to maxX as the x range and minOut and maxReturn
 // as the corresponding return values range.
-function scale(input, minIn, maxIn, minOut, maxOut) {
-  return (input - minIn) * (maxOut - minOut) / (maxIn - minIn) + minOut;
+function scale(x, minX, maxX, minReturn, maxReturn) {
+  return (x - minX) * (maxReturn - minReturn) / (maxX - minX) + minReturn;
 }
 
 // Specifies whether or not the number is negative (meaning it has a bit
