@@ -26,3 +26,11 @@ function replaceAll(subject, target, replacement, opt_limit) {
   opt_limit[opt_limit.length - 1] += subject.slice(opt_limit.join(target).length);
   return opt_limit.join(replacement);
 }
+
+function hypot() {
+  var val, ret = 0, args = arguments, i = args.length;
+  while (i--) {
+    ret += (val = +args[i]) * val;
+  }
+  return Math.sqrt(ret);
+}
