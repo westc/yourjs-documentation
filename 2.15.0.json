@@ -2965,6 +2965,31 @@
       "tests": []
     },
     {
+      "name": "hypot",
+      "code": "function hypot() {\n  var val, ret = 0, args = arguments, i = args.length;\n  while (i--) {\n    ret += (val = +args[i]) * val;\n  }\n  return Math.sqrt(ret);\n}",
+      "description": "Determines the square root of the sum of the squares of the arguments passed.",
+      "params": [
+        {
+          "name": "numX",
+          "description": "Each of the numbers that will be squared and summed together.",
+          "type": "number",
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The square root of the sum of the squares of the arguments passed."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.hypot(3,4), 5);"
+        }
+      ]
+    },
+    {
       "name": "ifExcludes",
       "code": "",
       "description": "If the second argument is not in the first argument (array) the third argument is passed back, otherwise the fourth argument (or if not given the first argument) is passed back.",
@@ -3352,6 +3377,31 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "imul",
+      "code": "function imul() {\n  // Using the lo/hi version because the 0x001fffff/0xffc00000 version doesn't\n  // always give the correct answer if the operands are placed in reverse order.\n  for (var a, aLo, bLo, args = arguments, i = args.length, b = ~~args[--i]; i-- > 0; ) {\n    a = b;\n    b = args[i];\n    aLo = a & 0xffff;\n    bLo = b & 0xffff;\n    b = ((aLo * bLo) + (((((a >>> 16) & 0xffff) * bLo + aLo * ((b >>> 16) & 0xffff)) << 16) >>> 0) | 0);\n  }\n  return b;\n}",
+      "description": "Determines the 32-bit product of the arguments passed similar to the way it would be calculated in C.",
+      "params": [
+        {
+          "name": "numX",
+          "description": "All of the numbers for which you would like to calculate the 32-bit product.",
+          "type": "number",
+          "rest": true
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "The C-like 32-bit product of all of the numbers passed in."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "var a = -1102240083;\nvar b = ~~29839843293842639.463;\ntest(YourJS.imul(a,b,a,b,a)+','+YourJS.imul(a,a,a,b,b), '26852608,26852608');"
+        }
+      ]
     },
     {
       "name": "includes",
@@ -7252,6 +7302,47 @@
       "tests": []
     },
     {
+      "name": "replaceMany",
+      "code": "function replaceMany(subject, target, replacement, opt_limit) {\n  // reusing opt_limit to allow code to be minified even more by avoiding\n  // declaring an additional variable.\n  opt_limit = subject.split(\n    target = target + '',\n    (opt_limit == undefined || opt_limit === Infinity) ? undefined : opt_limit >= 1 ? +opt_limit + 1 : 1\n  );\n  opt_limit[opt_limit.length - 1] += subject.slice(opt_limit.join(target).length);\n  return opt_limit.join(replacement);\n}",
+      "description": "Replace multiple instances of a `target` string with a `replacement` string.",
+      "params": [
+        {
+          "name": "subject",
+          "description": "The string to be searched and modified.",
+          "type": "string"
+        },
+        {
+          "name": "target",
+          "description": "The string to look for and replace within `subject`.",
+          "type": "string"
+        },
+        {
+          "name": "replacement",
+          "description": "The string to replace instances of `target` within `subject`.",
+          "type": "string"
+        },
+        {
+          "name": "opt_limit",
+          "description": "The maximum number of occurrences of `target` to replace.  If not specified all occurrences will be replaced.",
+          "type": "number",
+          "optional": true,
+          "default": "Infinity"
+        }
+      ],
+      "return": {
+        "type": "string",
+        "description": "A new version of `subject` with a maximum of `opt_limit` number of occurrences of `target` replaced by `replacement`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.replaceMany('You awe vewy intewesting!', 'w', 'r', 2), 'You are very intewesting!');"
+        }
+      ]
+    },
+    {
       "name": "restParam",
       "code": "function restParam(fn, opt_start) {\n  opt_start = opt_start == undefined ? fn.length - 1 : opt_start;\n  return function() {\n    var args = slice(arguments);\n    return fn.apply(this, args.length < opt_start ? args : slice(args, 0, opt_start).concat([slice(args, opt_start)]));\n  }\n}",
       "description": "Creates a wrapper function that if called with more arguments than specified, those arguments will be passed in as an array in the final argument.",
@@ -7477,6 +7568,50 @@
       "tests": []
     },
     {
+      "name": "scale",
+      "code": "function scale(x, minX, maxX, minReturn, maxReturn) {\n  return (x - minX) * (maxReturn - minReturn) / (maxX - minX) + minReturn;\n}",
+      "description": "Scales a number using an input range and and an output range to give a proportional output.",
+      "params": [
+        {
+          "name": "x",
+          "description": "The value to be scaled.",
+          "type": "number"
+        },
+        {
+          "name": "minX",
+          "description": "The lower bound of `x`.",
+          "type": "number"
+        },
+        {
+          "name": "maxX",
+          "description": "The upper bound of `x`.",
+          "type": "number"
+        },
+        {
+          "name": "minReturn",
+          "description": "The lower bound of the return value which directly corresponds to `minX`.",
+          "type": "number"
+        },
+        {
+          "name": "maxReturn",
+          "description": "The upper bound of the return value which directly corresponds to `maxX`.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns `x` scaled based on the range of `minX` to `maxX` being proportional to `minReturn` to `maxReturn`.  If `x` is within the range of `minX` and `maxX` the return value will be within the range of `minReturn` and `maxReturn`.  If `x` is outside of the range of `minX` to `maxX` then the return value will also be outside of the `minReturn` to `maxReturn` range.  If `minReturn` and `maxReturn` are the same `minReturn` will be returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(YourJS.scale(0, 3, 5, 8, 10), 5);"
+        }
+      ]
+    },
+    {
       "name": "sec",
       "code": "eval('seccos;cscsin;cottan;'.replace(/(...)(?=(...)?;)/g, function(m, name, base, i) {\n  return 'function ' + name + '(a,b){return ' + (base ? '1/' : '') + 'Math.' + (base || name) + '(b?a*'+Math.PI/180+':a)}';\n}));",
       "description": "Determines the secant of a given number either in radians or in degrees.",
@@ -7626,6 +7761,58 @@
       ],
       "required": false,
       "tests": []
+    },
+    {
+      "name": "sign",
+      "code": "function sign(x) {\n  x = +x;\n  return x ? x < 0 ? -1 : 1 : x;\n}",
+      "description": "Determines whether a value is positive, negative, a form of zero (`-0` or `0`) or not a number.",
+      "params": [
+        {
+          "name": "x",
+          "description": "Value that should be interpreted as a number to determine if it is positive or negative.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "number",
+        "description": "Returns `NaN` if `x` isn't recognized as a number.  If `x` is zero `x` will be returned.  If `x` is negative `-1` is returned, otherwise `1` is returned."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test([-Infinity,-3,0,95,Infinity,NaN].map(x => YourJS.sign(x)).join('|'), '-1|-1|0|1|1|NaN');"
+        },
+        {
+          "name": "Negative Zero",
+          "code": "test(YourJS.sign(-0), -0);"
+        }
+      ]
+    },
+    {
+      "name": "signbit",
+      "code": "function signbit(x) {\n  return x < 0 || 1 / x < 0;\n}",
+      "description": "Specifies whether or not the number is negative (meaning it has a bit indicating the sign of the number).",
+      "params": [
+        {
+          "name": "x",
+          "description": "The value to be observed.",
+          "type": "number"
+        }
+      ],
+      "return": {
+        "type": "boolean",
+        "description": "Returns `true` if `x` is `-0` or less than `0`, otherwise returns `false`."
+      },
+      "requires": [],
+      "required": false,
+      "tests": [
+        {
+          "name": "Simple",
+          "code": "test(\n  [-Infinity,-3.4,-0,0,6,Infinity,NaN].map(x => YourJS.signbit(x)).join('|'),\n  'true|true|true|false|false|false|false'\n);"
+        }
+      ]
     },
     {
       "name": "sin",
