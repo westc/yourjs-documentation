@@ -5674,7 +5674,7 @@
     },
     {
       "name": "matchAll",
-      "code": "eval('exec:a,ematch:e,a'.replace(/(\\w+):(.,.)/g, 'function $1All($2,d){a=new RegExp(a.source,a.flags||(a+\"\").replace(/[^]+\\\\//,\"\"));for(var b,f=0,c=[];b=a.exec(e);)d&&(b=d(b,++f)),void 0!==b&&c.push(b);return c.length?c:null}'));",
+      "code": "eval('exec:a,ematch:e,a'.replace(/(\\w+):(.,.)/g, 'function $1All($2,d){a=new RegExp(a.source,(a.flags||(a+\"\").replace(/[^]+\\\\//,\"\")).replace(\"g\",\"\")+\"g\");for(var b,f=0,c=[];b=a.exec(e);)d&&(b=d(b,++f)),void 0!==b&&c.push(b);return c.length?c:null}'));",
       "description": "Gets all of the matches found when matching a regular expression against a string.",
       "params": [
         {
@@ -5702,7 +5702,12 @@
         "execAll"
       ],
       "required": false,
-      "tests": []
+      "tests": [
+        {
+          "name": "Simple Test",
+          "code": "var result = YourJS.matchAll('Hello world!', /([a-z])(\\w+)/i);\ntest(\n  JSON.stringify([result[0][1], result[0][2], result[1][1], result[1][2], result.length]),\n  '[\"H\",\"ello\",\"w\",\"orld\",2]'\n);"
+        }
+      ]
     },
     {
       "name": "max",
