@@ -18,3 +18,8 @@ var modDate;
     return date;
   };
 })({ Ms: 'Milliseconds', Day: 'Date', Year: 'FullYear' });
+
+// modDate(new Date, { month: 1 });  // Offsets date by 1 year in the future.
+// modDate(new Date, { year: -1 });  // Offsets date by 1 year ago.
+// modDate(new Date, { ms: -143 });  // Offsets date by -143 milliseconds.
+// modDate(new Date, { $hour: 8 });  // Sets hour to 8am.
