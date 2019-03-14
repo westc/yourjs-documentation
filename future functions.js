@@ -58,4 +58,7 @@ eval('exec:a,fmatch:f,a'.replace(/(\w+):(.,.)/g, 'function $1All($2,d){a=new Reg
 // - If nothing is supplied or null or undefined then the function will be called on the initial and
 //   if called multiple times before the time elapses the final call will occur after the specified
 //   time has passed from the previous execution.
-"debounce231k=b;b=@;##b-k##@-b#throttle312#k=@,#k-b#b=k,#k-b#".replace(/(\D+)(.)(.)(.)([^#]*)#([^#]*)#([^#]*)#([^#]*)#([^#]*)#/g,"function $1(h,c,a){var d,e,f,g,k,b=0;a=void 0==a?$2:a?$3:$4;return function(){d=0;e=arguments;f=this;$5a&1&&($6d=$7>=c)&&($8g=h.apply(f,e));!d&&a&2&&setTimeout(function(){k=@,k-b>=c&&(b=k,g=h.apply(f,e))},c);return g}}").replace(/@/g,"+new Date")
+eval('debounce231k=b;b=@;##b-k##@-b#throttle312#k=@,#k-b#b=k,#k-b#'.replace(
+  /(\D+)(.)(.)(.)([^#]*)#([^#]*)#([^#]*)#([^#]*)#([^#]*)#/g,
+  'function $1(h,c,a){var u,d,e,f,g,k,b=0;a=u==a?$2:a?$3:$4;return function(){d=0;e=arguments;f=this;$5a&1&&($6d=$7>=c)&&($8g=h.apply(f,e));!d&&a&2&&setTimeout(function(){k=@,k-b>=c&&(b=k,g=h.apply(f,e))},c);return g}}'
+).replace(/@/g, '+new Date'));
