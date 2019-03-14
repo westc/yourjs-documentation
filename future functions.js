@@ -1,7 +1,3 @@
-// only should work for something like the following:
-//   JS.only(o, (k, v) => v != undefined)
-// The above would essentially create a new object with all of the key-value pairs where the value is not null or undefined
-
 // Modifies a date object with either offsets or specific times.
 var modDate;
 (function(MAP) {
@@ -23,3 +19,16 @@ var modDate;
 // modDate(new Date, { year: -1 });  // Offsets date by 1 year ago.
 // modDate(new Date, { ms: -143 });  // Offsets date by -143 milliseconds.
 // modDate(new Date, { $hour: 8 });  // Sets hour to 8am.
+
+
+
+// Updates replaceMany() function to allow opt_limit to be negative.
+function replaceMany(subject, target, replacement, opt_limit) {
+  var arr = subject.split(target);
+  var first = arr.slice(
+    0,
+    opt_limit = opt_limit == undefined ? Infinity : opt_limit < 0 ? ~~opt_limit - 1 : ~~opt_limit
+  );
+  var rest = arr.slice(opt_limit);
+  return first.join(replacement) + ((0 in first && 0 in rest) ? replacement : '') + rest.join(target + '');
+}
