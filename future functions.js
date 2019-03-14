@@ -5,7 +5,7 @@ var modDate;
     for (var setter, getter, isSetOnly, k, v, keys = Object.keys(objOffsets), i = keys.length; i--; ) {
       v = objOffsets[k = keys[i]];
       isSetOnly = /^\$/.test(k);
-      k = k.replace(/^\$|s$/g, '').replace(/^((milli)?second|minute|hour)$/, '$&s').replace(/./, function(a) { return a.toUpperCase(); });
+      k = k.replace(/^\$|\b(ms)$|s$/g, '$1').replace(/^((milli)?second|minute|hour)$/, '$&s').replace(/./, function(a) { return a.toUpperCase(); });
       k = MAP[k] || k;
       if ('function' === typeof date[setter = 'set' + k] && 'function' === typeof date[getter = 'get' + k]) {
         date[setter](!isSetOnly ? date[getter]() + v : v);
@@ -15,7 +15,7 @@ var modDate;
   };
 })({ Ms: 'Milliseconds', Day: 'Date', Year: 'FullYear' });
 
-// modDate(new Date, { month: 1 });  // Offsets date by 1 year in the future.
+// modDate(new Date, { month: 1 });  // Offsets date by 1 month in the future.
 // modDate(new Date, { year: -1 });  // Offsets date by 1 year ago.
 // modDate(new Date, { ms: -143 });  // Offsets date by -143 milliseconds.
 // modDate(new Date, { $hour: 8 });  // Sets hour to 8am.
