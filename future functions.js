@@ -32,3 +32,8 @@ function replaceMany(subject, target, replacement, opt_limit) {
   var rest = arr.slice(opt_limit);
   return first.join(replacement) + ((0 in first && 0 in rest) ? replacement : '') + rest.join(target + '');
 }
+
+
+
+// Updates matchAll() and execAll() so they can handle regular expressions like /(?:)/
+eval('exec:a,fmatch:f,a'.replace(/(\w+):(.,.)/g, 'function $1All($2,d){a=new RegExp(a.source,(a.flags||(a+"").replace(/[^]+\\//,"")).replace("g","")+"g");for(var b,g=0,c=[],e=0;b=a.exec(f);e===a.lastIndex&&++a.lastIndex,e=a.lastIndex)d&&(b=d(b,++g)),void 0!==b&&c.push(b);return c.length?c:null}'));
