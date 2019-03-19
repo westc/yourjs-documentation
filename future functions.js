@@ -1,4 +1,6 @@
 // requires has(...)
+// Is similar to setAt but always ensures that the specified path will be added
+// to the root object.
 function ensureAt(root, path, opt_value) {
   for (var k, o = root, i = 0, l = o == undefined ? i : path.length, m = l - 1; i < l; i++) {
     o = has(o, k = path[i])
