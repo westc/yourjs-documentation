@@ -38,4 +38,11 @@ function flattenKeys(obj, opt_keyedObjects) {
   return result;
 }
 
+// Splits a dot-catenated path into an array while unescaping the escaped characters.
+function splitPath(path) {
+  return (path + '.').match(/([^\\.]|\\.)*\./g).map(function(x) {
+    return x.slice(0, -1).replace(/\\(.)/g, '$1');
+  });
+}
+
 // Update the documentation for set(...) to include the 4th parameter (opt_returnObj)
