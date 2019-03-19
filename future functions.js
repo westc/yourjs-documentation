@@ -20,7 +20,7 @@ function flattenKeys(obj, opt_keyedObjects) {
       v = base[k = keys[i]];
       innerKeys = v ? getKeys(v) : [];
       if (ancestors.indexOf(v) < 0) {
-        k = k.replace(/[\\.]/g, '\\$&');
+        k = k.replace(/\\|\./g, '\\\\$&');
         if (innerKeysCount = innerKeys.length) {
           recurse(v, path + k + '.', innerKeys, innerKeysCount, ancestors.concat([v]));
         }
@@ -43,6 +43,12 @@ function splitPath(path) {
   return (path + '.').match(/([^\\.]|\\.)*\./g).map(function(x) {
     return x.slice(0, -1).replace(/\\(.)/g, '$1');
   });
+}
+
+function joinPath(arrPath) {
+  return arrPath.map(function (x) {
+    return (x + '').replace(/\\|\./g, '\\\\$&');
+  }).join('.');
 }
 
 // Update the documentation for set(...) to include the 4th parameter (opt_returnObj)
