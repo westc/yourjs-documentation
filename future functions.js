@@ -18,9 +18,9 @@ function flattenKeys(obj, opt_keyedObjects) {
   function recurse(base, path, keys, keysCount, ancestors) {
     for (var innerKeys, innerKeysCount, v, k, i = 0; i < keysCount; i++) {
       v = base[k = keys[i]];
-      innerKeys = v ? getKeys(v) : [];
+      innerKeys = (v && 'object' === typeof v) ? getKeys(v) : [];
       if (ancestors.indexOf(v) < 0) {
-        k = k.replace(/\\|\./g, '\\\\$&');
+        k = k.replace(/\\|\./g, '\\$&');
         if (innerKeysCount = innerKeys.length) {
           recurse(v, path + k + '.', innerKeys, innerKeysCount, ancestors.concat([v]));
         }
@@ -31,7 +31,10 @@ function flattenKeys(obj, opt_keyedObjects) {
     }
   }
 
-  var getKeys = Object.keys, result = {}, keys = obj ? getKeys(obj) : [], keysCount = keys.length;
+  var getKeys = Object.keys,
+      result = {},
+      keys = (obj && 'object' === typeof obj) ? getKeys(obj) : [],
+      keysCount = keys.length;
   if (keysCount) {
     recurse(obj, '', keys, keysCount, [obj]);
   }
@@ -47,7 +50,7 @@ function splitPath(path) {
 
 function joinPath(arrPath) {
   return arrPath.map(function (x) {
-    return (x + '').replace(/\\|\./g, '\\\\$&');
+    return (x + '').replace(/\\|\./g, '\\$&');
   }).join('.');
 }
 
