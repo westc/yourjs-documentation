@@ -1,10 +1,11 @@
 // requires has()
 // Modifies keys of an object or augments the object with more keys for the same values.
 function rekey(obj, keyMap, opt_keepOriginals) {
+  obj = Object(obj);
   // Allow for partial call...
   if (obj == undefined) {
     return function(obj) {
-      return rekey(Object(obj), keyMap, opt_keepOriginals);
+      return rekey(obj, keyMap, opt_keepOriginals);
     };
   }
 
