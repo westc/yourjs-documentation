@@ -1,57 +1,41 @@
-// requires has(...)
-// Is similar to setAt but always ensures that the specified path will be added
-// to the root object.
-function ensureAt(root, path, opt_value) {
-  for (var k, o = root, i = 0, l = o == undefined ? i : path.length, m = l - 1; i < l; i++) {
-    o = has(o, k = path[i])
-      ? o[k]
-      : (o[k] = i === m ? opt_value : {});
+// requires has()
+// Modifies keys of an object or augments the object with more keys for the same values.
+function rekey(obj, keyMap, opt_keepOriginals) {
+  // Allow for partial call...
+  if (obj == undefined) {
+    return function(obj) {
+      return rekey(Object(obj), keyMap, opt_keepOriginals);
+    };
   }
-  return root;
-}
 
-// Creates a new object with keys to all of the values regardless of the level
-// (excluding recursive objects).  Keys for values on deeper levels will be
-// joined by a "." while any dots or backslashes in the original keys will be
-// escaped with a leading blackslash.
-function flattenKeys(obj, opt_keyedObjects) {
-  function recurse(base, path, keys, keysCount, ancestors) {
-    for (var innerKeys, innerKeysCount, v, k, i = 0; i < keysCount; i++) {
-      v = base[k = keys[i]];
-      innerKeys = (v && 'object' === typeof v) ? getKeys(v) : [];
-      if (ancestors.indexOf(v) < 0) {
-        k = k.replace(/\\|\./g, '\\$&');
-        if (innerKeysCount = innerKeys.length) {
-          recurse(v, path + k + '.', innerKeys, innerKeysCount, ancestors.concat([v]));
-        }
-        if (opt_keyedObjects || !innerKeysCount) {
-          result[path + k] = v;
+  var newObj = {};
+  var excludedOriginals = [];
+  (
+    Array.isArray(keyMap)
+      ? keyMap
+      : Object.keys(keyMap).map(function (key) {
+          return [key, keyMap[key]];
+        })
+  ).forEach(function (pair) {
+    var oldKey = pair[0];
+    var oldKeyType = typeof oldKey;
+    var testId = oldKeyType === 'function' ? 1 : 'string,boolean,number'.indexOf(oldKeyType) >= 0 ? 2 : 0;
+    var newKey = pair[1];
+    for (var keyInObj in obj) {
+      if (has(obj, keyInObj)) {
+        if (testId ? testId === 1 ? oldKey(keyInObj) != undefined : oldKey == keyInObj : oldKey.test(keyInObj)) {
+          newObj[keyInObj.replace(testId ? /^[^]*$/ : oldKey, newKey)] = obj[keyInObj];
+          if (!opt_keepOriginals) {
+            excludedOriginals.push(keyInObj);
+          }
         }
       }
     }
-  }
-
-  var getKeys = Object.keys,
-      result = {},
-      keys = (obj && 'object' === typeof obj) ? getKeys(obj) : [],
-      keysCount = keys.length;
-  if (keysCount) {
-    recurse(obj, '', keys, keysCount, [obj]);
-  }
-  return result;
-}
-
-// Splits a dot-catenated path into an array while unescaping the escaped characters.
-function splitPath(path) {
-  return (path + '.').match(/([^\\.]|\\.)*\./g).map(function(x) {
-    return x.slice(0, -1).replace(/\\(.)/g, '$1');
   });
+  for (var keyInObj in obj) {
+    if (has(obj, keyInObj) && excludedOriginals.indexOf(keyInObj) < 0 && !has(newObj, keyInObj)) {
+      newObj[keyInObj] = obj[keyInObj];
+    }
+  }
+  return newObj;
 }
-
-function joinPath(arrPath) {
-  return arrPath.map(function (x) {
-    return (x + '').replace(/\\|\./g, '\\$&');
-  }).join('.');
-}
-
-// Update the documentation for set(...) to include the 4th parameter (opt_returnObj)
