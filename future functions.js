@@ -1,3 +1,4 @@
+// requires getDateExtremes()
 function isInDateRange(measure, date1, date2) {
   var args = arguments;
   if (args.length < 3) {
