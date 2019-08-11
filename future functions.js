@@ -1,71 +1,30 @@
-// requires has()
-// Modifies keys of an object or augments the object with more keys for the same values.
-function rekey(obj, keyMap, opt_keepOriginals) {
-  obj = Object(obj);
-  // Allow for partial call...
-  if (obj == undefined) {
-    return function(obj) {
-      return rekey(obj, keyMap, opt_keepOriginals);
-    };
+function isInDateRange(date1, measure, date2) {
+  measure = measure.replace(/^DATE$/i, 'DAY');
+  var measures = ['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND'];
+  var measureFuncNames = ['FullYear', 'Month', 'Date', 'Hours', 'Minutes', 'Seconds'];
+  var matchWeek = /^WEEK([0-6]?)$/i.exec(measure);
+  var measureIndex = matchWeek ? 1 : measures.indexOf(measure.toUpperCase());
+  if (measureIndex < 0) {
+    throw new Error('Unknown date measure:\t' + measure);
   }
-
-  var newObj = {};
-  var excludedOriginals = [];
-  (
-    Array.isArray(keyMap)
-      ? keyMap
-      : Object.keys(keyMap).map(function (key) {
-          return [key, keyMap[key]];
-        })
-  ).forEach(function (pair) {
-    var oldKey = pair[0];
-    var oldKeyType = typeof oldKey;
-    var testId = oldKeyType === 'function' ? 1 : 'string,boolean,number'.indexOf(oldKeyType) >= 0 ? 2 : 0;
-    var newKey = pair[1];
-    for (var keyInObj in obj) {
-      if (has(obj, keyInObj)) {
-        if (testId ? testId === 1 ? oldKey(keyInObj) != undefined : oldKey == keyInObj : oldKey.test(keyInObj)) {
-          newObj[keyInObj.replace(testId ? /^[^]*$/ : oldKey, newKey)] = obj[keyInObj];
-          if (!opt_keepOriginals) {
-            excludedOriginals.push(keyInObj);
-          }
-        }
-      }
-    }
-  });
-  for (var keyInObj in obj) {
-    if (has(obj, keyInObj) && excludedOriginals.indexOf(keyInObj) < 0 && !has(newObj, keyInObj)) {
-      newObj[keyInObj] = obj[keyInObj];
+  
+  for (var fnName; measureIndex + 1; measureIndex--) {
+    fnName = 'get' + measureFuncNames[measureIndex];
+    if (date1[fnName]() !== date2[fnName]()) {
+      return false;
     }
   }
-  return newObj;
+  if (matchWeek) {
+    matchWeek = +(matchWeek[1] || 0);
+    date1 = new Date(date1);
+    date1.setDate(date1.getDate() - (((date1.getDay() - matchWeek) % 7 + 7) % 7));
+    date2 = new Date(date2);
+    date2.setDate(date2.getDate() - (((date2.getDay() - matchWeek) % 7 + 7) % 7));
+    return date1.getDate() === date2.getDate();
+  }
+  return true;
 }
 
-
-// Update this to allow for setting of DOW, min, and sec
-var modDate;
-(function (MAP) {
-  modDate = function (date, objOffsets) {
-    for (var setter, getter, isSetOnly, k, v, keys = Object.keys(objOffsets), i = keys.length; i--;) {
-      v = objOffsets[k = keys[i]];
-      isSetOnly = /^\$/.test(k);
-      k.replace(/^\$|\b(ms)$|s$/g, '$1')
-        .replace(/^((milli)?sec(ond)?|min(ute)?|hour)$/, '$&s')
-        .replace(/./, function (a) { return a.toUpperCase(); })
-        .replace(/^(DOW|dow)([0-6])?$|^.+$/i, function (k, dow, offset) {
-          if (dow) {
-            dow = (date.getDay() + -(offset || 0) + 7) % 7;
-            v = ((v % 7) + 7) % 7;
-            date.setDate(date.getDate() + (isSetOnly ? v - dow : ((dow + v) % 7 - dow)));
-          }
-          else {
-            k = MAP[k] || k;
-            if ('function' === typeof date[setter = 'set' + k] && 'function' === typeof date[getter = 'get' + k]) {
-              date[setter](!isSetOnly ? date[getter]() + v : v);
-            }
-          }
-        });
-    }
-    return date;
-  };
-})({ Ms: 'Milliseconds', Day: 'Date', Year: 'FullYear', Secs: 'Seconds', Mins: 'Minutes' });
+function dow(date, opt_offset) {
+  return ((date.getDay() - (opt_offset || 0)) % 7 + 7) % 7;
+}
