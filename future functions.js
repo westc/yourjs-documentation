@@ -1,48 +1,32 @@
-// requires getDateExtremes()
-function isInDateRange(measure, date1, date2) {
-  var args = arguments;
-  if (args.length < 3) {
-    return function() {
-      return isInDateRange.apply(this, slice(args).concat(slice(arguments)));
-    };
-  }
-  
-  var extremes = getDateExtremes(measure, date1);
-  return extremes[0] <= date2 && date2 <= extremes[1];
-}
-
-function getDateExtremes(measure, date) {
-  if (!date) {
-    return function(date) {
-      return getDateExtremes(measure, date);
-    };
-  }
-
-  measure = measure.replace(/^DATE$/i, 'DAY');
-  var measures = ['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND'];
-  var measureFuncNames = ['Month', 'Date', 'Hours', 'Minutes', 'Seconds', 'Milliseconds'];
-  var maxes = [11, 31, 23, 59, 59, 999];
-  var matchWeek = /^WEEK([0-6]?)$/i.exec(measure);
-  var measureIndex = matchWeek ? 2 : measures.indexOf(measure.toUpperCase());
-  if (measureIndex < 0) {
-    throw new Error('Unknown date measure:\t' + measure);
-  }
-  
-  for (var fnName, date1 = new Date(date), date2 = new Date(date); measureIndex < 6;) {
-    fnName = 'set' + measureFuncNames[measureIndex];
-    date1[fnName](measureIndex === 1 ? 1 : 0);
-    date2[fnName](maxes[measureIndex++]);
-    if (measureIndex === 1 && date2.getDate() < 9) {
-      date2.setDate(0);
+// Creates the following 56 functions:
+// endOfYear, startOfYear, isSameYear, limitsOfYear, endOfMonth, startOfMonth, isSameMonth, limitsOfMonth, endOfDay, startOfDay, isSameDay, limitsOfDay, endOfHour, startOfHour, isSameHour, limitsOfHour, endOfMinute, startOfMinute, isSameMinute, limitsOfMinute, endOfSecond, startOfSecond, isSameSecond, limitsOfSecond, endOfWeek, startOfWeek, isSameWeek, limitsOfWeek, endOfSundayWeek, startOfSundayWeek, isSameSundayWeek, limitsOfSundayWeek, endOfMondayWeek, startOfMondayWeek, isSameMondayWeek, limitsOfMondayWeek, endOfTuesdayWeek, startOfTuesdayWeek, isSameTuesdayWeek, limitsOfTuesdayWeek, endOfWednesdayWeek, startOfWednesdayWeek, isSameWednesdayWeek, limitsOfWednesdayWeek, endOfThursdayWeek, startOfThursdayWeek, isSameThursdayWeek, limitsOfThursdayWeek, endOfFridayWeek, startOfFridayWeek, isSameFridayWeek, limitsOfFridayWeek, endOfSaturdayWeek, startOfSaturdayWeek, isSameSaturdayWeek, limitsOfSaturdayWeek
+eval('Year Month Day Hour Minute Second Week Sunday Monday Tuesday Wednesday Thursday Friday Saturday'.split(' ').map(
+  function(unit, i) {
+    var code = [
+      'b.setMonth(0);a.setMonth(11)',
+      'b.setDate(0);a.setDate(32);a.setDate(0)',
+      'b.setHours(0);a.setHours(23)',
+      'b.setMinutes(0);a.setMinutes(59)',
+      'b.setSeconds(0);a.setSeconds(59)',
+      'b.setMilliseconds(0);a.setMilliseconds(999)'
+    ];
+    if (i > 5) {
+      var offset = i > 6 ? 14 - i : 7;
+      code.push('b.setDate(b.getDate()-(b.getDay()+'
+        + offset + ')%7);a.setDate(a.getDate()-(a.getDay()+'
+        + offset + ')%7+6)');
+      if (i > 6) {
+        unit += 'Week';
+      }
+      i = 2;
     }
+    code = 'function #(a){var b=new Date(a);a=new Date(a);@;return [b,a]}'.replace('@', code.slice(i).join(';'));
+    return code.replace(/\bb\.set;|\[b,(a)\]/g, '$1').replace('#', 'endOf' + unit)
+      + code.replace(/\ba\.set;|\[(b),a\]/g, '$1').replace('#', 'startOf' + unit)
+      + code.replace('){', ',c){if(void 0===c)return function(c){return #(a,c)};').replace(/\ba\.set;/g, '').replace('[b,a]', 'b<=c&&c<=a').replace(/#/g, 'isSame' + unit)
+      + code.replace('#', 'limitsOf' + unit);
   }
-  if (matchWeek) {
-    matchWeek = +(matchWeek[1] || 0);
-    date1.setDate(date1.getDate() - (((date1.getDay() - matchWeek) % 7 + 7) % 7));
-    date2.setDate(date2.getDate() - (((date2.getDay() - matchWeek) % 7 + 7) % 7) + 6);
-  }
-  return [date1, date2];
-}
+).join(''));
 
 function dow(date, opt_offset) {
   return ((date.getDay() - (opt_offset || 0)) % 7 + 7) % 7;
