@@ -45,26 +45,19 @@ function step(array, callback, opt_stepValue, opt_startIndex) {
   return result;
 }
 
-// blockify() and scopify() will create global variables and when the returned
-// code is executed via eval() the global variables will be deleted.
-var blockify, scopify;
-(function() {
-  function getter(keyword, levelName) {
-    return function blockify(obj) {
-      var code = [];
-      var global = (function() { return this; })();
-      for (var id; has(global, id = '*yjs' + levelName + Math.random()););
-      global[id] = Object.keys(obj).reduce(function(carry, key) {
-        if (isValidVarName(key)) {
-          carry[key] = obj[key];
-          code.push(keyword + ' ' + key + '=@.' + key);
-        }
-        return carry;
-      }, {});
-      code.push('delete @');
-      return code.join(';').replace(/@/g, '(function(){return this})()["' + id + '"]');
-    };
-  }
-  blockify = getter('var', 'Block');
-  scopify = getter('let', 'Scope');
-})();
+// blockify() will create global variables and when the returned code is executed via eval() the
+// global variables will be deleted and will only be included in the block in which eval executes.
+function blockify(obj) {
+  var code = ['try{if(@===undefined){throw 1}}catch(e){throw new Error("Block is no longer available.")}'];
+  var global = (function() { return this; })();
+  for (var id; has(global, id = '*yjsBlock' + Math.random()););
+  global[id] = Object.keys(obj).reduce(function(carry, key) {
+    if (isValidVarName(key)) {
+      carry[key] = obj[key];
+      code.push('var ' + key + '=@.' + key);
+    }
+    return carry;
+  }, {});
+  code.push('delete @');
+  return code.join(';').replace(/@/g, '(function(){return this})()["' + id + '"]');
+}
