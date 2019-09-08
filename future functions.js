@@ -49,11 +49,11 @@ function step(array, callback, opt_stepValue, opt_startIndex) {
 // code is executed via eval() the global variables will be deleted.
 var blockify, scopify;
 (function() {
-  function getter(keyword) {
+  function getter(keyword, levelName) {
     return function blockify(obj) {
-      var global = (function() { return this; })();
-      for (var id = '-scope-'; has(global, id = id.replace(/e[\d\.]*/, 'e' + Math.random())););
       var code = [];
+      var global = (function() { return this; })();
+      for (var id; has(global, id = '*yjs' + levelName + Math.random()););
       global[id] = Object.keys(obj).reduce(function(carry, key) {
         if (isValidVarName(key)) {
           carry[key] = obj[key];
@@ -65,6 +65,6 @@ var blockify, scopify;
       return code.join(';').replace(/@/g, '(function(){return this})()["' + id + '"]');
     };
   }
-  blockify = getter('var');
-  scopify = getter('let');
+  blockify = getter('var', 'Block');
+  scopify = getter('let', 'Scope');
 })();
