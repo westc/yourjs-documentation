@@ -44,3 +44,27 @@ function step(array, callback, opt_stepValue, opt_startIndex) {
   }
   return result;
 }
+
+// blockify() and scopify() will create global variables and when the returned
+// code is executed via eval() the global variables will be deleted.
+var blockify, scopify;
+(function() {
+  function getter(keyword) {
+    return function blockify(obj) {
+      var global = (function() { return this; })();
+      for (var id = '-scope-'; has(global, id = id.replace(/e[\d\.]*/, 'e' + Math.random())););
+      var code = [];
+      global[id] = Object.keys(obj).reduce(function(carry, key) {
+        if (isValidVarName(key)) {
+          carry[key] = obj[key];
+          code.push(keyword + ' ' + key + '=@.' + key);
+        }
+        return carry;
+      }, {});
+      code.push('delete @');
+      return code.join(';').replace(/@/g, '(function(){return this})()["' + id + '"]');
+    };
+  }
+  blockify = getter('var');
+  scopify = getter('let');
+})();
