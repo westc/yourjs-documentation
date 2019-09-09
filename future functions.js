@@ -45,16 +45,28 @@ function step(array, callback, opt_stepValue, opt_startIndex) {
   return result;
 }
 
+// requires nativeType(), isValidVarName(), has()
 // blockify() will create global variables and when the returned code is executed via eval() the
 // global variables will be deleted and will only be included in the block in which eval executes.
-function blockify(obj) {
-  var code = ['try{if(@===undefined){throw 1}}catch(e){throw new Error("Block is no longer available.")}'];
+function blockify(obj, opt_filter, opt_overwrite) {
+  var filterType = nativeType(opt_filter);
+  var filter = filterType === 'Function'
+    ? opt_filter
+    : filterType === 'Array'
+      ? function(key) { return opt_filter.indexOf(key) >= 0; } // Array#indexOf() has IE9+ support
+      : filterType === 'RegExp'
+        ? function(key) { return opt_filter.test(key); }
+        : filterType === 'Function'
+          ? opt_filter
+          : function(key) { return opt_filter !== key; };
+  opt_overwrite = opt_overwrite === undefined ? true : !!opt_overwrite;
+  var code = ['try{if(@===undefined){throw 1}}catch(e){throw new Error("Specified block no longer exists.")}'];
   var global = (function() { return this; })();
   for (var id; has(global, id = '*yjsBlock' + Math.random()););
   global[id] = Object.keys(obj).reduce(function(carry, key) {
-    if (isValidVarName(key)) {
+    if (isValidVarName(key) && filter(key)) {
       carry[key] = obj[key];
-      code.push('var ' + key + '=@.' + key);
+      code.push('var ' + key + (!opt_overwrite ? '=' + key + '===undefined?@.' + key + ':' : '=@.') + key);
     }
     return carry;
   }, {});
