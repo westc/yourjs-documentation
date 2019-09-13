@@ -28,6 +28,7 @@ eval('0call2[].slice.call(arguments,1)3arguments)}}0apply2b3b)}}'.replace(/\d/g,
 
 // Allows for an array or an array like structure to be stepped through in the order specified
 // after each iteration.
+// Example at:  https://www.yourjs.com/console/?gist=b93e3d6df9070b4f5fee28a9331c626d&file=step-example.js
 function step(array, callback, opt_stepValue, opt_startIndex) {
   opt_stepValue = ~~opt_stepValue || 1;
   var count = array.length;
