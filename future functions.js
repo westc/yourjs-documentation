@@ -37,9 +37,9 @@ function step(array, callback, opt_stepValue, opt_startIndex) {
       : 0
     : opt_startIndex;
   i = (~~i % count + count) % count;
-  for (var newStep, value, result = []; 0 <= i && i < array.length; i += opt_stepValue) {
-    newStep = callback(value = array[i], i, array);
-    result.push(value);
+  for (var newStep, result = []; 0 <= i && i < array.length; i += opt_stepValue) {
+    newStep = callback(array[i], i, array);
+    result.push(array[i]);
     opt_stepValue = newStep != undefined ? ~~newStep || 0 : opt_stepValue;
   }
   return result;
