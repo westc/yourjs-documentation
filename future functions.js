@@ -74,3 +74,30 @@ function blockify(obj, opt_filter, opt_overwrite) {
   code.push('delete @');
   return code.join(';').replace(/@/g, '(function(){return this})()["' + id + '"]');
 }
+
+// requires filter()
+function compact(arrOrObj) {
+  return filter(arrOrObj, function(value) { return value; });
+}
+
+// requires isArrayLike() and has()
+function filter(arrOrObj, callback, opt_this) {
+  var result;
+  if (isArrayLike(arrOrObj = Object(arrOrObj))) {
+    result = [];
+    for (var i = 0, l = arrOrObj.length; i < l; i++) {
+      if (callback.call(opt_this, arrOrObj[i], i, arrOrObj)) {
+        result.push(arrOrObj[i]);
+      }
+    }
+  }
+  else {
+    result = {};
+    for (var k in arrOrObj) {
+      if (has(arrOrObj, k) && callback.call(opt_this, arrOrObj[k], k, arrOrObj)) {
+        result[k] = arrOrObj[k];
+      }
+    }
+  }
+  return result;
+}
