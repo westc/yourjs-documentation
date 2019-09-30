@@ -3,11 +3,11 @@ function toBool(value) {
   return!/^(no|off|false|0|)$/i.test((value || '') + '');
 }
 
-// Takes an object and turns it into a serialized string for use in a URL.
+// Takes an object and turns it into a serialized URL parameter string.
 // The opt_formatter is an optional parameter that can be used to format the values that will be displayed for each value in `obj`.
 // require escape(), flattenKeys() and has()
 // var { escape, flattenKeys, has } = YourJS;
-function serialize(obj, opt_formatter) {
+function toParams(obj, opt_formatter) {
   var encodedKey, encodedValue, k, parts = [];
   obj = flattenKeys(obj);
   for (k in obj) {
@@ -40,11 +40,11 @@ function serialize(obj, opt_formatter) {
   return parts.join('&');
 }
 
-// Takes a URL serialized string and turns it into an object.
+// Takes a serialized URL parameter string and turns it into an object.
 // The opt_parser is an optional parameter that can be used to parse each value found in `str`.
 // require unescape(), nativeType() and has()
 // var { unescape, nativeType, has } = YourJS;
-function unserialize(str, opt_parser) {
+function fromParams(str, opt_parser) {
   var result = {};
   str.replace(
     /([^&=]+)(?:=([^&]*))?/g,
