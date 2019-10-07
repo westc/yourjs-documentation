@@ -28,3 +28,29 @@ var fromCodePoint;
     return result + fromCharCode.apply(null, codeUnits);
   };
 })(String.fromCharCode);
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt#Polyfill
+function codePointAt(string, position) {
+  var size = string.length;
+  if (position != position) { // NaN
+    position = 0;
+  }
+  // Account for out-of-bounds indices:
+  if (position < 0 || position >= size) {
+    return undefined;
+  }
+  // Get the first code unit
+  var first = string.charCodeAt(position);
+  var second;
+  if ( // check if it’s the start of a surrogate pair
+    first >= 55296 && first <= 56319 && // high surrogate
+    size > position + 1 // there is a next code unit
+  ) {
+    second = string.charCodeAt(position + 1);
+    if (second >= 56320 && second <= 57343) { // low surrogate
+      // https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+      return (first - 55296) * 1024 + second - 56320 + 65536;
+    }
+  }
+  return first;
+}
