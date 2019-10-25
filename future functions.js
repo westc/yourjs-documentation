@@ -54,3 +54,51 @@ function codePointAt(string, position) {
   }
   return first;
 }
+
+// ORIGINAL SOURCE CODE:  hasIn(), setIn(), getIn()
+// // hasIn({name:{first:'Chris'}}, ['name','last']);
+// function hasIn(obj, key,nothing) {
+//   key = Object.prototype.toString.call(key) === '[object Array]' ? key : [key];
+//   for (
+//     var target = obj, i = 0, l = key.length;
+//     target && 'object' === typeof target && key[i] in target && ++i < l;
+//     target = target[key[i-1]]
+//   );
+//   return i === l;
+// }
+
+// function setIn(obj, key, value) {
+//   key = Object.prototype.toString.call(key) === '[object Array]' ? key : [key];
+//   for (
+//     var target = obj, i = 0, l = key.length - 1;
+//     target && 'object' === typeof target && key[i] in target && i < l;
+//     target = target[key[i++]]
+//   );
+//   if (i === l && target != undefined) {
+//     target[key[i]] = value;
+//   }
+//   return obj;
+// }
+
+// function getIn(obj, key, opt_default) {
+//   key = Object.prototype.toString.call(key) === '[object Array]' ? key : [key];
+//   for (
+//     var target = obj, i = 0, l = key.length;
+//     target && 'object' === typeof target && key[i] in target && ++i < l;
+//     target = target[key[i-1]]
+//   );
+//   return i === l ? target[key[i - 1]] : opt_default;
+// }
+
+eval(
+  'AhasBC++D-1]]);E}AsetB-1CD++]]);d===f&&void 0!=b&&(b[a[d]]=e);return c}AgetBC++D-1]]);E?b[a[d-1]]:e}'
+    .replace(/[A-E]/g, function(c) {
+      return {
+        A: 'function ',
+        B: 'In(c,a,e){a="[object Array]"===Object.prototype.toString.call(a)?a:[a];for(var b=c,d=0,f=a.length',
+        C: ';b&&"object"===typeof b&&a[d]in b&&',
+        D: 'd<f;b=b[a[d',
+        E: 'return d===f'
+      }[c];
+    })
+);
