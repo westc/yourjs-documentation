@@ -104,15 +104,33 @@ eval(
 );
 
 /**
+ * @name remove
  * Removes a target value from the specified array.
  * @param array {Array} The array from which the specified value should be removed.
  * @param target {*} The value that should be removed from array.
  * @param opt_maxRemovals {number} Optional.  Defaults to Infinity.  The maximum number of times target should be removed from array.
  * @returns {Array} The array that was passed in.
  */
+/*
+// ORIGINAL CODE FOR remove(), removeRight() and removeAll():
 function remove(array, target, opt_maxRemovals) {
-  opt_maxRemovals = ~~opt_maxRemovals || 0;
-  for (var v, isnan = target !== target, i = array.length; i-- && opt_maxRemovals > 0;) {
+  opt_maxRemovals = opt_maxRemovals != undefined ? ~~opt_maxRemovals || 0 : 1;
+  for (var v, isnan = target !== target, i = -1, l = array.length; ++i < l && 0 < opt_maxRemovals;) {
+    if (i in array) {
+      v = array[i];
+      if (isnan ? v !== v : target === v) {
+        array.splice(i, 1);
+        i--;
+        f--;
+        opt_maxRemovals--;
+      }
+    }
+  }
+  return array;
+}
+function removeRight(array, target, opt_maxRemovals) {
+  opt_maxRemovals = opt_maxRemovals != undefined ? ~~opt_maxRemovals || 0 : 1;
+  for (var v, isnan = target !== target, i = array.length; 0 < i-- && 0 < opt_maxRemovals;) {
     if (i in array) {
       v = array[i];
       if (isnan ? v !== v : target === v) {
@@ -123,3 +141,29 @@ function remove(array, target, opt_maxRemovals) {
   }
   return array;
 }
+function removeAll(array, target) {
+  for (var v, isnan = target !== target, i = array.length; 0 < i--;) {
+    if (i in array) {
+      v = array[i];
+      if (isnan ? v !== v : target === v) {
+        array.splice(i, 1);
+      }
+    }
+  }
+  return array;
+}
+*/
+eval('ZYXW=-1,fV++d<f&&0<bU,d--,f--,b--TZRightYXWV0<d--&&0<bU,b--TZAllYWV0<d--UT'.replace(
+  /[T-Z]/g,
+  function (c) {
+    return {
+      Z: 'function remove',
+      Y: '(a,e,b){',
+      X: 'b=void 0!=b?~~b||0:1;',
+      W: 'for(var c,g=e!==e,d',
+      V: '=a.length;',
+      U: ';)d in a&&(c=a[d],g?c!==c:e===c)&&(a.splice(d,1)',
+      T: ');return a}'
+    }[c];
+  }
+));
