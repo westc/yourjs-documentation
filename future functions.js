@@ -167,3 +167,75 @@ eval('ZYXW=-1,fV++d<f&&0<bU,d--,f--,b--TZRightYXWV0<d--&&0<bU,b--TZAllYWV0<d--UT
     }[c];
   }
 ));
+
+// function filterPropNames(obj, tester, opt_negate) {
+//   opt_negate = !opt_negate;
+//   for (var key, result = [], keys = Object.getOwnPropertyNames(obj), i = keys.length; i--;) {
+//     key = keys[i];
+//     if (!tester(key, obj[key], obj) !== opt_negate) {
+//       result.unshift(key);
+//     }
+//   }
+//   return result;
+// }
+// function filterKeys(obj, tester, opt_negate) {
+//   opt_negate = !opt_negate;
+//   for (var key, result = [], keys = Object.keys(obj), i = keys.length; i--;) {
+//     key = keys[i];
+//     if (!tester(key, obj[key], obj) !== opt_negate) {
+//       result.unshift(key);
+//     }
+//   }
+//   return result;
+// }
+// function filterProps(obj, tester, opt_negate) {
+//   opt_negate = !opt_negate;
+//   for (var key, result = [], keys = Object.getOwnPropertyNames(obj), i = keys.length; i--;) {
+//     key = keys[i];
+//     if (!tester(obj[key], key, obj) !== opt_negate) {
+//       result.unshift(obj[key]);
+//     }
+//   }
+//   return result;
+// }
+// function filterValues(obj, tester, opt_negate) {
+//   opt_negate = !opt_negate;
+//   for (var key, result = [], keys = Object.keys(obj), i = keys.length; i--;) {
+//     key = keys[i];
+//     if (!tester(obj[key], key, obj) !== opt_negate) {
+//       result.unshift(obj[key]);
+//     }
+//   }
+//   return result;
+// }
+// function filterPropEntries(obj, tester, opt_negate) {
+//   opt_negate = !opt_negate;
+//   for (var key, result = [], keys = Object.getOwnPropertyNames(obj), i = keys.length; i--;) {
+//     key = keys[i];
+//     if (!tester(key, obj[key], obj) !== opt_negate) {
+//       result.unshift([key, obj[key]]);
+//     }
+//   }
+//   return result;
+// }
+// function filterEntries(obj, tester, opt_negate) {
+//   opt_negate = !opt_negate;
+//   for (var key, result = [], keys = Object.keys(obj), i = keys.length; i--;) {
+//     key = keys[i];
+//     if (!tester(key, obj[key], obj) !== opt_negate) {
+//       result.unshift([key, obj[key]]);
+//     }
+//   }
+//   return result;
+// }
+eval('QPropNamesRSTa,WUaXQKeysRkeysTa,WUaXQPropsRSTW,aUWXQValuesRkeysTW,aUWXQPropEntriesRSTa,WU[a,W]XQEntriesRkeysTa,WU[a,W]X'.replace(/[Q-UWX]/g, function(c) {
+  return {
+    Q: 'function filter',
+    R: '(b,f,g){g=!g;for(var a,c=[],d=Object.',
+    S: 'getOwnPropertyNames',
+    T: '(b),e=d.length;e--;)a=d[e],!f(',
+    U: ',b)!==g&&c.unshift(',
+    W: 'b[a]',
+    X: ');return c}',
+  }[c];
+}));
