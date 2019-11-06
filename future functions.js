@@ -29,31 +29,61 @@ var fromCodePoint;
   };
 })(String.fromCharCode);
 
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt#Polyfill
-function codePointAt(string, position) {
-  var size = string.length;
-  if (position != position) { // NaN
-    position = 0;
+// // ORIGINAL CODE FOR codePointAt()
+// // Allows for a negative position.  Similar to String#codePointAt():
+// // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt#Polyfill
+// function codePointAt(string, position) {
+//   var x, y, l = string.length;
+//   position = position < 0 ? position + l : (position || 0);
+//   // Get the first code unit
+//   x = string.charCodeAt(position);
+//   if ( // check if it’s the start of a surrogate pair
+//     x >= 55296 && x <= 56319 && // high surrogate
+//     l > position + 1 // there is a next code unit
+//   ) {
+//     y = string.charCodeAt(position + 1);
+//     if (y >= 56320 && y <= 57343) { // low surrogate
+//       // https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+//       x = (x - 55296) * 1024 + y - 56320 + 65536;
+//       position++;
+//     }
+//   }
+//   return x;
+// }
+// // ORIGINAL CODE FOR toCodePoint()
+// // Based on polyfill for String#codePointAt():
+// // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt#Polyfill
+// function toCodePoint(string) {
+//   for (var x, y, l = string.length, position = 0, a = []; position < l; position++) {
+//     // Get the first code unit
+//     x = string.charCodeAt(position);
+//     if ( // check if it’s the start of a surrogate pair
+//       x >= 55296 && x <= 56319 && // high surrogate
+//       l > position + 1 // there is a next code unit
+//     ) {
+//       y = string.charCodeAt(position + 1);
+//       if (y >= 56320 && y <= 57343) { // low surrogate
+//         // https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+//         x = (x - 55296) * 1024 + y - 56320 + 65536;
+//         position++;
+//       }
+//     }
+//     a.push(x);
+//   }
+//   return a;
+// }
+eval('ZtoCY(d){for(X,b=0,e=[];b<f;b++)W,e.push(a)Ve}ZcYAt(d,b){X;b=0>b?f+b:b||0;WVa}'.replace(
+  /[V-Z]/g,
+  function (c) {
+    return {
+      Z: 'function ',
+      Y: 'odePoint',
+      X: 'var a,c,f=d.length',
+      W: 'a=d.charCodeAt(b),55296<=a&&56319>=a&&f>b+1&&(c=d.charCodeAt(b+1),56320<=c&&57343>=c&&(a=1024*(a-55296)+c-56320+65536,b++))',
+      V: ';return '
+    }[c];
   }
-  // Account for out-of-bounds indices:
-  if (position < 0 || position >= size) {
-    return undefined;
-  }
-  // Get the first code unit
-  var first = string.charCodeAt(position);
-  var second;
-  if ( // check if it’s the start of a surrogate pair
-    first >= 55296 && first <= 56319 && // high surrogate
-    size > position + 1 // there is a next code unit
-  ) {
-    second = string.charCodeAt(position + 1);
-    if (second >= 56320 && second <= 57343) { // low surrogate
-      // https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
-      return (first - 55296) * 1024 + second - 56320 + 65536;
-    }
-  }
-  return first;
-}
+));
 
 // ORIGINAL SOURCE CODE:  hasIn(), setIn(), getIn()
 // // hasIn({name:{first:'Chris'}}, ['name','last']);
