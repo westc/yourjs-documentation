@@ -269,3 +269,70 @@ eval('QPropNamesRSTa,WUaXQKeysRkeysTa,WUaXQPropsRSTW,aUWXQValuesRkeysTW,aUWXQPro
     X: ');return c}',
   }[c];
 }));
+
+
+// // The findWhere(), findLastWhere() and where() functions are derived from the following code:
+// function findWhere(array) {
+//   // "rl" is the number of args to check
+//   for (var args = arguments, rl = ((args.length + 1) | 1) - 2, i = 0, l = array.length; i < l; i++) {
+//     if (array[i] != undefined) {
+//       for (var ri = 1; ri < rl;) {
+//         for (var item = array[i], comparer = '===', path = args[ri++], value = args[ri++], pi = 0, pl = path.length; pi < pl; pi++) {
+//           var pathPart = path[pi];
+//           if (item == undefined) {
+//             pi = pl + 1;
+//           }
+//           else if (pi === 0 && (pathPart === '!~' || pathPart === '~' || pathPart === '!()' || pathPart === '()' || pathPart === '===' || pathPart === '==' || pathPart === '<=' || pathPart === '>=' || pathPart === '!=' || pathPart === '!==' || pathPart === '<' || pathPart === '>')) {
+//             comparer = pathPart;
+//           }
+//           else {
+//             item = item[pathPart];
+//           }
+//         }
+//         if (
+//           (pi > pl)
+//           || (
+//             (value !== value)
+//             ? (
+//               ((comparer === '===' || comparer === '==' || comparer === '>=' || comparer === '<=') && item === item)
+//               || ((comparer === '!==' || comparer === '!=') && item !== item)
+//               || comparer.indexOf('=') < 0
+//             )
+//             : (
+//               (comparer === '===' && item !== value)
+//               || (comparer === '==' && item != value)
+//               || (comparer === '!==' && item === value)
+//               || (comparer === '!=' && item == value)
+//               || (comparer === '<=' && item > value)
+//               || (comparer === '>=' && item < value)
+//               || (comparer === '>' && item <= value)
+//               || (comparer === '<' && item >= value)
+//               || (comparer === '~' && !value.test(item))
+//               || (comparer === '!~' && value.test(item))
+//               || (comparer === '()' && !value(item))
+//               || (comparer === '!()' && value(item))
+//             )
+//           )
+//         ) {
+//           ri = rl + 1;
+//         }
+//       }
+//       if (ri === rl) {
+//         return array[i];
+//       }
+//     }
+//   }
+// }
+eval('AfindWBg=0,pC<p;g++DEAfindLastWBgC--;DEAwBi=[],g=0,pC<p;g++Di.push(h[g])}return i}'
+  .replace(/[A-E]/g, function(c) {
+    return {
+      A: 'function ',
+      B: 'here(h){for(var a,k=arguments,l=(k.length+1|1)-2,',
+      C: '=h.length;g',
+      D: ')if(void 0!=h[g]){for(var f=1;f<l;){for(var a=h[g],b=#",n=k[f++],c=k[f++],e=0,m=n.length;e<m;e++){var d=n[e];void 0==a?e=m+1:0!==e||"~@!~@()"!==d&&#@==@<=@>=@!=@!==@<@>"!==d?a=a[d]:b=d}if(e>m||(c!==c?(##b||"==#b||">=#b||"<=#b)&&a===a||("!==#b||"!=#b)&&a!==a||b.indexOf("=")<0:##b&&a!==c||"==#b&&a!=c||"!==#b&&a===c||"!=#b&&a==c||"<=#b&&a>c||">=#b&&a<c||">#b&&a<=c||"<#b&&a>=c||"~#b&&!c.test(a)||"!~#b&&c.test(a)||"()#b&&!c(a)))f=l+1}if(f===l)',
+      E: 'return h[g]}}'
+    }[c];
+  })
+  .replace(/#/g,'"===')
+  .replace(/@/g,'"!==d&&"')
+);
