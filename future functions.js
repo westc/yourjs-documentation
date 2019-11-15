@@ -289,12 +289,12 @@ function testFor() {
       value = rules[ri],
       pathLength = path.length,
       comparer = path[0];
-    argNames.push('_' + ri, 'a' + ri);
     if (!/^(([!=]=?|!?~|<|>)=|<|>|!?\(\))$/.test(comparer || '')) {
       comparer = '===';
       pathStart = pathIndex = 0;
     }
-    for (; pathIndex <= pathLength; pathIndex++) {
+    // argNames.push(...) is only in for-loop to save some code (1 character lol)
+    for (argNames.push('_' + ri, 'a' + ri); pathIndex <= pathLength; pathIndex++) {
       for (var code = 'i', i = pathStart; i < pathIndex; i++) {
         code += '[' + JSON.stringify(path[i]) + ']';
       }
