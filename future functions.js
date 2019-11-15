@@ -270,79 +270,53 @@ eval('QPropNamesRSTa,WUaXQKeysRkeysTa,WUaXQPropsRSTW,aUWXQValuesRkeysTW,aUWXQPro
   }[c];
 }));
 
-
-// // The firstWhere(), lastWhere(), where(), indexWhere(), lastIndexWhere() and indicesWhere() functions are derived from the following code:
-// function findWhere(array) {
-//   // "rl" is the number of args to check
-//   for (var args = arguments, rl = ((args.length + 1) | 1) - 2, i = 0, l = array.length; i < l; i++) {
-//     if (array[i] != undefined) {
-//       for (var ri = 1; ri < rl;) {
-//         for (var item = array[i], comparer = '===', path = args[ri++], value = args[ri++], pi = 0, pl = path.length; pi < pl; pi++) {
-//           var pathPart = path[pi];
-//           if (item == undefined) {
-//             pi = pl + 1;
-//           }
-//           else if (pi === 0 && (pathPart === '!~' || pathPart === '~' || pathPart === '!()' || pathPart === '()' || pathPart === '===' || pathPart === '==' || pathPart === '<=' || pathPart === '>=' || pathPart === '!=' || pathPart === '!==' || pathPart === '<' || pathPart === '>')) {
-//             comparer = pathPart;
-//           }
-//           else {
-//             item = item[pathPart];
-//           }
-//         }
-//         if (
-//           (pi > pl)
-//           || (
-//             (value !== value)
-//             ? (
-//               ((comparer === '===' || comparer === '==' || comparer === '>=' || comparer === '<=') && item === item)
-//               || ((comparer === '!==' || comparer === '!=') && item !== item)
-//               || comparer.indexOf('=') < 0
-//             )
-//             : (
-//               (comparer === '===' && item !== value)
-//               || (comparer === '==' && item != value)
-//               || (comparer === '!==' && item === value)
-//               || (comparer === '!=' && item == value)
-//               || (comparer === '<=' && item > value)
-//               || (comparer === '>=' && item < value)
-//               || (comparer === '>' && item <= value)
-//               || (comparer === '<' && item >= value)
-//               || (comparer === '~' && !value.test(item))
-//               || (comparer === '!~' && value.test(item))
-//               || (comparer === '()' && !value(item))
-//               || (comparer === '!()' && value(item))
-//             )
-//           )
-//         ) {
-//           ri = rl + 1;
-//         }
-//       }
-//       if (ri === rl) {
-//         return array[i];
-//       }
-//     }
-//   }
+// people = Array(10000000).fill({}).map((x, i) => ({ name: `Person #${i + 1}`, age: ~~(Math.random() * 100), score: ~~(Math.random() * 51 + 49) }));
+// t = testFor(['>=', 'age'], 18, ['<=', 'age'], 21, ['~=', 'name'], /5/, ['>', 'score'], 95);
+// for (var i = 0; i < 5; i++) {
+//   console.time('r0');
+//   r0 = people.filter(i => i != void 0 && i.age >= 18 && i.age <= 21 && /5/.test(i.name) && i.score > 95);
+//   console.timeEnd('r0');
+//
+//   console.time('r1');
+//   r1 = people.filter(t)
+//   console.timeEnd('r1');
 // }
-eval('AfirstWBg=0,pC<p;g++DEh[g]}}AlastWBgC--;DEh[g]}}AwBi=[],g=0,pC<p;g++Di.push(h[g])}Ei}AindexWBg=0,pC<p;g++DEg}}AlastIndexWBgC--;DEg}}AindicesWBi=[],g=0,pC<p;g++Di.push(g)}Ei}'
-  .replace(/[A-E]/g, function(c) {
-    return {
-      A: 'function ',
-      B: 'here(hFa,k=arguments,l=(kG+1|1)-2,',
-      C: '=hG;g',
-      D: ')if(void 0!=h[g]Ff=1;f<l;Fa=h[g],b=A",n=k[f++],c=k[f++],e=0,m=nG;e<m;e++){var d=n[e];void 0Da?e=m+1:0!DeC~B!~B()"!Dd&&ABDB<=B>=B!=B!DB<B>"!Dd?a=a[d]:b=d}if(e>m||(c!Dc?(AAbCDAbC>=AbC<=Ab)EaD=a||("!DAbC!=Ab)Ea!Da||b.indexOf("=")<0:AHa!DcCDHa!=cC!DHaD=cC!=HaDcC<=Ha>cC>=Ha<cC>Ha<=cC<Ha>=cC~H!c.test(a)C!~Hc.test(a)C()H!c(a)))f=l+1}if(fD=l)',
-      E: 'return '
-    }[c];
-  })
-  .replace(/H/g, 'AbE')
-  .replace(/[A-G]/g, function(c) {
-    return {
-      A: '"===',
-      B: '"!==d&&"',
-      C: '||"',
-      D: '==',
-      E: '&&',
-      F: '){for(var ',
-      G: '.length'
-    }[c];
-  })
-););
+function testFor() {
+  for (var argNames = [], checks = [], rules = arguments, ri = 0, rl = (rules.length | 1) - 1; ri < rl; ri++) {
+    var pathStart = 1,
+      pathIndex = 1,
+      path = rules[ri++],
+      value = rules[ri],
+      pathLength = path.length,
+      comparer = path[0];
+    argNames.push('_' + ri, 'a' + ri);
+    if (!/^(([!=]=?|!?~|<|>)=|<|>|!?\(\))$/.test(comparer || '')) {
+      comparer = '===';
+      pathStart = pathIndex = 0;
+    }
+    for (; pathIndex <= pathLength; pathIndex++) {
+      for (var code = 'i', i = pathStart; i < pathIndex; i++) {
+        code += '[' + JSON.stringify(path[i]) + ']';
+      }
+      code = pathIndex + 1 > pathLength
+        ? /~|\(/.test(comparer)
+          ? ((/!/.test(comparer) ? '!' : '') + 'a' + ri + (/~/.test(comparer) ? '.test(' : '(') + code + ')')
+          : (value !== value && /^[!=]/.test(comparer))
+            ? code + (/!/.test(comparer) ? '===' : '!==') + code // Allows for comparison of NaN
+            : (code + comparer + 'a' + ri)
+        : (code + '!=void 0');
+      if (checks.indexOf(code) < 0) {
+        checks.push(code);
+      }
+    }
+  }
+  return Function(argNames.join(','), 'return function(i){return ' + checks.join('&&') + '}').apply(0, rules);
+}
+
+// requires testFor() and slice()
+// creates where(), someWhere(), everyWhere(), noWhere(), and notEveryWhere()
+var where,someWhere,everyWhere,noWhere,notEveryWhere;
+Function(
+  'A,T,S',
+  'wAfilterB};someWAsomeB};everyWAeveryB};noWAsomeB===!1};notEveryWAeveryB===!1}'.replace(/A/g,'here=function(a){return A.').replace(/B/g,'.call(a,T.apply(0,S(arguments,1)))')
+)(__EMPTY_ARRAY, testFor, slice);
