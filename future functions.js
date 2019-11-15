@@ -271,7 +271,7 @@ eval('QPropNamesRSTa,WUaXQKeysRkeysTa,WUaXQPropsRSTW,aUWXQValuesRkeysTW,aUWXQPro
 }));
 
 
-// // The findWhere(), findLastWhere() and where() functions are derived from the following code:
+// // The firstWhere(), lastWhere(), where(), indexWhere(), lastIndexWhere() and indicesWhere() functions are derived from the following code:
 // function findWhere(array) {
 //   // "rl" is the number of args to check
 //   for (var args = arguments, rl = ((args.length + 1) | 1) - 2, i = 0, l = array.length; i < l; i++) {
@@ -323,16 +323,26 @@ eval('QPropNamesRSTa,WUaXQKeysRkeysTa,WUaXQPropsRSTW,aUWXQValuesRkeysTW,aUWXQPro
 //     }
 //   }
 // }
-eval('AfindWBg=0,pC<p;g++DEAfindLastWBgC--;DEAwBi=[],g=0,pC<p;g++Di.push(h[g])}return i}'
+eval('AfirstWBg=0,pC<p;g++DEh[g]}}AlastWBgC--;DEh[g]}}AwBi=[],g=0,pC<p;g++Di.push(h[g])}Ei}AindexWBg=0,pC<p;g++DEg}}AlastIndexWBgC--;DEg}}AindicesWBi=[],g=0,pC<p;g++Di.push(g)}Ei}'
   .replace(/[A-E]/g, function(c) {
     return {
       A: 'function ',
-      B: 'here(h){for(var a,k=arguments,l=(k.length+1|1)-2,',
-      C: '=h.length;g',
-      D: ')if(void 0!=h[g]){for(var f=1;f<l;){for(var a=h[g],b=#",n=k[f++],c=k[f++],e=0,m=n.length;e<m;e++){var d=n[e];void 0==a?e=m+1:0!==e||"~@!~@()"!==d&&#@==@<=@>=@!=@!==@<@>"!==d?a=a[d]:b=d}if(e>m||(c!==c?(##b||"==#b||">=#b||"<=#b)&&a===a||("!==#b||"!=#b)&&a!==a||b.indexOf("=")<0:##b&&a!==c||"==#b&&a!=c||"!==#b&&a===c||"!=#b&&a==c||"<=#b&&a>c||">=#b&&a<c||">#b&&a<=c||"<#b&&a>=c||"~#b&&!c.test(a)||"!~#b&&c.test(a)||"()#b&&!c(a)))f=l+1}if(f===l)',
-      E: 'return h[g]}}'
+      B: 'here(hFa,k=arguments,l=(kG+1|1)-2,',
+      C: '=hG;g',
+      D: ')if(void 0!=h[g]Ff=1;f<l;Fa=h[g],b=A",n=k[f++],c=k[f++],e=0,m=nG;e<m;e++){var d=n[e];void 0Da?e=m+1:0!DeC~B!~B()"!Dd&&ABDB<=B>=B!=B!DB<B>"!Dd?a=a[d]:b=d}if(e>m||(c!Dc?(AAbCDAbC>=AbC<=Ab)EaD=a||("!DAbC!=Ab)Ea!Da||b.indexOf("=")<0:AHa!DcCDHa!=cC!DHaD=cC!=HaDcC<=Ha>cC>=Ha<cC>Ha<=cC<Ha>=cC~H!c.test(a)C!~Hc.test(a)C()H!c(a)))f=l+1}if(fD=l)',
+      E: 'return '
     }[c];
   })
-  .replace(/#/g,'"===')
-  .replace(/@/g,'"!==d&&"')
-);
+  .replace(/H/g, 'AbE')
+  .replace(/[A-G]/g, function(c) {
+    return {
+      A: '"===',
+      B: '"!==d&&"',
+      C: '||"',
+      D: '==',
+      E: '&&',
+      F: '){for(var ',
+      G: '.length'
+    }[c];
+  })
+););
