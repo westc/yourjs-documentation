@@ -315,8 +315,30 @@ function testFor() {
 
 // requires testFor() and slice()
 // creates where(), someWhere(), everyWhere(), noWhere(), and notEveryWhere()
-var where,someWhere,everyWhere,noWhere,notEveryWhere;
+var where, someWhere, everyWhere, noWhere, notEveryWhere;
 Function(
   'A,T,S',
-  'wAfilterB};someWAsomeB};everyWAeveryB};noWAsomeB===!1};notEveryWAeveryB===!1}'.replace(/A/g,'here=function(a){return A.').replace(/B/g,'.call(a,T.apply(0,S(arguments,1)))')
+  'w@filter#};};someW@some#};};everyW@every#};};noW@some#===!1};};notEveryW@every#===!1};};'
+    .replace(/@/g, 'here=function(a){var t=T.apply(0,S(arguments,1));if(a==void 0)return function(a){return A.')
+    .replace(/#/g, '.call(a,t)')
+    .replace(/\{([^\{]+?)\};/g, '$&$1')
 )(__EMPTY_ARRAY, testFor, slice);
+
+// requires testFor() and slice()
+// creates findWhere(), indexWhere(), indicesWhere(), lastWhere(), and lastIndexWhere()
+// NOTE: Allows for partial calls by providing undefined or null as the first parameter.
+var findWhere, indexWhere, indicesWhere, lastWhere, lastIndexWhere;
+Function(
+  'T,S',
+  'findZYXi]))Wa[i]VindexZYXi]))Wi;W-1VindicesZ,s=[]YXi]))s.push(i);WsVlastZ;l--;Xl]))Wa[l]VlastIndexZ;l--;Xl]))break;WlV'
+    .replace(/[V-Z]/g, function (c) {
+      return {
+        Z: 'Where=function(a){var t=T.apply(0,S(arguments,1));if(a==void 0)return function(a){for(var l=a.length',
+        Y: ',i=0;i<l;i++',
+        X: ')if(t(a[',
+        W: 'return ',
+        V: '};};'
+      }[c];
+    })
+    .replace(/\{([^\{]+?)\};/g, '$&$1')
+)(testFor, slice);
