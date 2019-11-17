@@ -138,7 +138,7 @@ eval(
  * Removes a target value from the specified array.
  * @param array {Array} The array from which the specified value should be removed.
  * @param target {*} The value that should be removed from array.
- * @param opt_maxRemovals {number} Optional.  Defaults to Infinity.  The maximum number of times target should be removed from array.
+ * @param opt_maxRemovals {number} Optional.  Defaults to 1.  The maximum number of times target should be removed from array.
  * @returns {Array} The array that was passed in.
  */
 /*
