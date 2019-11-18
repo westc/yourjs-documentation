@@ -281,48 +281,85 @@ eval('QPropNamesRSTa,WUaXQKeysRkeysTa,WUaXQPropsRSTW,aUWXQValuesRkeysTW,aUWXQPro
   }[c];
 }));
 
+// CODE FOR testFor(), testForNot()
 // people = Array(10000000).fill({}).map((x, i) => ({ name: `Person #${i + 1}`, age: ~~(Math.random() * 100), score: ~~(Math.random() * 51 + 49) }));
-// t = testFor(['>=', 'age'], 18, ['<=', 'age'], 21, ['~=', 'name'], /5/, ['>', 'score'], 95);
+// t = testFor(['age', '>=', 18], ['age', '<=', 21], ['name', '~=', /5/], ['score', '>', 95]);
 // for (var i = 0; i < 5; i++) {
 //   console.time('r0');
 //   r0 = people.filter(i => i != void 0 && i.age >= 18 && i.age <= 21 && /5/.test(i.name) && i.score > 95);
 //   console.timeEnd('r0');
-//
+
 //   console.time('r1');
 //   r1 = people.filter(t)
 //   console.timeEnd('r1');
 // }
-function testFor() {
-  for (var argNames = [], checks = [], rules = arguments, ri = 0, rl = (rules.length | 1) - 1; ri < rl; ri++) {
-    var pathStart = 1,
-      pathIndex = 1,
-      path = rules[ri++],
-      value = rules[ri],
-      pathLength = path.length,
-      comparer = path[0];
-    if (!/^(([!=]=?|!?~|<|>)=|<|>|!?\(\))$/.test(comparer || '')) {
-      comparer = '===';
-      pathStart = pathIndex = 0;
-    }
-    // argNames.push(...) is only in for-loop to save some code (1 character lol)
-    for (argNames.push('_' + ri, 'a' + ri); pathIndex <= pathLength; pathIndex++) {
-      for (var code = 'i', i = pathStart; i < pathIndex; i++) {
-        code += '[' + JSON.stringify(path[i]) + ']';
-      }
-      code = pathIndex + 1 > pathLength
-        ? /~|\(/.test(comparer)
-          ? ((/!/.test(comparer) ? '!' : '') + 'a' + ri + (/~/.test(comparer) ? '.test(' : '(') + code + ')')
-          : (value !== value && /^[!=]/.test(comparer))
-            ? code + (/!/.test(comparer) ? '===' : '!==') + code // Allows for comparison of NaN
-            : (code + comparer + 'a' + ri)
-        : (code + '!=void 0');
-      if (checks.indexOf(code) < 0) {
-        checks.push(code);
-      }
-    }
-  }
-  return Function(argNames.join(','), 'return function(i){return ' + checks.join('&&') + '}').apply(0, rules);
-}
+// function testFor() {
+//   for (var argNames = [], checks = [], rules = arguments, ri = 0, rl = rules.length; ri < rl; ri++) {
+//     var pathStart = 0,
+//       pathIndex = 0,
+//       path = rules[ri].slice(),
+//       value = rules[ri] = path.pop(),
+//       comparer = /^(([!=]=?|!?~|<|>)=|<|>|!?\(\))$/.test(path[path.length - 1])
+//         ? path.pop()
+//         : '===',
+//       pathLength = path.length;
+//     // argNames.push(...) is only in for-loop to save some code (1 character lol)
+//     for (argNames[ri] = 'a' + ri; pathIndex <= pathLength; pathIndex++) {
+//       for (var code = 'i', i = pathStart; i < pathIndex; i++) {
+//         code += '[' + JSON.stringify(path[i]) + ']';
+//       }
+//       code = pathIndex + 1 > pathLength
+//         ? /~|\(/.test(comparer)
+//           ? ((/!/.test(comparer) ? '!' : '') + 'a' + ri + (/~/.test(comparer) ? '.test(' : '(') + code + ')')
+//           : (value !== value && /^[!=]/.test(comparer))
+//             ? code + (/!/.test(comparer) ? '===' : '!==') + code // Allows for comparison of NaN
+//             : (code + comparer + 'a' + ri)
+//         : (code + '!=void 0');
+//       if (checks.indexOf(code) < 0) {
+//         checks.push(code);
+//       }
+//     }
+//   }
+//   return Function(argNames.join(','), 'return function(i){return ' + checks.join('&&') + '}').apply(0, rules);
+// }
+
+// function testForNot() {
+//   for (var argNames = [], checks = [], rules = arguments, ri = 0, rl = rules.length; ri < rl; ri++) {
+//     var pathStart = 0,
+//       pathIndex = 0,
+//       path = rules[ri].slice(),
+//       value = rules[ri] = path.pop(),
+//       comparer = /^(([!=]=?|!?~|<|>)=|<|>|!?\(\))$/.test(path[path.length - 1])
+//         ? path.pop()
+//         : '===',
+//       pathLength = path.length;
+//     // argNames.push(...) is only in for-loop to save some code (1 character lol)
+//     for (argNames[ri] = 'a' + ri; pathIndex <= pathLength; pathIndex++) {
+//       for (var code = 'i', i = pathStart; i < pathIndex; i++) {
+//         code += '[' + JSON.stringify(path[i]) + ']';
+//       }
+//       code = pathIndex + 1 > pathLength
+//         ? /~|\(/.test(comparer)
+//           ? ((/!/.test(comparer) ? '!' : '') + 'a' + ri + (/~/.test(comparer) ? '.test(' : '(') + code + ')')
+//           : (value !== value && /^[!=]/.test(comparer))
+//             ? code + (/!/.test(comparer) ? '===' : '!==') + code // Allows for comparison of NaN
+//             : (code + comparer + 'a' + ri)
+//         : (code + '!=void 0');
+//       if (checks.indexOf(code) < 0) {
+//         checks.push(code);
+//       }
+//     }
+//   }
+//   return Function(argNames.join(','), 'return function(i){return !(' + checks.join('&&') + ')}').apply(0, rules);
+// }
+eval(
+  '##'
+    .replace(
+      /#/g,
+      'function testFor(){for(var k=[],g=[],e=arguments,b=0,n=e.length;b<n;b++){var f=0,c=e[b].slice(),l=e[b]=c.pop(),d=/^(([!=]=?|!?~|<|>)=|<|>|!?\\(\\))$/.test(c[c.length-1])?c.pop():"===",m=c.length;for(k[b]="a"+b;f<=m;f++){for(var a="i",h=0;h<f;h++)a+="["+JSON.stringify(c[h])+"]";a=f+1>m?/~|\\(/.test(d)?(/!/.test(d)?"!":"")+"a"+b+(/~/.test(d)?".test(":"(")+a+")":l!==l&&/^[!=]/.test(d)?a+(/!/.test(d)?"===":"!==")+a:a+d+"a"+b:a+"!=void 0";0>g.indexOf(a)&&g.push(a)}}return Function(k.join(","),"return function(i){return "+g.join("&&")+"}").apply(0,e)}'
+    )
+    .replace(/r(.+?)(".g.+?\+")/, 'rNot$1!($2)')
+);
 
 // requires testFor() and slice()
 // creates where(), whereNot(), someWhere(), everyWhere(), noWhere(), and notEveryWhere()
