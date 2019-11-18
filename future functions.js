@@ -85,7 +85,8 @@ eval('ZtoCY(d){for(X,b=0,e=[];b<f;b++)W,e.push(a)Ve}ZcYAt(d,b){X;b=0>b?f+b:b||0;
   }
 ));
 
-// ORIGINAL SOURCE CODE:  hasIn(), setIn(), getIn()
+// // ORIGINAL SOURCE CODE:  hasIn(), setIn(), getIn(), getAllIn() and stepIn()
+// // Set a value under a path starting at the given root.
 // function setIn(root, path, value) {
 //   for (var target = root, i = -1, l = path.length - 1; target != undefined && ++i < l;) {
 //     target = target[path[i]];
@@ -96,6 +97,7 @@ eval('ZtoCY(d){for(X,b=0,e=[];b<f;b++)W,e.push(a)Ve}ZcYAt(d,b){X;b=0>b?f+b:b||0;
 //   return root;
 // }
 
+// // Check if an object contains a given path.
 // function hasIn(root, path) {
 //   for (var target = root, i = -1, l = path.length - 1; target != undefined && ++i < l;) {
 //     target = target[path[i]];
@@ -103,6 +105,7 @@ eval('ZtoCY(d){for(X,b=0,e=[];b<f;b++)W,e.push(a)Ve}ZcYAt(d,b){X;b=0>b?f+b:b||0;
 //   return i === l && (('object' === typeof target && path[i] in target) || target[path[i]] !== undefined);
 // }
 
+// // Get the value starting at root and traversing the given path.
 // function getIn(root, path, opt_default) {
 //   for (var target = root, i = -1, l = path.length; target != undefined && ++i < l;) {
 //     target = target[path[i]];
@@ -110,22 +113,33 @@ eval('ZtoCY(d){for(X,b=0,e=[];b<f;b++)W,e.push(a)Ve}ZcYAt(d,b){X;b=0>b?f+b:b||0;
 //   return i === l ? target : opt_default;
 // }
 
+// // Get all of the values in root at each step of the given path.
 // function getAllIn(root, path) {
 //   for (var target = root, i = -1, l = path.length, out = []; target != undefined && ++i < l;) {
 //     target = target[path[i]];
 //     out.push(target);
 //   }
-//   return out;
+//   return out.slice(0, i);
+// }
+
+// // Step into the root object as far as possible using the given path.
+// function stepIn(root, path) {
+//   for (var target = root, i = -1, l = path.length, out = []; target != undefined && ++i < l;) {
+//     target = target[path[i]];
+//     out.push(path[i]);
+//   }
+//   return out.slice(0, i);
 // }
 eval(
-  'ZsetY-1X;ifVt[p[i]]=vWr}ZhasY-1XWV&&("object"===typeof t&&p[i]in t||void 0!==t[p[i]])}ZgetYXWV?t:v}ZgetAllY,o=[]X,o.push(t)Wo}'
-    .replace(/[V-Z]/g, function (c) {
+  'ZsetY-1X;ifVt[U]=vWr}ZhasY-1XWV&&("object"===typeof t&&Uin t||void 0!==t[U])}ZgetYXWV?t:v}ZgetAllY,o=[]X,o.push(t)Wo.slice(0,i)}ZstepY,o=[]X,o.pushUWo.slice(0,i)}'
+    .replace(/[U-Z]/g, function (c) {
       return {
         Z: 'function ',
         Y: 'In(r,p,v){for(var t=r,i=-1,l=p.length',
         X: ';void 0!=t&&++i<l;)(t=t[p[i]])',
         W: ';return ',
-        V: '(i===l)'
+        V: '(i===l)',
+        U: '(p[i])'
       }[c];
     })
 );
