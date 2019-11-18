@@ -325,8 +325,8 @@ function testFor() {
 }
 
 // requires testFor() and slice()
-// creates where(), someWhere(), everyWhere(), noWhere(), and notEveryWhere()
-var where, someWhere, everyWhere, noWhere, notEveryWhere;
+// creates where(), whereNot(), someWhere(), everyWhere(), noWhere(), and notEveryWhere()
+var where, whereNot, someWhere, everyWhere, noWhere, notEveryWhere;
 Function(
   'A,T,S',
   'w@filter#};};w@filter#};};someW@some#};};everyW@every#};};noW@some#===!1};};notEveryW@every#===!1};};'
