@@ -86,49 +86,46 @@ eval('ZtoCY(d){for(X,b=0,e=[];b<f;b++)W,e.push(a)Ve}ZcYAt(d,b){X;b=0>b?f+b:b||0;
 ));
 
 // ORIGINAL SOURCE CODE:  hasIn(), setIn(), getIn()
-// // hasIn({name:{first:'Chris'}}, ['name','last']);
-// function hasIn(obj, key,nothing) {
-//   key = Object.prototype.toString.call(key) === '[object Array]' ? key : [key];
-//   for (
-//     var target = obj, i = 0, l = key.length;
-//     target && 'object' === typeof target && key[i] in target && ++i < l;
-//     target = target[key[i-1]]
-//   );
-//   return i === l;
-// }
-
-// function setIn(obj, key, value) {
-//   key = Object.prototype.toString.call(key) === '[object Array]' ? key : [key];
-//   for (
-//     var target = obj, i = 0, l = key.length - 1;
-//     target && 'object' === typeof target && key[i] in target && i < l;
-//     target = target[key[i++]]
-//   );
-//   if (i === l && target != undefined) {
-//     target[key[i]] = value;
+// function setIn(root, path, value) {
+//   for (var target = root, i = -1, l = path.length - 1; target != undefined && ++i < l;) {
+//     target = target[path[i]];
 //   }
-//   return obj;
+//   if (i === l) {
+//     target[path[i]] = value;
+//   }
+//   return root;
 // }
 
-// function getIn(obj, key, opt_default) {
-//   key = Object.prototype.toString.call(key) === '[object Array]' ? key : [key];
-//   for (
-//     var target = obj, i = 0, l = key.length;
-//     target && 'object' === typeof target && key[i] in target && ++i < l;
-//     target = target[key[i-1]]
-//   );
-//   return i === l ? target[key[i - 1]] : opt_default;
+// function hasIn(root, path) {
+//   for (var target = root, i = -1, l = path.length - 1; target != undefined && ++i < l;) {
+//     target = target[path[i]];
+//   }
+//   return i === l && (('object' === typeof target && path[i] in target) || target[path[i]] !== undefined);
 // }
 
+// function getIn(root, path, opt_default) {
+//   for (var target = root, i = -1, l = path.length; target != undefined && ++i < l;) {
+//     target = target[path[i]];
+//   }
+//   return i === l ? target : opt_default;
+// }
+
+// function getAllIn(root, path) {
+//   for (var target = root, i = -1, l = path.length, out = []; target != undefined && ++i < l;) {
+//     target = target[path[i]];
+//     out.push(target);
+//   }
+//   return out;
+// }
 eval(
-  'AhasBC++D-1]]);E}AsetB-1CD++]]);d===f&&void 0!=b&&(b[a[d]]=e);return c}AgetBC++D-1]]);E?b[a[d-1]]:e}'
-    .replace(/[A-E]/g, function(c) {
+  'ZsetY-1X;ifVt[p[i]]=vWr}ZhasY-1XWV&&("object"===typeof t&&p[i]in t||void 0!==t[p[i]])}ZgetYXWV?t:v}ZgetAllY,o=[]X,o.push(t)Wo}'
+    .replace(/[V-Z]/g, function (c) {
       return {
-        A: 'function ',
-        B: 'In(c,a,e){a="[object Array]"===Object.prototype.toString.call(a)?a:[a];for(var b=c,d=0,f=a.length',
-        C: ';b&&"object"===typeof b&&a[d]in b&&',
-        D: 'd<f;b=b[a[d',
-        E: 'return d===f'
+        Z: 'function ',
+        Y: 'In(r,p,v){for(var t=r,i=-1,l=p.length',
+        X: ';void 0!=t&&++i<l;)(t=t[p[i]])',
+        W: ';return ',
+        V: '(i===l)'
       }[c];
     })
 );
