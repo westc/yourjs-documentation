@@ -337,11 +337,9 @@ Function(
 )(__EMPTY_ARRAY, testFor, slice);
 
 // requires testFor() and slice()
-// creates findWhere(), indexWhere(), indicesWhere(), lastWhere(), and lastIndexWhere()
+// creates findWhere(), indexWhere(), indicesWhere(), lastWhere(), lastIndexWhere(), findWhereNot(), indexWhereNot(), indicesWhereNot(), lastWhereNot(), and lastIndexWhereNot()
 // NOTE: Allows for partial calls by providing undefined or null as the first parameter.
-var findWhere, indexWhere, indicesWhere, lastWhere, lastIndexWhere;
-Function(
-  'T,S',
+eval(
   'findZYXi]))Wa[i]VindexZYXi]))Wi;W-1VindicesZ,s=[]YXi]))s.push(i);WsVlastZ;l--;Xl]))Wa[l]VlastIndexZ;l--;Xl]))break;WlV'
     .replace(/[V-Z]/g, function (c) {
       return {
@@ -352,5 +350,14 @@ Function(
         V: '};};'
       }[c];
     })
+    .replace(/.+/, '$&9;$&')
+    .replace(/(=fu.+?if.)t(?=.+9;)/g, 'Not$1!t')
     .replace(/\{([^\{]+?)\};/g, '$&$1')
+    .replace(
+      /.+/,
+      'find@index@indices@last@lastIndex@(function(T,S){$&})'.replace(
+        /(\w+)@/g,
+        'var $1WhereNot,$1Where;'
+      )
+    )
 )(testFor, slice);
