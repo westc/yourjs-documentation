@@ -329,8 +329,9 @@ function testFor() {
 var where, someWhere, everyWhere, noWhere, notEveryWhere;
 Function(
   'A,T,S',
-  'w@filter#};};someW@some#};};everyW@every#};};noW@some#===!1};};notEveryW@every#===!1};};'
+  'w@filter#};};w@filter#};};someW@some#};};everyW@every#};};noW@some#===!1};};notEveryW@every#===!1};};'
     .replace(/@/g, 'here=function(a){var t=T.apply(0,S(arguments,1));if(a==void 0)return function(a){return A.')
+    .replace(/(=.+?)A/, 'Not$1!A')
     .replace(/#/g, '.call(a,t)')
     .replace(/\{([^\{]+?)\};/g, '$&$1')
 )(__EMPTY_ARRAY, testFor, slice);
