@@ -25,3 +25,6 @@ function pluck(array, path) {
   }
   return result;
 }
+
+// YourJS.translate()
+// https://www.yourjs.com/console/?gist=63781eadb826a776a42c3221d6cb49cd&file=YourJS.translate.js
