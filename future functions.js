@@ -34,7 +34,7 @@ function pluck(array, path) {
 var unhtmlify;
 (function(div) {
   unhtmlify = function(strHTML) {
-    div.innerHTML = strHTML;
+    div.innerHTML = strHTML || '';
     return div.textContent || div.innerText;
   }
 })(document.createElement('DIV'));
